@@ -11,11 +11,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.log
+logs
+*.log
 
 # Environment variables
 .env
 .env.*
 !.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # IDE files
 .idea
@@ -28,7 +34,43 @@ yarn-error.log*
 
 # OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Test outputs
 /coverage
+
+# MongoDB
+*.mongodb
+mongodb/
+.mongodb/
+/data/
+
+# Sensitive and personal data
+credentials.json
+user-data/
+*config.json
+*secrets.json
+api-keys.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+.temp/
+
+# Debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# System Files
+.directory
+.fuse_hidden*
+.nfs*
