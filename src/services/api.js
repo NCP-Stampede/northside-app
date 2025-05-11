@@ -1,5 +1,7 @@
 // API service with real backend implementation
 
+const API_BASE_URL = 'http://107.142.183.165:5000'; // Update to use laptop's IP address
+
 // Helper for making API requests
 const apiRequest = async (url, options = {}) => {
   try {
@@ -18,7 +20,7 @@ const apiRequest = async (url, options = {}) => {
     }
     
     // Make the request
-    const response = await fetch(url, {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
       headers
     });
