@@ -3,21 +3,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-// This custom clipper creates the angled background shape.
-class AngledBackgroundClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path()
-      ..lineTo(0, size.height * 0.25)
-      ..lineTo(size.width, size.height * 0.35)
-      ..lineTo(size.width, 0)
-      ..close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
+// NOTE: The AngledBackgroundClipper has been removed as it's not needed.
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,21 +25,33 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // The body is now a Stack, which lets us layer the background and UI.
       body: Stack(
         children: [
-          ClipPath(
-            clipper: AngledBackgroundClipper(),
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFE8A1A1), Color(0xFFADC6E6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+          // This Container is the new background. It fills the entire screen.
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                // These are the colors of the gradient.
+                colors: [
+                  Color(0xFFE8A1A1), // Top-left red
+                  Color(0xFFADC6E6), // Middle blue
+                  Colors.white,      // Bottom white
+                ],
+                // These 'stops' are the key to the effect.
+                // They control where each color transition finishes.
+                stops: [
+                  0.0,  // Red starts at the beginning (0%).
+                  0.25, // Blue takes over by the 25% mark.
+                  0.4,  // White takes over by the 40% mark, covering the rest.
+                ],
+                // These control the angle of the gradient.
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
+          // The rest of the UI sits on top of the gradient background.
           SafeArea(
             bottom: false,
             child: Column(
@@ -69,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          // The floating nav bar sits on top of everything.
           _buildFloatingNavBar(),
         ],
       ),
