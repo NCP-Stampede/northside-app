@@ -3,8 +3,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-// NOTE: The AngledBackgroundClipper has been removed as it's not needed.
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -15,6 +13,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   int _currentPageIndex = 0;
+  // This variable TRACKS which nav item is selected. It's the key to making it interactive.
+  int _navBarIndex = 0;
 
   @override
   void dispose() {
@@ -25,33 +25,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The body is now a Stack, which lets us layer the background and UI.
       body: Stack(
         children: [
-          // This Container is the new background. It fills the entire screen.
+          // Layer 1: The correct background gradient.
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                // These are the colors of the gradient.
-                colors: [
-                  Color(0xFFE8A1A1), // Top-left red
-                  Color(0xFFADC6E6), // Middle blue
-                  Colors.white,      // Bottom white
-                ],
-                // These 'stops' are the key to the effect.
-                // They control where each color transition finishes.
-                stops: [
-                  0.0,  // Red starts at the beginning (0%).
-                  0.25, // Blue takes over by the 25% mark.
-                  0.4,  // White takes over by the 40% mark, covering the rest.
-                ],
-                // These control the angle of the gradient.
+                colors: [Color(0xFFE8A1A1), Color(0xFFADC6E6), Colors.white],
+                stops: [0.0, 0.25, 0.4],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
           ),
-          // The rest of the UI sits on top of the gradient background.
+          // Layer 2: The main UI content.
           SafeArea(
             bottom: false,
             child: Column(
@@ -67,12 +54,97 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          // The floating nav bar sits on top of everything.
+          // Layer 3: The floating navigation bar.
           _buildFloatingNavBar(),
         ],
       ),
     );
   }
+
+  // THIS IS THE CORRECT, INTERACTIVE FLOATING NAVIGATION BAR.
+  Widget _buildFloatingNavBar() {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(50.0),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+            child: Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(50.0),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  // Each item is now built with its index to check for selection.
+                  _buildNavItem('Home', 0),
+                  _buildNavItem('Athletics', 1),
+                  _buildNavItem('Attendance', 2),
+                  _buildNavItem('Grades', 3),
+                  _buildNavIconItem(Icons.person_outline, 4),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // This helper widget now handles taps to change the state.
+  Widget _buildNavItem(String label, int index) {
+    final isSelected = _navBarIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _navBarIndex = index; // Updates the state when tapped.
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey[700],
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // This helper widget also handles taps.
+  Widget _buildNavIconItem(IconData icon, int index) {
+    final isSelected = _navBarIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _navBarIndex = index; // Updates the state when tapped.
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          border: isSelected ? Border.all(color: const Color(0xFF007AFF), width: 1.5) : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 28, color: isSelected ? const Color(0xFF007AFF) : Colors.grey[700]),
+      ),
+    );
+  }
+
+  // --- The rest of the file (header, buttons, etc.) is the same. ---
 
   Widget _buildHeader() {
     return Padding(
@@ -141,62 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       }),
-    );
-  }
-
-  Widget _buildFloatingNavBar() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50.0),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-            child: Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(50.0),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem('Home', isSelected: true),
-                  _buildNavItem('Athletics'),
-                  _buildNavItem('Attendance'),
-                  _buildNavItem('Grades'),
-                  _buildNavIconItem(Icons.person_outline),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(String label, {bool isSelected = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.grey[700], fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, fontSize: 14)),
-    );
-  }
-
-  Widget _buildNavIconItem(IconData icon, {bool isSelected = false}) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        border: isSelected ? Border.all(color: const Color(0xFF007AFF), width: 1.5) : null,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(icon, size: 28, color: isSelected ? const Color(0xFF007AFF) : Colors.grey[700]),
     );
   }
 }
