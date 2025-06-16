@@ -3,6 +3,24 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+// NEW: A custom clipper to create the angled background shape.
+class AngledBackgroundClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    // This creates a four-sided polygon that covers the top of the screen at an angle.
+    final path = Path()
+      ..lineTo(0, size.height * 0.25) // Left side of the angle
+      ..lineTo(size.width, size.height * 0.35) // Right side of the angle
+      ..lineTo(size.width, 0) // Top-right corner
+      ..close(); // Connects back to the top-left corner
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -11,9 +29,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Controller to manage the swiping for the Homecoming card
   final PageController _pageController = PageController();
-  // Variable to track the current dot for the page indicator
   int _currentPageIndex = 0;
 
   @override
@@ -24,26 +40,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The Scaffold now has a plain white background.
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // This container creates the gradient background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFE8A1A1), // Light red from the top
-                  Color(0xFFADC6E6), // Light blue
-                  Colors.white,      // Fades to white
-                ],
-                stops: [0.0, 0.35, 0.35], // Gradient stops at 35% from the top
+          // The angled gradient is now the first layer in the Stack.
+          ClipPath(
+            clipper: AngledBackgroundClipper(),
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFE8A1A1), Color(0xFFADC6E6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
             ),
           ),
-          // SafeArea ensures your UI isn't hidden by the phone's notch or status bar
           SafeArea(
             bottom: false,
             child: Column(
@@ -52,23 +66,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 20),
                 _buildQuickActions(),
                 const SizedBox(height: 25),
-                // Expanded makes the carousel take up the remaining available space
                 Expanded(child: _buildEventsCarousel()),
                 const SizedBox(height: 15),
                 _buildPageIndicator(),
-                // This space ensures content isn't hidden by the floating nav bar
                 const SizedBox(height: 110),
               ],
             ),
           ),
-          // This builds the floating navigation bar at the bottom
           _buildFloatingNavBar(),
         ],
       ),
     );
   }
 
-  // Builds the "Home" title and the profile icon
+  // --- All the build methods below are the same as before, ---
+  // --- except for _HomecomingCard which now has the gradient text. ---
+
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 16.0, 16.0, 16.0),
@@ -93,7 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Builds the 2x2 grid of buttons
   Widget _buildQuickActions() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -103,10 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const NeverScrollableScrollPhysics(),
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 2.7, // Adjusts the width-to-height ratio of the buttons
+        childAspectRatio: 2.7,
         children: [
           _QuickActionButton(
-            // TODO: 1. Add your grades_icon.png to your assets folder
             iconWidget: Image.asset('assets/images/grades_icon.png', width: 32, height: 32),
             label: 'Grades',
             onTap: () {},
@@ -117,13 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {},
           ),
           _QuickActionButton(
-            // TODO: 2. Add your hoofbeat_icon.png to your assets folder
             iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32),
             label: 'HoofBeat',
             onTap: () {},
           ),
           _QuickActionButton(
-            // TODO: 3. Add your flexes_icon.png to your assets folder
             iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32),
             label: 'Flexes',
             onTap: () {},
@@ -133,7 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Builds the swipeable Homecoming card section
   Widget _buildEventsCarousel() {
     return PageView(
       controller: _pageController,
@@ -144,13 +152,12 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       children: [
         _HomecomingCard(),
-        _HomecomingCard(), // Duplicated for demonstration
-        _HomecomingCard(), // Duplicated for demonstration
+        _HomecomingCard(),
+        _HomecomingCard(),
       ],
     );
   }
 
-  // Builds the small dots indicator below the carousel
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -170,7 +177,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Builds the floating navigation "pill" at the bottom
   Widget _buildFloatingNavBar() {
     return Align(
       alignment: Alignment.bottomCenter,
@@ -191,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  // Home is selected by default
                   _buildNavItem('Home', isSelected: true),
                   _buildNavItem('Athletics'),
                   _buildNavItem('Attendance'),
@@ -206,7 +211,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Helper widget for text items in the nav bar
   Widget _buildNavItem(String label, {bool isSelected = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -225,7 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Helper widget for the icon item in the nav bar
   Widget _buildNavIconItem(IconData icon, {bool isSelected = false}) {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -238,7 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// A private widget for the action buttons to keep the code clean
+// Private helper widgets remain below
+
 class _QuickActionButton extends StatelessWidget {
   final Widget iconWidget;
   final String label;
@@ -255,11 +259,7 @@ class _QuickActionButton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
           ],
         ),
         child: Row(
@@ -275,7 +275,6 @@ class _QuickActionButton extends StatelessWidget {
   }
 }
 
-// A private widget for the Homecoming card to keep the code clean
 class _HomecomingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -285,11 +284,7 @@ class _HomecomingCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 5))
         ],
       ),
       child: Column(
@@ -305,7 +300,6 @@ class _HomecomingCard extends StatelessWidget {
                     topLeft: Radius.circular(24),
                     topRight: Radius.circular(24),
                   ),
-                  // TODO: 4. Add your homecoming_bg.png to your assets folder
                   child: Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.cover),
                 ),
                 Container(
@@ -318,14 +312,25 @@ class _HomecomingCard extends StatelessWidget {
                   ),
                 ),
                 const Center(
-                  child: Text(
-                    'HOMECOMING',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.5,
-                      shadows: [Shadow(blurRadius: 5.0, color: Colors.black45, offset: Offset(2, 2))],
+                  // NEW: The Text widget is now wrapped with a ShaderMask to create the gradient.
+                  child: ShaderMask(
+                    blendMode: BlendMode.srcIn,
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [Color(0xFFE474A2), Color(0xFF8A9AE4)], // Pink to purple gradient
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(
+                      Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                    ),
+                    child: Text(
+                      'HOMECOMING',
+                      style: TextStyle(
+                        color: Colors.white, // This color is necessary but is overridden by the shader
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.5,
+                        shadows: [Shadow(blurRadius: 5.0, color: Colors.black45, offset: Offset(2, 2))],
+                      ),
                     ),
                   ),
                 ),
