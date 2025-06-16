@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:flutter_svg/flutter_svg.dart'; // Example for using SVGs later
+// If you use SVG icons later, ensure 'flutter_svg' is in pubspec.yaml and uncomment:
+// import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const SchoolApp());
@@ -10,15 +11,15 @@ class SchoolApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define a font family if you have one (e.g., SF Pro Display)
-    // const String appFontFamily = 'SFProDisplay'; // Ensure added to pubspec.yaml
+    // Ensure 'Inter' font is added to pubspec.yaml and assets/fonts/
+    const String appFontFamily = 'Inter';
 
     return MaterialApp(
       title: 'Northside App',
       theme: ThemeData(
-        // fontFamily: appFontFamily, // Apply default font family
-        brightness: Brightness.light, // Assuming a light theme from the mockup
-        // appBarTheme is handled in HomeScreen for transparency
+        fontFamily: appFontFamily,
+        brightness: Brightness.light,
+        primaryColor: const Color(0xFF007AFF), // Standard iOS Blue, for consistency
       ),
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
@@ -34,65 +35,76 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentBottomNavIndex = 0; // For BottomNavigationBar
+  int _currentBottomNavIndex = 0;
 
-  // Placeholder for custom icons. Replace with Image.asset or SvgPicture.asset
-  Widget _getCustomIcon(String iconName, Color color) {
-    // In a real app, you'd load your actual asset here.
-    // For example: return Image.asset('assets/icons/$iconName.png', width: 30, height: 30, color: color);
-    // Or: return SvgPicture.asset('assets/icons/$iconName.svg', width: 30, height: 30, colorFilter: ColorFilter.mode(color, BlendMode.srcIn));
-    IconData placeholderIcon = Icons.help_outline; // Default placeholder
-    double iconSize = 30;
-    if (iconName == 'grades') placeholderIcon = Icons.apps; // Closest to Rubik's cube
-    if (iconName == 'events') placeholderIcon = Icons.calendar_today_outlined;
-    if (iconName == 'hoofbeat') placeholderIcon = Icons.graphic_eq; // Placeholder for sound/beat
-    if (iconName == 'flexes') placeholderIcon = Icons.star_border; // Generic placeholder for logo
-
-    if (iconName == 'events') {
-       return Icon(placeholderIcon, size: iconSize, color: const Color(0xFF6C63FF)); // Specific blue for events icon
+  // PLACEHOLDER FOR CUSTOM ICON ASSETS
+  // This function uses IconData for placeholders and aims to match Figma icon colors.
+  // Replace the Icon widget with Image.asset or SvgPicture.asset for your actual icons.
+  Widget _getPlaceholderIconForFigma(String figmaIconName, {double size = 26}) { // Default size for quick action icons
+    // Colors from Figma design's custom icons
+    if (figmaIconName == 'grades') {
+      // Placeholder for the Rubik's Cube. Your asset will provide the actual visual.
+      // This colored container is just to represent the space and dominant color idea.
+      return Container(
+        width: size, height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          // Example: Use a prominent color from the Rubik's cube if it's mostly one shade,
+          // or just a neutral placeholder. For now, a generic colorful representation.
+          color: const Color(0xFFF9A825), // Dominant yellow/orange from the cube
+          // If you want to simulate blocks:
+          // gradient: LinearGradient(colors: [Color(0xFFF9A825), Color(0xFF4CAF50), Color(0xFF2196F3), Color(0xFFE91E63)])
+        ),
+        // child: Center(child: Icon(Icons.apps_rounded, size: size*0.7, color: Colors.white.withOpacity(0.5))), // Optional inner detail
+      );
+    } else if (figmaIconName == 'events') {
+      return Icon(Icons.calendar_today_outlined, size: size, color: const Color(0xFF333333)); // Dark gray/black for calendar
+    } else if (figmaIconName == 'hoofbeat') {
+      // Placeholder for Hoofbeat (hoof + sound wave).
+      return Icon(Icons.graphic_eq, size: size, color: const Color(0xFFE53935)); // Reddish-orange from Figma
+    } else if (figmaIconName == 'flexes') {
+      // Placeholder for Flexes (horse logo).
+      return Icon(Icons.shield_outlined, size: size, color: const Color(0xFF7B1FA2)); // Deep red/maroon from Figma logo
     }
-    if (iconName == 'grades') {
-       return Icon(placeholderIcon, size: iconSize, color: const Color(0xFFFFB02F)); // Orange for grades
-    }
-     if (iconName == 'hoofbeat') {
-       return Icon(placeholderIcon, size: iconSize, color: const Color(0xFFE94F37)); // Reddish for hoofbeat
-    }
-     if (iconName == 'flexes') {
-       return Icon(placeholderIcon, size: iconSize, color: const Color(0xFF6C63FF).withOpacity(0.8)); // Purple for flexes
-    }
-
-
-    return Icon(placeholderIcon, size: iconSize, color: color);
+    return Icon(Icons.help_outline, size: size, color: Colors.grey); // Fallback
   }
 
 
   @override
   Widget build(BuildContext context) {
-    // Approximate gradient colors from Figma
-    const Color gradientStartColor = Color(0xFFF07C70); // Pinkish-Red top-left
-    const Color gradientEndColor = Color(0xFF8A98DE);   // Light Blue/Purple bottom-right
+    const Color gradientStartColor = Color(0xFFED6E67);
+    const Color gradientMidColor = Color(0xFFD083A8);
+    const Color gradientEndColor = Color(0xFF8A98DE);
+
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double topSystemPadding = MediaQuery.of(context).padding.top;
+    const double appBarHeight = 60.0; // Consistent AppBar height
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // Make body go behind AppBar
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Home',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 22, // Adjusted size
+        toolbarHeight: appBarHeight,
+        title: const Padding(
+          padding: EdgeInsets.only(left: 4.0), // Figma has title slightly offset from absolute edge
+          child: Text(
+            'Home',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700, // Inter Bold
+              fontSize: 26, // Matches Figma visually
+            ),
           ),
         ),
-        backgroundColor: Colors.transparent, // Transparent AppBar
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.only(right: 10.0),
+            padding: EdgeInsets.only(right: 20.0), // Matches screen horizontal padding
             child: CircleAvatar(
-              backgroundColor: Colors.black,
-              radius: 18,
+              backgroundColor: Color(0xFF1C1C1E), // Very dark gray/off-black from Figma
+              radius: 19, // Matches Figma profile icon size
               child: Icon(
-                Icons.person_outline,
+                Icons.person,
                 color: Colors.white,
                 size: 22,
               ),
@@ -103,119 +115,108 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [gradientStartColor, gradientEndColor],
+            colors: [gradientStartColor, gradientMidColor, gradientEndColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            stops: [0.0, 1.0], // Gradient stops
+            stops: [0.0, 0.45, 1.0],
           ),
         ),
-        child: SafeArea( // Ensures content is not obscured by notches etc.
-          bottom: false, // We'll handle bottom padding with the BottomNav
-          child: ListView( // Using ListView for scrollability if content overflows
-            padding: const EdgeInsets.fromLTRB(16.0, kToolbarHeight + 20, 16.0, 16.0), // Top padding for AppBar
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: EdgeInsets.only(
+              top: topSystemPadding + appBarHeight + 20, // Status bar + AppBar + margin
+              left: 20.0,
+              right: 20.0,
+              bottom: 20.0,
+            ),
             children: [
-              _buildQuickActionGrid(context),
-              const SizedBox(height: 24),
+              _buildQuickActionGrid(context, screenWidth - 40), // available content width
+              const SizedBox(height: 30), // Spacing from Figma
               _buildHomecomingCard(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24), // Spacing from Figma
               _buildPaginationDots(),
-              // Add more content here if needed, or SizedBox for spacing above BottomNav
-              const SizedBox(height: 80), // Space for bottom nav
+              // This SizedBox ensures that the lowest content in ListView can scroll above the bottom nav bar
+              SizedBox(height: kBottomNavigationBarHeight + MediaQuery.of(context).padding.bottom + 10),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
-  Widget _buildQuickActionGrid(BuildContext context) {
-    // Using GridView for a 2x2 layout
+  Widget _buildQuickActionGrid(BuildContext context, double availableWidth) {
+    double spacing = 16.0; // Spacing between cards from Figma
+    double itemWidth = (availableWidth - spacing) / 2;
+    // Height derived from Figma's visual proportion (approx 60-62% of itemWidth)
+    double itemHeight = itemWidth * 0.62;
+
     return GridView.count(
       crossAxisCount: 2,
-      shrinkWrap: true, // Important for GridView inside ListView
-      physics: const NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
-      mainAxisSpacing: 12.0,
-      crossAxisSpacing: 12.0,
-      childAspectRatio: (MediaQuery.of(context).size.width / 2 - 22) / 80, // Adjust aspect ratio for height
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: spacing,
+      crossAxisSpacing: spacing,
+      childAspectRatio: itemWidth / itemHeight,
       children: [
-        _buildQuickActionItem(
-          context,
-          iconName: 'grades',
-          label: 'Grades',
-          // iconColor: const Color(0xFFFFB02F), // Orange
-          onTap: () => print('Grades tapped'),
-        ),
-        _buildQuickActionItem(
-          context,
-          iconName: 'events',
-          label: 'Events',
-          // iconColor: const Color(0xFF6C63FF), // Blue/Purple
-          onTap: () => print('Events tapped'),
-        ),
-        _buildQuickActionItem(
-          context,
-          iconName: 'hoofbeat',
-          label: 'HoofBeat',
-          // iconColor: const Color(0xFFE94F37), // Reddish
-          onTap: () => print('HoofBeat tapped'),
-        ),
-        _buildQuickActionItem(
-          context,
-          iconName: 'flexes',
-          label: 'Flexes',
-          // iconColor: const Color(0xFF1EAE98), // Teal/Green - Pick from your design
-          onTap: () => print('Flexes tapped'),
-        ),
+        _buildQuickActionItem(context, figmaIconName: 'grades', label: 'Grades'),
+        _buildQuickActionItem(context, figmaIconName: 'events', label: 'Events'),
+        _buildQuickActionItem(context, figmaIconName: 'hoofbeat', label: 'HoofBeat'),
+        _buildQuickActionItem(context, figmaIconName: 'flexes', label: 'Flexes'),
       ],
     );
   }
 
   Widget _buildQuickActionItem(
     BuildContext context, {
-    required String iconName, // Changed to iconName for custom icon handling
+    required String figmaIconName,
     required String label,
-    // required Color iconColor,
-    required VoidCallback onTap,
+    VoidCallback? onTap, // Made onTap optional if some are non-interactive initially
   }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap ?? () {}, // Default empty tap if none provided
       child: Card(
-        elevation: 2.0,
+        elevation: 1.5, // Figma buttons are quite flat, very subtle shadow
         color: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0), // Rounded corners
+          borderRadius: BorderRadius.circular(18.0), // Matches Figma
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _getCustomIcon(iconName, Colors.black), // Pass a default color, custom icon might have its own colors
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500, // Slightly bolder than normal
-                color: Colors.black,
+        child: Padding(
+          // Padding inside the card to position icon and text
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            children: [
+              _getPlaceholderIconForFigma(figmaIconName, size: 26), // Icon size from Figma
+              const SizedBox(width: 12), // Space between icon and text from Figma
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15, // Matches Figma
+                    fontWeight: FontWeight.w600, // Inter SemiBold
+                    color: Colors.black,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
  Widget _buildHomecomingCard(BuildContext context) {
-    const String homeComingImageUrl = 'https://images.unsplash.com/photo-1531058020387-3be344556be6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGV2ZW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60'; // Placeholder
-    // Color from Figma for "Homecoming 2024" text
-    const Color homecomingTitleColor = Color(0xFF4A0D66); // Dark Magenta/Purple
+    // const String homecomingImageAsset = 'assets/images/YOUR_HOMECOMING_IMAGE.png'; // REPLACE THIS
+    const String placeholderNetworkImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80';
+    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Vibrant Blue from Figma
 
     return Card(
-      elevation: 3.0,
+      elevation: 3.5, // Matches Figma shadow depth
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0), // More rounded corners
+        borderRadius: BorderRadius.circular(24.0), // Pronounced rounding from Figma
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -225,59 +226,57 @@ class _HomeScreenState extends State<HomeScreen> {
             alignment: Alignment.center,
             children: [
               Container(
-                height: 180, // Adjust height as per design
+                height: 195, // Visual height from Figma
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(homeComingImageUrl), // Replace with your actual image
+                    // image: AssetImage(homecomingImageAsset), // USE YOUR ACTUAL ASSET
+                    image: NetworkImage(placeholderNetworkImage),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-              // Optional: Dark overlay if needed for text contrast, though Figma doesn't show a strong one
-              // Container(height: 180, color: Colors.black.withOpacity(0.2)),
               const Text(
                 'HOMECOMING',
                 style: TextStyle(
-                  fontSize: 40, // Large and Bold
-                  fontWeight: FontWeight.w900, // Extra bold
+                  fontSize: 44, // Matches Figma
+                  fontWeight: FontWeight.w900, // Inter Black
                   color: Colors.white,
-                  letterSpacing: 1.5,
-                  // No explicit text shadow visible in Figma
+                  letterSpacing: 1.5, // Matches Figma
                 ),
               ),
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(20.0, 22.0, 20.0, 22.0), // Matches Figma padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Homecoming 2024',
                   style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: homecomingTitleColor,
+                    fontSize: 24, // Matches Figma
+                    fontWeight: FontWeight.w800, // Inter ExtraBold
+                    color: homecoming2024TextColor,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16), // Matches Figma spacing
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade700),
-                    const SizedBox(width: 6),
+                    Icon(Icons.calendar_today_outlined, size: 18, color: const Color(0xFF555555)), // Dark gray icon
+                    const SizedBox(width: 8),
                     Text(
                       'This Friday',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: const Color(0xFF333333)), // Dark gray text
                     ),
                     const Spacer(),
-                     Icon(Icons.more_horiz_outlined, size: 20, color: Colors.grey.shade700), // Three dots icon
-                    const SizedBox(width: 4),
+                    Icon(Icons.more_horiz_rounded, size: 22, color: const Color(0xFF555555)), // Dark gray icon
+                    const SizedBox(width: 6),
                     Text(
                       'More Details',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade800, // Dark grey, not blue
-                        fontWeight: FontWeight.w500,
+                        fontSize: 15, // Matches Figma
+                        color: const Color(0xFF333333), // Dark gray text
+                        fontWeight: FontWeight.w500, // Inter Medium
                       ),
                     ),
                   ],
@@ -291,74 +290,76 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPaginationDots() {
-    int currentPage = 0;
+    int currentPage = 1; // Figma shows middle dot active
     int dotCount = 3;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(dotCount, (index) {
+        bool isActive = index == currentPage;
         return Container(
-          width: 8.0,
-          height: 8.0,
-          margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
+          width: isActive ? 8.5 : 8.0, // Active dot can be subtly larger
+          height: isActive ? 8.5 : 8.0,
+          margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0), // Matches Figma spacing
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: index == currentPage
-                ? Colors.grey.shade600 // Active dot (darker grey)
-                : Colors.grey.shade400, // Inactive dot (lighter grey)
+            color: isActive
+                ? const Color(0xFF616161)  // Darker gray for active (Figma)
+                : const Color(0xFFCCCCCC), // Lighter gray for inactive (Figma)
           ),
         );
       }),
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    // Height needs to accommodate labels and icon, plus iPhone home indicator area padding
+    double bottomPadding = MediaQuery.of(context).padding.bottom;
+    // Figma bottom nav bar seems compact, about 50-55 for items + label, then system padding
+    double navBarContentHeight = 50.0;
+
     return Container(
+      height: navBarContentHeight + bottomPadding, // Dynamic height
+      padding: EdgeInsets.only(bottom: bottomPadding > 0 ? bottomPadding * 0.25 : 0), // Reduced padding for notch area for a tighter fit
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.90), // Semi-transparent white
-        // For blur effect, you might need a package like `glassmorphism` or custom painting.
-        // This is a simpler semi-transparent background.
+        color: Colors.white.withOpacity(0.92), // Matches Figma's semi-transparency
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.06), // Matches Figma's subtle shadow
             blurRadius: 10,
-            spreadRadius: 0,
+            offset: const Offset(0, -1),
           )
         ],
-        // borderRadius: BorderRadius.only( // Optional: if you want rounded top corners
-        //   topLeft: Radius.circular(20),
-        //   topRight: Radius.circular(20),
-        // )
+        border: Border(top: BorderSide(color: Colors.black.withOpacity(0.08), width: 0.5)), // Subtle top border from Figma
       ),
       child: BottomNavigationBar(
         currentIndex: _currentBottomNavIndex,
         onTap: (index) {
-          setState(() {
-            _currentBottomNavIndex = index;
-          });
-          // Handle navigation based on index
-          print('Tapped item $index');
+          setState(() { _currentBottomNavIndex = index; });
         },
-        type: BottomNavigationBarType.fixed, // Fixed type for more than 3 items
-        backgroundColor: Colors.transparent, // Handled by container
-        elevation: 0, // Handled by container's shadow
-        selectedItemColor: Colors.blue.shade700, // Color for selected icon and label
-        unselectedItemColor: Colors.grey.shade600,
-        selectedFontSize: 10, // Font size for selected label
-        unselectedFontSize: 10, // Font size for unselected label
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        selectedItemColor: const Color(0xFF007AFF), // iOS Blue from Figma
+        unselectedItemColor: const Color(0xFF8A8A8E), // iOS Gray from Figma (slightly adjusted from 8E8E93)
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10), // Inter Medium, size from Figma
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10),
         showUnselectedLabels: true,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.sports_basketball_outlined), label: 'Athletics'),
           BottomNavigationBarItem(icon: Icon(Icons.check_circle_outline), label: 'Attendance'),
-          BottomNavigationBarItem(icon: Icon(Icons.assessment_outlined), label: 'Grades'),
+          BottomNavigationBarItem(icon: Icon(Icons.insert_chart_outlined_rounded), label: 'Grades'), // Different icon for Grades
           BottomNavigationBarItem(
-            icon: CircleAvatar(
-              backgroundColor: Colors.black, // Small profile icon
-              radius: 12,
-              child: Icon(Icons.person_outline, color: Colors.white, size: 14),
+            icon: Padding(
+              padding: EdgeInsets.only(top: 1.5), // Fine-tune vertical alignment
+              child: CircleAvatar(
+                backgroundColor: Color(0xFF1C1C1E), // Dark gray/off-black from Figma
+                radius: 13, // Matches Figma
+                child: Icon(Icons.person, color: Colors.white, size: 16),
+              ),
             ),
-            label: 'Profile', // Or an empty string if no label desired
+            label: 'Profile',
           ),
         ],
       ),
