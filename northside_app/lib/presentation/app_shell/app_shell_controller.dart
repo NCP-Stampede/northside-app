@@ -1,13 +1,10 @@
-// lib/presentation/app_shell/app_shell_controller.dart
-
 import 'package:get/get.dart';
 
 class AppShellController extends GetxController {
-  // .obs makes this variable "observable" or "reactive".
-  // The UI will automatically update when its value changes.
+  // Reactive variable to hold the selected navigation bar index.
   final RxInt navBarIndex = 0.obs;
 
-  // This function changes the page.
+  // Function to update the index when a nav item is tapped.
   void changePage(int index) {
     navBarIndex.value = index;
   }
