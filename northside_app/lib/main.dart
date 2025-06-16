@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Make sure you have run 'flutter pub add flutter_svg'
+// SVG package is not needed for this testable version, but you will need it later.
+// import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const SchoolApp());
@@ -10,14 +11,13 @@ class SchoolApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String appFontFamily = 'Inter';
-
+    // This version uses the default system font for immediate testing.
+    // To add the "Inter" font later, declare it here in ThemeData.
     return MaterialApp(
       title: 'Northside App',
       theme: ThemeData(
-        fontFamily: appFontFamily,
         brightness: Brightness.light,
-        primaryColor: const Color(0xFF007AFF), // iOS Blue from Figma
+        primaryColor: const Color(0xFF007AFF),
       ),
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
@@ -35,21 +35,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentBottomNavIndex = 0;
 
-  // This function loads your actual SVG assets from the 'assets/icons/' folder.
-  Widget _getCustomIconAsset(String assetName, {double size = 28}) {
-    // This is no longer a placeholder. It will load your files.
-    // Ensure files like 'grades_icon.svg' exist in 'assets/icons/'.
-    return SvgPicture.asset(
-      'assets/icons/$assetName',
-      width: size,
-      height: size,
-    );
+  // This function now returns a blank, sized box to prevent asset errors during testing.
+  // It holds the exact 28x28 space your final icon will occupy.
+  Widget _getIconPlaceholder({double size = 28}) {
+    // This is a blank placeholder. It will not cause errors.
+    return SizedBox(width: size, height: size);
+    // When you are ready to add your assets, you will replace the call to this
+    // function with your SvgPicture.asset(...) or Image.asset(...) widgets.
   }
 
 
   @override
   Widget build(BuildContext context) {
-    // Exact colors from the Figma design
     const Color gradientStartColor = Color(0xFFEA6960);
     const Color gradientEndColor = Color(0xFFA485D7);
 
@@ -67,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Home',
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w700, // Inter Bold
+              fontWeight: FontWeight.w700,
               fontSize: 26,
             ),
           ),
@@ -78,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: CircleAvatar(
-              backgroundColor: Color(0xFF1C1C1E), // Off-black from Figma
+              backgroundColor: Color(0xFF1C1C1E),
               radius: 19.0,
               child: Icon(
                 Icons.person,
@@ -95,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [gradientStartColor, gradientEndColor],
-                begin: Alignment.topLeft, // Corresponds to Figma's angle
+                begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
@@ -109,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: 120.0,
                 ),
                 children: [
-                  const SizedBox(height: 24.0), // Exact space from Figma
+                  const SizedBox(height: 24.0),
                   _buildQuickActionGrid(context, screenWidth - 40),
                   const SizedBox(height: 30),
                   _buildHomecomingCard(context),
@@ -138,17 +135,16 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisSpacing: spacing,
       childAspectRatio: itemWidth / itemHeight,
       children: [
-        _buildQuickActionItem(context, assetName: 'grades_icon.svg', label: 'Grades'),
-        _buildQuickActionItem(context, assetName: 'events_icon.svg', label: 'Events'),
-        _buildQuickActionItem(context, assetName: 'hoofbeat_icon.svg', label: 'HoofBeat'),
-        _buildQuickActionItem(context, assetName: 'flexes_icon.svg', label: 'Flexes'),
+        _buildQuickActionItem(context, label: 'Grades'),
+        _buildQuickActionItem(context, label: 'Events'),
+        _buildQuickActionItem(context, label: 'HoofBeat'),
+        _buildQuickActionItem(context, label: 'Flexes'),
       ],
     );
   }
 
   Widget _buildQuickActionItem(
     BuildContext context, {
-    required String assetName,
     required String label,
     VoidCallback? onTap,
   }) {
@@ -165,13 +161,13 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _getCustomIconAsset(assetName, size: 28), // This now loads your actual SVG file
+              _getIconPlaceholder(), // Blank, error-free placeholder
               const SizedBox(width: 12.0),
               Text(
                 label,
                 style: const TextStyle(
                   fontSize: 15.0,
-                  fontWeight: FontWeight.w600, // Inter SemiBold
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
@@ -183,8 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
  Widget _buildHomecomingCard(BuildContext context) {
-    const String homecomingImageAsset = 'assets/images/homecoming_banner.png'; // **YOUR IMAGE FILE NAME**
-    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Vibrant Blue from Figma
+    // This now uses a NetworkImage to avoid local asset errors during testing.
+    const String placeholderNetworkImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80';
+    const Color homecoming2024TextColor = Color(0xFF0A24F5);
 
     return Card(
       elevation: 4.0,
@@ -203,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 195.0,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(homecomingImageAsset), // **NOW USES YOUR ASSET**
+                    image: NetworkImage(placeholderNetworkImage), // ERROR-FREE
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -212,7 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'HOMECOMING',
                 style: TextStyle(
                   fontSize: 44.0,
-                  fontWeight: FontWeight.w900, // Inter Black
+                  fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: 1.5,
                 ),
@@ -228,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Homecoming 2024',
                   style: TextStyle(
                     fontSize: 24.0,
-                    fontWeight: FontWeight.w800, // Inter ExtraBold
+                    fontWeight: FontWeight.w800,
                     color: homecoming2024TextColor,
                   ),
                 ),
