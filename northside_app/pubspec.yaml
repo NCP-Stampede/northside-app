@@ -10,19 +10,16 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # I moved http here. This is the correct place for packages your app uses.
-  http: ^1.2.1 # Added a version number, which is good practice
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
 
-# This is the section you need to modify.
+# The flutter section must be configured exactly like this.
+# The indentation (spaces) is extremely important.
 flutter:
   uses-material-design: true
 
-  # This section tells Flutter to include your images in the app.
-  # The indentation (two spaces) is VERY important.
+  # This tells your app where to find your images.
   assets:
     - assets/images/
