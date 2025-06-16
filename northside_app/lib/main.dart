@@ -11,6 +11,7 @@ class SchoolApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure 'Inter' font is added to pubspec.yaml and assets/fonts/
     const String appFontFamily = 'Inter';
 
     return MaterialApp(
@@ -36,11 +37,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentBottomNavIndex = 0;
 
-  // This placeholder reserves the EXACT space (28x28) for your final icon asset.
+  // This placeholder reserves the EXACT space for your final icon asset.
   // **YOU MUST REPLACE THE `SizedBox` WITH YOUR `Image.asset` WIDGET.**
   Widget _getIconPlaceholder(String figmaIconName) {
-    // This widget's only job is to be a 28x28 box.
-    // The final visual will come from your actual image file.
     return const SizedBox(width: 28.0, height: 28.0);
     // EXAMPLE REPLACEMENT:
     // return Image.asset('assets/icons/$figmaIconName.png', width: 28, height: 28);
@@ -49,12 +48,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Colors from the design specification
     const Color gradientStartColor = Color(0xFFED6E67);
     const Color gradientMidColor = Color(0xFFD083A8);
     const Color gradientEndColor = Color(0xFF8A98DE);
 
-    // Dimensions from the specification
     final double screenWidth = MediaQuery.of(context).size.width;
     final double topSystemPadding = MediaQuery.of(context).padding.top;
     const double appBarHeight = 60.0;
@@ -69,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Home',
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w700, // Inter Bold
+              fontWeight: FontWeight.w700,
               fontSize: 26,
             ),
           ),
@@ -80,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: CircleAvatar(
-              backgroundColor: Color(0xFF1C1C1E), // Off-black
+              backgroundColor: Color(0xFF1C1C1E),
               radius: 19.0,
               child: Icon(
                 Icons.person,
@@ -108,12 +105,13 @@ class _HomeScreenState extends State<HomeScreen> {
               bottom: false,
               child: ListView(
                 padding: EdgeInsets.only(
-                  top: topSystemPadding + appBarHeight + 20, // Final top padding
+                  top: topSystemPadding + appBarHeight,
                   left: 20.0,
                   right: 20.0,
-                  bottom: 120.0, // Ensures content scrolls above the nav bar
+                  bottom: 120.0,
                 ),
                 children: [
+                  const SizedBox(height: 24.0), // This creates the space below the AppBar
                   _buildQuickActionGrid(context, screenWidth - 40),
                   const SizedBox(height: 30),
                   _buildHomecomingCard(context),
@@ -133,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickActionGrid(BuildContext context, double availableWidth) {
     const double spacing = 16.0;
     final double itemWidth = (availableWidth - spacing) / 2;
-    final double itemHeight = itemWidth * 0.62; // Aspect ratio from spec
+    final double itemHeight = itemWidth * 0.62;
 
     return GridView.count(
       crossAxisCount: 2,
@@ -167,16 +165,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
+          child: Row( // <-- This is the correct Row layout
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _getIconPlaceholder(figmaIconName), // Placeholder for your custom icon
+              _getIconPlaceholder(figmaIconName),
               const SizedBox(width: 12.0),
               Text(
                 label,
                 style: const TextStyle(
                   fontSize: 15.0,
-                  fontWeight: FontWeight.w600, // Inter SemiBold
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
@@ -188,9 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
  Widget _buildHomecomingCard(BuildContext context) {
-    // const String homecomingImageAsset = 'assets/images/YOUR_HOMECOMING_IMAGE.png';
     const String placeholderNetworkImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80';
-    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Vibrant Blue
+    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Correct Blue
 
     return Card(
       elevation: 4.0,
@@ -209,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 195.0,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    // image: AssetImage(homecomingImageAsset), // **REPLACE WITH YOUR ASSET**
                     image: NetworkImage(placeholderNetworkImage),
                     fit: BoxFit.cover,
                   ),
@@ -219,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'HOMECOMING',
                 style: TextStyle(
                   fontSize: 44.0,
-                  fontWeight: FontWeight.w900, // Inter Black
+                  fontWeight: FontWeight.w900,
                   color: Colors.white,
                   letterSpacing: 1.5,
                 ),
@@ -235,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Homecoming 2024',
                   style: TextStyle(
                     fontSize: 24.0,
-                    fontWeight: FontWeight.w800, // Inter ExtraBold
+                    fontWeight: FontWeight.w800,
                     color: homecoming2024TextColor,
                   ),
                 ),
@@ -256,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 15.0,
                         color: Color(0xFF333333),
-                        fontWeight: FontWeight.w500, // Inter Medium
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -270,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPaginationDots() {
-    const int currentPage = 1; // Middle dot is active
+    const int currentPage = 1;
     const int dotCount = 3;
 
     return Container(
@@ -280,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min, // Container should only be as wide as its children
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(dotCount, (index) {
           bool isActive = index == currentPage;
@@ -298,6 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // This is the floating navigation bar implementation.
   Widget _buildFloatingBottomNavBar(BuildContext context) {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -305,10 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
       alignment: Alignment.bottomCenter,
       child: Container(
         height: 65.0,
-        margin: EdgeInsets.only(left: 24.0, right: 24.0, bottom: bottomPadding + 5), // Adjust margin for safe area
+        margin: EdgeInsets.only(left: 24.0, right: 24.0, bottom: bottomPadding + 5),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.92),
-          borderRadius: BorderRadius.circular(32.5),
+          borderRadius: BorderRadius.circular(32.5), // For the pill shape
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
