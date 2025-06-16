@@ -1,16 +1,13 @@
-// lib/presentation/app_shell/app_shell_screen.dart
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:northside_app/presentation/app_shell/app_shell_controller.dart';
 import 'package:northside_app/presentation/home_screen_content/home_screen_content.dart';
 import 'package:northside_app/presentation/placeholder_pages/athletics_page.dart';
-import 'package:northside_app/presentation/placeholder_pages/grades_page.dart';
 import 'package:northside_app/presentation/placeholder_pages/attendance_page.dart';
+import 'package:northside_app/presentation/placeholder_pages/grades_page.dart';
 import 'package:northside_app/presentation/placeholder_pages/profile_page.dart';
 
-// This is a GetView, which is a stateless widget that has access to a controller.
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
 
@@ -28,8 +25,6 @@ class AppShellScreen extends GetView<AppShellController> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Obx wraps the IndexedStack. When controller.navBarIndex changes,
-          // only this part of the UI rebuilds to show the new page.
           Obx(() => IndexedStack(
                 index: controller.navBarIndex.value,
                 children: pages,
@@ -42,8 +37,7 @@ class AppShellScreen extends GetView<AppShellController> {
       ),
     );
   }
-
-  // The floating nav bar now gets its state from the controller.
+  
   Widget _buildFloatingNavBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
@@ -59,7 +53,6 @@ class AppShellScreen extends GetView<AppShellController> {
               borderRadius: BorderRadius.circular(50.0),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            // Obx ensures the Row rebuilds when an item is tapped.
             child: Obx(() => Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -76,7 +69,6 @@ class AppShellScreen extends GetView<AppShellController> {
     );
   }
 
-  // The build methods now call controller.changePage() instead of setState().
   Widget _buildNavItem(String label, int index) {
     final isSelected = controller.navBarIndex.value == index;
     return GestureDetector(
