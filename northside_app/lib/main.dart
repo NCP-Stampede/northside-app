@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-// If you use SVG icons later, ensure 'flutter_svg' is in pubspec.yaml and uncomment:
-// import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Make sure you have run 'flutter pub add flutter_svg'
 
 void main() {
   runApp(const SchoolApp());
@@ -11,7 +10,6 @@ class SchoolApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure 'Inter' font is added to pubspec.yaml and assets/fonts/
     const String appFontFamily = 'Inter';
 
     return MaterialApp(
@@ -19,7 +17,7 @@ class SchoolApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: appFontFamily,
         brightness: Brightness.light,
-        primaryColor: const Color(0xFF007AFF), // Standard iOS Blue
+        primaryColor: const Color(0xFF007AFF), // iOS Blue from Figma
       ),
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
@@ -37,20 +35,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentBottomNavIndex = 0;
 
-  // This placeholder reserves the EXACT space for your final icon asset.
-  // **YOU MUST REPLACE THE `SizedBox` WITH YOUR `Image.asset` WIDGET.**
-  Widget _getIconPlaceholder(String figmaIconName) {
-    return const SizedBox(width: 28.0, height: 28.0);
-    // EXAMPLE REPLACEMENT:
-    // return Image.asset('assets/icons/$figmaIconName.png', width: 28, height: 28);
+  // This function loads your actual SVG assets from the 'assets/icons/' folder.
+  Widget _getCustomIconAsset(String assetName, {double size = 28}) {
+    // This is no longer a placeholder. It will load your files.
+    // Ensure files like 'grades_icon.svg' exist in 'assets/icons/'.
+    return SvgPicture.asset(
+      'assets/icons/$assetName',
+      width: size,
+      height: size,
+    );
   }
 
 
   @override
   Widget build(BuildContext context) {
-    const Color gradientStartColor = Color(0xFFED6E67);
-    const Color gradientMidColor = Color(0xFFD083A8);
-    const Color gradientEndColor = Color(0xFF8A98DE);
+    // Exact colors from the Figma design
+    const Color gradientStartColor = Color(0xFFEA6960);
+    const Color gradientEndColor = Color(0xFFA485D7);
 
     final double screenWidth = MediaQuery.of(context).size.width;
     final double topSystemPadding = MediaQuery.of(context).padding.top;
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Home',
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w700, // Inter Bold
               fontSize: 26,
             ),
           ),
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: EdgeInsets.only(right: 20.0),
             child: CircleAvatar(
-              backgroundColor: Color(0xFF1C1C1E),
+              backgroundColor: Color(0xFF1C1C1E), // Off-black from Figma
               radius: 19.0,
               child: Icon(
                 Icons.person,
@@ -88,17 +89,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // The body is a Stack to layer the floating nav bar over the scrolling content.
       body: Stack(
         children: [
-          // Layer 1: Background Gradient and Scrolling Content
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [gradientStartColor, gradientMidColor, gradientEndColor],
-                begin: Alignment.topLeft,
+                colors: [gradientStartColor, gradientEndColor],
+                begin: Alignment.topLeft, // Corresponds to Figma's angle
                 end: Alignment.bottomRight,
-                stops: [0.0, 0.45, 1.0],
               ),
             ),
             child: SafeArea(
@@ -111,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: 120.0,
                 ),
                 children: [
-                  const SizedBox(height: 24.0), // This creates the space below the AppBar
+                  const SizedBox(height: 24.0), // Exact space from Figma
                   _buildQuickActionGrid(context, screenWidth - 40),
                   const SizedBox(height: 30),
                   _buildHomecomingCard(context),
@@ -121,7 +119,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Layer 2: Floating Navigation Bar aligned to the bottom
           _buildFloatingBottomNavBar(context),
         ],
       ),
@@ -141,17 +138,17 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisSpacing: spacing,
       childAspectRatio: itemWidth / itemHeight,
       children: [
-        _buildQuickActionItem(context, figmaIconName: 'grades', label: 'Grades'),
-        _buildQuickActionItem(context, figmaIconName: 'events', label: 'Events'),
-        _buildQuickActionItem(context, figmaIconName: 'hoofbeat', label: 'HoofBeat'),
-        _buildQuickActionItem(context, figmaIconName: 'flexes', label: 'Flexes'),
+        _buildQuickActionItem(context, assetName: 'grades_icon.svg', label: 'Grades'),
+        _buildQuickActionItem(context, assetName: 'events_icon.svg', label: 'Events'),
+        _buildQuickActionItem(context, assetName: 'hoofbeat_icon.svg', label: 'HoofBeat'),
+        _buildQuickActionItem(context, assetName: 'flexes_icon.svg', label: 'Flexes'),
       ],
     );
   }
 
   Widget _buildQuickActionItem(
     BuildContext context, {
-    required String figmaIconName,
+    required String assetName,
     required String label,
     VoidCallback? onTap,
   }) {
@@ -165,16 +162,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row( // <-- This is the correct Row layout
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _getIconPlaceholder(figmaIconName),
+              _getCustomIconAsset(assetName, size: 28), // This now loads your actual SVG file
               const SizedBox(width: 12.0),
               Text(
                 label,
                 style: const TextStyle(
                   fontSize: 15.0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w600, // Inter SemiBold
                   color: Colors.black,
                 ),
               ),
@@ -186,8 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
  Widget _buildHomecomingCard(BuildContext context) {
-    const String placeholderNetworkImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1200&q=80';
-    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Correct Blue
+    const String homecomingImageAsset = 'assets/images/homecoming_banner.png'; // **YOUR IMAGE FILE NAME**
+    const Color homecoming2024TextColor = Color(0xFF0A24F5); // Vibrant Blue from Figma
 
     return Card(
       elevation: 4.0,
@@ -206,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 195.0,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(placeholderNetworkImage),
+                    image: AssetImage(homecomingImageAsset), // **NOW USES YOUR ASSET**
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -215,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 'HOMECOMING',
                 style: TextStyle(
                   fontSize: 44.0,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w900, // Inter Black
                   color: Colors.white,
                   letterSpacing: 1.5,
                 ),
@@ -231,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Homecoming 2024',
                   style: TextStyle(
                     fontSize: 24.0,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w800, // Inter ExtraBold
                     color: homecoming2024TextColor,
                   ),
                 ),
@@ -294,7 +291,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // This is the floating navigation bar implementation.
   Widget _buildFloatingBottomNavBar(BuildContext context) {
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -305,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: EdgeInsets.only(left: 24.0, right: 24.0, bottom: bottomPadding + 5),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.92),
-          borderRadius: BorderRadius.circular(32.5), // For the pill shape
+          borderRadius: BorderRadius.circular(32.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
