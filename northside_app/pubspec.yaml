@@ -1,26 +1,51 @@
 name: northside_app
 description: "A new Flutter project."
-publish_to: 'none'
-version: 0.1.0
+publish_to: 'none' 
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
 
+# ===================================================================
+# APPLICATION DEPENDENCIES
+# These are the packages your app needs to run.
+# ===================================================================
 dependencies:
   flutter:
     sdk: flutter
 
+  # Core package for state management, dependency injection, and routing.
+  get: ^4.6.6
+
+  # A package to make your UI responsive to different screen sizes.
+  sizer: ^2.0.15
+
+  # Although not used yet, your project will likely need this for network calls.
+  http: ^1.2.1
+
+  # Add any other core packages here.
+  cupertino_icons: ^1.0.6
+
+# ===================================================================
+# DEVELOPMENT DEPENDENCIES
+# These are packages for testing and code analysis, not included in the final app.
+# ===================================================================
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
-  http: 
 
-# The flutter section must be configured exactly like this.
-# The indentation (spaces) is extremely important.
+  flutter_lints: ^3.0.0
+
+# ===================================================================
+# FLUTTER-SPECIFIC CONFIGURATION
+# This is where you declare assets like images and fonts.
+# ===================================================================
 flutter:
+  # This line is standard for using Material Design icons and components.
   uses-material-design: true
 
-  # This tells your app where to find your images.
+  # This section is CRITICAL for your images to load.
+  # The indentation (spaces) must be exactly as shown.
   assets:
+    # This line tells Flutter to include all files inside your assets/images/ folder.
     - assets/images/
