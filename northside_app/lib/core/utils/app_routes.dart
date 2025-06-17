@@ -3,17 +3,21 @@ import 'package:northside_app/presentation/app_shell/app_shell_binding.dart';
 import 'package:northside_app/presentation/app_shell/app_shell_screen.dart';
 
 class AppRoutes {
-  // We define the starting point of the app here.
-  static const String initialRoute = '/app_shell';
+  // Define a name for our shell route.
+  static const String appShell = '/app_shell';
+
+  // The app will start at this route.
+  static const String initialRoute = appShell;
 
   static List<GetPage> pages = [
     GetPage(
-      name: initialRoute,
+      name: appShell,
       page: () => const AppShellScreen(),
-      // The binding provides the necessary controllers to the AppShell.
+      // This is the correct way to provide controllers to this route.
       binding: AppShellBinding(),
     ),
-    // Later, you can add routes to detail pages here, for example:
+    // TODO: When you build the "More Details" page for Homecoming,
+    // you would add its route here like this:
     // GetPage(name: '/homecoming_details', page: () => HomecomingDetailPage()),
   ];
 }
