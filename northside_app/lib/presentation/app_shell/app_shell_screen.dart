@@ -1,43 +1,33 @@
-// lib/presentation/app_shell/app_shell_screen.dart
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
-
-// Import all the pages that will live inside the shell
+import 'package:get/get.dart';
+import 'package:northside_app/presentation/app_shell/app_shell_controller.dart';
 import 'package:northside_app/presentation/home_screen_content/home_screen_content.dart';
 import 'package:northside_app/presentation/athletics_screen/athletics_screen.dart';
 import 'package:northside_app/presentation/attendance_screen/attendance_screen.dart';
 
-class AppShellScreen extends StatefulWidget {
+class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
 
   @override
-  State<AppShellScreen> createState() => _AppShellScreenState();
-}
-
-class _AppShellScreenState extends State<AppShellScreen> {
-  int _navBarIndex = 0;
-
-  // The list of pages now includes all three new designs.
-  final List<Widget> _pages = [
-    const HomeScreenContent(),
-    const AthleticsPage(),
-    const AttendancePage(),
-    // TODO: Add GradesPage and ProfilePage here when ready
-    Container(color: Colors.white), // Placeholder for Grades
-    Container(color: Colors.white), // Placeholder for Profile
-  ];
-
-  @override
   Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      const HomeScreenContent(),
+      const AthleticsPage(),
+      const AttendancePage(),
+      const Center(child: Text("Grades Page Placeholder")),
+      const Center(child: Text("Profile Page Placeholder")),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          IndexedStack(
-            index: _navBarIndex,
-            children: _pages,
-          ),
+          // Obx automatically listens to changes in controller variables.
+          Obx(() => IndexedStack(
+                index: controller.navBarIndex.value,
+                children: pages,
+              )),
           Align(
             alignment: Alignment.bottomCenter,
             child: _buildFloatingNavBar(),
@@ -46,7 +36,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
       ),
     );
   }
-
+  
   Widget _buildFloatingNavBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
@@ -62,16 +52,17 @@ class _AppShellScreenState extends State<AppShellScreen> {
               borderRadius: BorderRadius.circular(50.0),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem('Home', 0),
-                _buildNavItem('Athletics', 1),
-                _buildNavItem('Attendance', 2),
-                _buildNavItem('Grades', 3),
-                _buildProfileNavIcon(4),
-              ],
-            ),
+            // This Obx makes sure only the Row rebuilds on tap, which is efficient.
+            child: Obx(() => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem('Home', 0),
+                    _buildNavItem('Athletics', 1),
+                    _buildNavItem('Attendance', 2),
+                    _buildNavItem('Grades', 3),
+                    _buildProfileNavIcon(4),
+                  ],
+                )),
           ),
         ),
       ),
@@ -79,9 +70,10 @@ class _AppShellScreenState extends State<AppShellScreen> {
   }
 
   Widget _buildNavItem(String label, int index) {
-    final isSelected = _navBarIndex == index;
+    final isSelected = controller.navBarIndex.value == index;
     return GestureDetector(
-      onTap: () => setState(() => _navBarIndex = index),
+      // The onTap now calls the controller's function.
+      onTap: () => controller.changePage(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -101,9 +93,9 @@ class _AppShellScreenState extends State<AppShellScreen> {
   }
 
   Widget _buildProfileNavIcon(int index) {
-    final isSelected = _navBarIndex == index;
+    final isSelected = controller.navBarIndex.value == index;
     return GestureDetector(
-      onTap: () => setState(() => _navBarIndex = index),
+      onTap: () => controller.changePage(index),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -121,4 +113,5 @@ class _AppShellScreenState extends State<AppShellScreen> {
       ),
     );
   }
+}
 }
