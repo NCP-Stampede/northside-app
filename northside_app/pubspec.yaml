@@ -1,0 +1,26 @@
+name: northside_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  http: 
+
+# The flutter section must be configured exactly like this.
+# The indentation (spaces) is extremely important.
+flutter:
+  uses-material-design: true
+
+  # This tells your app where to find your images.
+  assets:
+    - assets/images/
