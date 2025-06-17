@@ -1,9 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:northside_app/presentation/home_screen_content/home_screen_content_controller.dart';
+// lib/presentation/home_screen_content/home_screen_content.dart
 
-class HomeScreenContent extends GetView<HomeScreenContentController> {
+import 'package:flutter/material.dart';
+
+class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
+
+  @override
+  State<HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<HomeScreenContent> {
+  final PageController _pageController = PageController();
+  int _currentPageIndex = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +89,18 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
+  // THIS WIDGET CONTAINS THE FIX FOR THE CLIPPED SHADOW
   Widget _buildEventsCarousel() {
     return PageView(
-      controller: controller.pageController,
-      onPageChanged: controller.onPageChanged,
+      // THE FIX: This line allows the cards inside the PageView
+      // to draw their shadows outside of the PageView's rectangular boundary.
+      clipBehavior: Clip.none,
+      controller: _pageController,
+      onPageChanged: (index) {
+        setState(() {
+          _currentPageIndex = index;
+        });
+      },
       children: const [
         _HomecomingCard(),
         _HomecomingCard(),
@@ -88,20 +110,20 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
   }
 
   Widget _buildPageIndicator() {
-    return Obx(() => Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
-              width: 8.0,
-              height: 8.0,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: controller.currentPageIndex.value == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
-              ),
-            );
-          }),
-        ));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          width: 8.0,
+          height: 8.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+          ),
+        );
+      }),
+    );
   }
 }
 
@@ -216,6 +238,11 @@ class _HomecomingCard extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
         ],
       ),
     );
