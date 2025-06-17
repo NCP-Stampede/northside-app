@@ -61,12 +61,13 @@ class _AppShellScreenState extends State<AppShellScreen> {
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              // The mainAxisAlignment is no longer needed because Expanded handles the space.
               children: [
                 _buildNavItem('Home', 0),
                 _buildNavItem('Athletics', 1),
                 _buildNavItem('Attendance', 2),
                 _buildNavItem('Grades', 3),
+                // The profile icon is NOT expanded, so it keeps its fixed size.
                 _buildProfileNavIcon(4),
               ],
             ),
@@ -76,24 +77,32 @@ class _AppShellScreenState extends State<AppShellScreen> {
     );
   }
 
-  // THIS WIDGET CONTAINS THE FIX FOR THE OVERFLOW
+  // THIS WIDGET CONTAINS THE CORRECT FIX FOR THE OVERFLOW BUG
   Widget _buildNavItem(String label, int index) {
     final isSelected = _navBarIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _navBarIndex = index),
-      child: Container(
-        // THE FIX: Reduced horizontal padding from 16 to 12.
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
+    // THE FIX: We wrap the GestureDetector in an Expanded widget.
+    // This tells the four text items to share the available space.
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _navBarIndex = index),
+        child: Container(
+          // The horizontal padding is removed from here because Expanded handles spacing.
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey[700],
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 14,
+              ),
+              maxLines: 1, // Prevents text like "Attendance" from wrapping
+              overflow: TextOverflow.ellipsis, // Fades out text if it's still too long
+            ),
           ),
         ),
       ),
