@@ -1,33 +1,41 @@
+// lib/presentation/app_shell/app_shell_screen.dart
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:northside_app/presentation/app_shell/app_shell_controller.dart';
+
+// Import all the content pages that this shell will display.
 import 'package:northside_app/presentation/home_screen_content/home_screen_content.dart';
 import 'package:northside_app/presentation/athletics_screen/athletics_screen.dart';
 import 'package:northside_app/presentation/attendance_screen/attendance_screen.dart';
 
-class AppShellScreen extends GetView<AppShellController> {
+class AppShellScreen extends StatefulWidget {
   const AppShellScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      const HomeScreenContent(),
-      const AthleticsPage(),
-      const AttendancePage(),
-      const Center(child: Text("Grades Page Placeholder")),
-      const Center(child: Text("Profile Page Placeholder")),
-    ];
+  State<AppShellScreen> createState() => _AppShellScreenState();
+}
 
+class _AppShellScreenState extends State<AppShellScreen> {
+  int _navBarIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomeScreenContent(),
+    const AthleticsPage(),
+    const AttendancePage(),
+    const Center(child: Text("Grades Page")), // Placeholder
+    const Center(child: Text("Profile Page")), // Placeholder
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Obx automatically listens to changes in controller variables.
-          Obx(() => IndexedStack(
-                index: controller.navBarIndex.value,
-                children: pages,
-              )),
+          IndexedStack(
+            index: _navBarIndex,
+            children: _pages,
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: _buildFloatingNavBar(),
@@ -36,7 +44,7 @@ class AppShellScreen extends GetView<AppShellController> {
       ),
     );
   }
-  
+
   Widget _buildFloatingNavBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
@@ -52,30 +60,30 @@ class AppShellScreen extends GetView<AppShellController> {
               borderRadius: BorderRadius.circular(50.0),
               border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
-            // This Obx makes sure only the Row rebuilds on tap, which is efficient.
-            child: Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem('Home', 0),
-                    _buildNavItem('Athletics', 1),
-                    _buildNavItem('Attendance', 2),
-                    _buildNavItem('Grades', 3),
-                    _buildProfileNavIcon(4),
-                  ],
-                )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem('Home', 0),
+                _buildNavItem('Athletics', 1),
+                _buildNavItem('Attendance', 2),
+                _buildNavItem('Grades', 3),
+                _buildProfileNavIcon(4),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  // THIS WIDGET CONTAINS THE FIX FOR THE OVERFLOW
   Widget _buildNavItem(String label, int index) {
-    final isSelected = controller.navBarIndex.value == index;
+    final isSelected = _navBarIndex == index;
     return GestureDetector(
-      // The onTap now calls the controller's function.
-      onTap: () => controller.changePage(index),
+      onTap: () => setState(() => _navBarIndex = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // THE FIX: Reduced horizontal padding from 16 to 12.
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -93,9 +101,9 @@ class AppShellScreen extends GetView<AppShellController> {
   }
 
   Widget _buildProfileNavIcon(int index) {
-    final isSelected = controller.navBarIndex.value == index;
+    final isSelected = _navBarIndex == index;
     return GestureDetector(
-      onTap: () => controller.changePage(index),
+      onTap: () => setState(() => _navBarIndex = index),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -113,5 +121,4 @@ class AppShellScreen extends GetView<AppShellController> {
       ),
     );
   }
-}
 }
