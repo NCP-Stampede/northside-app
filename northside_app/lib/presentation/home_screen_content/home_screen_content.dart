@@ -1,33 +1,14 @@
-// lib/presentation/home_screen_content/home_screen_content.dart
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:northside_app/presentation/home_screen_content/home_screen_content_controller.dart';
 
-// This widget is responsible for drawing the Home screen's unique UI and background.
-// It does NOT include the Scaffold or the floating navigation bar.
-class HomeScreenContent extends StatefulWidget {
+class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
   @override
-  State<HomeScreenContent> createState() => _HomeScreenContentState();
-}
-
-class _HomeScreenContentState extends State<HomeScreenContent> {
-  final PageController _pageController = PageController();
-  int _currentPageIndex = 0;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // This Stack allows this page to draw its own unique background
-    // behind its content.
     return Stack(
       children: [
-        // Layer 1 (for this screen only): The background gradient.
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -38,7 +19,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ),
         ),
-        // Layer 2: The UI content (header, buttons, cards).
         SafeArea(
           bottom: false,
           child: Column(
@@ -50,8 +30,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               Expanded(child: _buildEventsCarousel()),
               const SizedBox(height: 15),
               _buildPageIndicator(),
-              // This space is crucial so the AppShell's permanent nav bar
-              // doesn't hide the content when the user scrolls.
               const SizedBox(height: 110),
             ],
           ),
@@ -60,7 +38,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // Builds the "Home" title and the profile icon.
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 16.0, 16.0, 16.0),
@@ -78,7 +55,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // Builds the 2x2 grid of quick action buttons.
   Widget _buildQuickActions() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -99,15 +75,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // Builds the swipeable PageView for the Homecoming cards.
   Widget _buildEventsCarousel() {
     return PageView(
-      controller: _pageController,
-      onPageChanged: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
-      },
+      controller: controller.pageController,
+      onPageChanged: controller.onPageChanged,
       children: const [
         _HomecomingCard(),
         _HomecomingCard(),
@@ -116,26 +87,24 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // Builds the small dot indicators for the PageView.
   Widget _buildPageIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          width: 8.0,
-          height: 8.0,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
-          ),
-        );
-      }),
-    );
+    return Obx(() => Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(3, (index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+              width: 8.0,
+              height: 8.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: controller.currentPageIndex.value == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+              ),
+            );
+          }),
+        ));
   }
 }
 
-// Private helper widget for the quick action buttons.
 class _QuickActionButton extends StatelessWidget {
   const _QuickActionButton({required this.iconWidget, required this.label, required this.onTap});
   final Widget iconWidget;
@@ -161,7 +130,6 @@ class _QuickActionButton extends StatelessWidget {
   }
 }
 
-// Private helper widget for the Homecoming card.
 class _HomecomingCard extends StatelessWidget {
   const _HomecomingCard();
 
@@ -252,4 +220,5 @@ class _HomecomingCard extends StatelessWidget {
       ),
     );
   }
+}
 }
