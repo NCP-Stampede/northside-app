@@ -2,8 +2,6 @@
 
 import 'package:flutter/material.dart';
 
-// NOTE: I've converted this to a StatefulWidget to manage the state
-// of the PageView indicator, just like in your original code.
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
 
@@ -23,11 +21,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
-    // CHANGED: The entire screen is now a Stack. This is essential for layering
-    // the gradient background behind the main content.
     return Stack(
       children: [
-        // LAYER 1: The unique background for the home screen.
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -38,21 +33,19 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ),
         ),
-
-        // LAYER 2: Your main UI content.
         SafeArea(
-          bottom: false, // The nav bar will handle its own safe area.
+          bottom: false,
           child: Column(
             children: [
               _buildHeader(),
               const SizedBox(height: 20),
               _buildQuickActions(),
-              const SizedBox(height: 25),
+              // CHANGED: Reduced the space here to give more height to the card.
+              const SizedBox(height: 20), 
+              // The Expanded widget will now have more vertical space to fill.
               Expanded(child: _buildEventsCarousel()),
               const SizedBox(height: 15),
               _buildPageIndicator(),
-              // This provides space at the bottom so the permanent floating
-              // nav bar in your AppShell doesn't hide the content.
               const SizedBox(height: 110),
             ],
           ),
@@ -61,7 +54,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // This widget has been updated to match the design's styling.
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 16.0, 16.0, 16.0),
@@ -79,7 +71,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // This widget has been updated to use custom images and correct styling.
   Widget _buildQuickActions() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -91,7 +82,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          // IMPORTANT: You will need to add these images to your `assets/images` folder.
           _QuickActionButton(iconWidget: Image.asset('assets/images/grades_icon.png', width: 32, height: 32), label: 'Grades', onTap: () {}),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () {}),
           _QuickActionButton(iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32), label: 'HoofBeat', onTap: () {}),
@@ -101,25 +91,27 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  // This builds the main swipeable card area.
   Widget _buildEventsCarousel() {
-    return PageView(
-      controller: _pageController,
-      onPageChanged: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
-      },
-      children: const [
-        // NEW: This is now a dedicated, reusable card widget.
-        _HomecomingCard(),
-        _HomecomingCard(), // Duplicated for demonstration
-        _HomecomingCard(), // Duplicated for demonstration
-      ],
+    // NEW: Wrapped the PageView in Padding to give the shadow room to render.
+    // This is the fix for the shadow being "cut off".
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0), // Gives 10px of space for the shadow
+      child: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
+        children: const [
+          _HomecomingCard(),
+          _HomecomingCard(),
+          _HomecomingCard(),
+        ],
+      ),
     );
   }
 
-  // This builds the small dots indicator below the carousel.
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -138,11 +130,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   }
 }
 
-// ===================================================================
-// Reusable Helper Widgets for a Cleaner Build Method
-// ===================================================================
-
-// NEW: A dedicated widget for the quick action buttons.
 class _QuickActionButton extends StatelessWidget {
   const _QuickActionButton({required this.iconWidget, required this.label, required this.onTap});
   final Widget iconWidget;
@@ -168,7 +155,6 @@ class _QuickActionButton extends StatelessWidget {
   }
 }
 
-// NEW: A dedicated widget for the complex Homecoming card.
 class _HomecomingCard extends StatelessWidget {
   const _HomecomingCard();
 
@@ -184,7 +170,6 @@ class _HomecomingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // This is the top part of the card with the image and gradient text.
           Expanded(
             flex: 3,
             child: Stack(
@@ -192,7 +177,6 @@ class _HomecomingCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-                  // IMPORTANT: You need to add this image to your assets folder.
                   child: Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.cover),
                 ),
                 Container(
@@ -202,7 +186,6 @@ class _HomecomingCard extends StatelessWidget {
                   ),
                 ),
                 Center(
-                  // This ShaderMask is how the gradient text is created.
                   child: ShaderMask(
                     blendMode: BlendMode.srcIn,
                     shaderCallback: (bounds) => const LinearGradient(
@@ -225,7 +208,6 @@ class _HomecomingCard extends StatelessWidget {
               ],
             ),
           ),
-          // This is the bottom part of the card with the info.
           Expanded(
             flex: 2,
             child: Padding(
@@ -234,7 +216,6 @@ class _HomecomingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // This RichText handles the two different colors for the title.
                   RichText(
                     text: const TextSpan(
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'sans-serif'),
@@ -264,5 +245,4 @@ class _HomecomingCard extends StatelessWidget {
       ),
     );
   }
-}
 }
