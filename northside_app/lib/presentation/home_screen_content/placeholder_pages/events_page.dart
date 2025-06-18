@@ -1,0 +1,262 @@
+// lib/presentation/placeholder_pages/events_page.dart
+
+import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'dart:collection'; // Required for LinkedHashMap
+
+// --- Data Models for Demonstration ---
+class Event {
+  const Event(this.title);
+  final String title;
+}
+
+// Using a LinkedHashMap to preserve the order of events
+final kEvents = LinkedHashMap<DateTime, List<Event>>(
+  equals: isSameDay,
+  hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year,
+)..addAll({
+  DateTime.now().subtract(const Duration(days: 2)): [const Event('Team Meeting')],
+  DateTime.now(): [const Event('Parent-Teacher Conference'), const Event('Soccer Game @ 7PM')],
+  DateTime.now().add(const Duration(days: 5)): [const Event('School Play')],
+});
+// --- End of Data Models ---
+
+class EventsPage extends StatefulWidget {
+  const EventsPage({super.key});
+
+  @override
+  State<EventsPage> createState() => _EventsPageState();
+}
+
+class _EventsPageState extends State<EventsPage> {
+  late final ValueNotifier<List<Event>> _selectedEvents;
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = _focusedDay;
+    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay!));
+  }
+
+  @override
+  void dispose() {
+    _selectedEvents.dispose();
+    super.dispose();
+  }
+
+  List<Event> _getEventsForDay(DateTime day) {
+    return kEvents[day] ?? [];
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    if (!isSameDay(_selectedDay, selectedDay)) {
+      setState(() {
+        _selectedDay = selectedDay;
+        _focusedDay = focusedDay;
+      });
+      _selectedEvents.value = _getEventsForDay(selectedDay);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 120),
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 16),
+          _buildFilterButton(),
+          const SizedBox(height: 16),
+          _buildCalendar(),
+          const SizedBox(height: 24),
+          _buildEventList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Events',
+            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: Colors.grey.shade300,
+            child: const Icon(Icons.person, color: Colors.black, size: 28),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'For Current Year',
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade600),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalendar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TableCalendar<Event>(
+        firstDay: DateTime.utc(2020, 1, 1),
+        lastDay: DateTime.utc(2030, 12, 31),
+        focusedDay: _focusedDay,
+        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+        onDaySelected: _onDaySelected,
+        eventLoader: _getEventsForDay,
+        startingDayOfWeek: StartingDayOfWeek.sunday,
+        headerStyle: const HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: false,
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          leftChevronIcon: Icon(Icons.arrow_back_ios, size: 16),
+          rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 16),
+        ),
+        calendarStyle: CalendarStyle(
+          todayDecoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.3),
+            shape: BoxShape.circle,
+          ),
+          selectedDecoration: const BoxDecoration(
+            color: Colors.blue,
+            shape: BoxShape.circle,
+          ),
+        ),
+        onPageChanged: (focusedDay) {
+          _focusedDay = focusedDay;
+        },
+      ),
+    );
+  }
+
+  Widget _buildEventList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: ValueListenableBuilder<List<Event>>(
+        valueListenable: _selectedEvents,
+        builder: (context, value, _) {
+          if (value.isEmpty) {
+            return const _NoEventsCard();
+          }
+          return Column(
+            children: value
+                .map((event) => _EventDetailCard(event: event))
+                .toList(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _NoEventsCard extends StatelessWidget {
+  const _NoEventsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: const Center(
+        child: Text(
+          'No Events Today',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EventDetailCard extends StatelessWidget {
+  const _EventDetailCard({required this.event});
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              event.title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Text('Details about the event...', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
