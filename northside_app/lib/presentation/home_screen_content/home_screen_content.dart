@@ -1,23 +1,11 @@
 // lib/presentation/home_screen_content/home_screen_content.dart
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'home_screen_content_controller.dart';
 
-class HomeScreenContent extends StatefulWidget {
+class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
-
-  @override
-  State<HomeScreenContent> createState() => _HomeScreenContentState();
-}
-
-class _HomeScreenContentState extends State<HomeScreenContent> {
-  final PageController _pageController = PageController();
-  int _currentPageIndex = 0;
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +28,34 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               _buildHeader(),
               const SizedBox(height: 20),
               _buildQuickActions(),
-              // CHANGED: Reduced the space here to give more height to the card.
-              const SizedBox(height: 20), 
-              // The Expanded widget will now have more vertical space to fill.
+              const SizedBox(height: 20),
+              // FIX: Replaced SizedBox with Expanded and added clipBehavior.
+              // This allows the card to be tall while ensuring its shadow is never clipped.
               Expanded(child: _buildEventsCarousel()),
-              const SizedBox(height: 15),
-              _buildPageIndicator(),
+              const SizedBox(height: 5),
+              Obx(() => _buildPageIndicator()),
               const SizedBox(height: 110),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEventsCarousel() {
+    return PageView.builder(
+      controller: controller.pageController,
+      itemCount: 3,
+      clipBehavior: Clip.none, // This is the essential fix for the clipped shadow.
+      physics: const BouncingScrollPhysics(),
+      onPageChanged: controller.onPageChanged,
+      itemBuilder: (context, index) {
+        // Using a margin on the outer container ensures space for the shadow.
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+          child: _buildEventCard(),
+        );
+      },
     );
   }
 
@@ -60,7 +65,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Home', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E))),
+          const Text(
+            'Home',
+            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFF1E1E1E)),
+          ),
           CircleAvatar(
             radius: 22,
             backgroundColor: const Color(0xFF1E1E1E).withOpacity(0.9),
@@ -91,77 +99,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-  Widget _buildEventsCarousel() {
-    // NEW: Wrapped the PageView in Padding to give the shadow room to render.
-    // This is the fix for the shadow being "cut off".
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0), // Gives 10px of space for the shadow
-      child: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentPageIndex = index;
-          });
-        },
-        children: const [
-          _HomecomingCard(),
-          _HomecomingCard(),
-          _HomecomingCard(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPageIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4.0),
-          width: 8.0,
-          height: 8.0,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
-          ),
-        );
-      }),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  const _QuickActionButton({required this.iconWidget, required this.label, required this.onTap});
-  final Widget iconWidget;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [iconWidget, const SizedBox(width: 12), Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))],
-        ),
-      ),
-    );
-  }
-}
-
-class _HomecomingCard extends StatelessWidget {
-  const _HomecomingCard();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildEventCard() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -240,6 +179,56 @@ class _HomecomingCard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          width: 8.0,
+          height: 8.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: controller.currentPageIndex.value == index
+                ? const Color(0xFF333333)
+                : Colors.grey.withOpacity(0.4),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({required this.iconWidget, required this.label, required this.onTap});
+  final Widget iconWidget;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [iconWidget, const SizedBox(width: 12), Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))],
+        ),
+      ),
+    );
+  }
+}
           ),
         ],
       ),
