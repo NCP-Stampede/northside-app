@@ -6,21 +6,24 @@ import 'package:get/get.dart';
 
 import 'app_shell_controller.dart';
 import '../home_screen_content/home_screen_content.dart';
-import '../home_screen_content/placeholder_pages/athletics_page.dart';
-import '../home_screen_content/placeholder_pages/attendance_page.dart';
-import '../home_screen_content/placeholder_pages/grades_page.dart';
-import '../home_screen_content/placeholder_pages/profile_page.dart';
+import '../placeholder_pages/athletics_page.dart';
+import '../placeholder_pages/profile_page.dart';
+
+// UPDATED: Import Events and Flexes
+import '../placeholder_pages/events_page.dart';
+import '../placeholder_pages/flexes_page.dart';
 
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // UPDATED: The list of pages is now in the correct order.
     final List<Widget> pages = <Widget>[
       const HomeScreenContent(),
       const AthleticsPage(),
-      const AttendancePage(),
-      const GradesPage(),
+      const EventsPage(), // Replaced Attendance
+      const FlexesPage(),
       const ProfilePage(),
     ];
 
@@ -28,10 +31,7 @@ class AppShellScreen extends GetView<AppShellController> {
       backgroundColor: Colors.white,
       body: Obx(() => Stack(
             children: [
-              // The selected page from the controller
               pages[controller.navBarIndex.value],
-
-              // The floating navigation bar
               Align(
                 alignment: Alignment.bottomCenter,
                 child: _buildFloatingNavBar(),
@@ -42,7 +42,6 @@ class AppShellScreen extends GetView<AppShellController> {
   }
 
   Widget _buildFloatingNavBar() {
-    // This widget is already correct and doesn't need changes.
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
       alignment: Alignment.bottomCenter,
@@ -70,12 +69,13 @@ class AppShellScreen extends GetView<AppShellController> {
                 borderRadius: BorderRadius.circular(50.0),
                 border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
+              // UPDATED: The Row now has the correct labels and indices.
               child: Row(
                 children: [
                   Expanded(child: _buildNavItem('Home', 0)),
                   Expanded(child: _buildNavItem('Athletics', 1)),
-                  Expanded(child: _buildNavItem('Attendance', 2)),
-                  Expanded(child: _buildNavItem('Grades', 3)),
+                  Expanded(child: _buildNavItem('Events', 2)), // Replaced Attendance
+                  Expanded(child: _buildNavItem('Flexes', 3)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: _buildProfileNavIcon(4),
@@ -89,17 +89,27 @@ class AppShellScreen extends GetView<AppShellController> {
     );
   }
 
+  // --- WIDGET WITH THE FIX ---
   Widget _buildNavItem(String label, int index) {
     final isSelected = controller.navBarIndex.value == index;
     return GestureDetector(
       onTap: () => controller.changePage(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        // FIX: Increased vertical padding to make the indicator taller and more proportionate.
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-          borderRadius: BorderRadius.circular(30), // Retains the pill shape
+          borderRadius: BorderRadius.circular(30),
+          // FIX: Added a shadow when the item is selected to give it depth.
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF007AFF).withOpacity(0.4),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
         ),
         child: Text(
           label,
@@ -116,6 +126,7 @@ class AppShellScreen extends GetView<AppShellController> {
     );
   }
 
+  // --- WIDGET WITH THE FIX ---
   Widget _buildProfileNavIcon(int index) {
     final isSelected = controller.navBarIndex.value == index;
     return GestureDetector(
@@ -123,15 +134,28 @@ class AppShellScreen extends GetView<AppShellController> {
       child: Container(
         width: 40,
         height: 40,
+        // FIX: Updated decoration to match the Figma design for both states.
         decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? const Color(0xFF007AFF) : Colors.grey.shade400,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Colors.white : Colors.grey.shade200,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(
+                  color: const Color(0xFF007AFF),
+                  width: 1.5,
+                )
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [],
         ),
         child: Icon(
-          Icons.person_outline,
+          isSelected ? Icons.person : Icons.person_outline,
           size: 24,
           color: isSelected ? const Color(0xFF007AFF) : Colors.grey[700],
         ),
