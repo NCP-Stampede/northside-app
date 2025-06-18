@@ -13,7 +13,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
   int _currentPageIndex = 0;
-  // This variable TRACKS which nav item is selected. It's the key to making it interactive.
   int _navBarIndex = 0;
 
   @override
@@ -27,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Layer 1: The correct background gradient.
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -38,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Layer 2: The main UI content.
           SafeArea(
             bottom: false,
             child: Column(
@@ -46,7 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildHeader(),
                 const SizedBox(height: 20),
                 _buildQuickActions(),
-                const SizedBox(height: 25),
+                // CHANGED: Reduced the space here to give more height to the card.
+                const SizedBox(height: 15),
+                // The Expanded widget will now have more vertical space to fill.
                 Expanded(child: _buildEventsCarousel()),
                 const SizedBox(height: 15),
                 _buildPageIndicator(),
@@ -54,42 +53,53 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          // Layer 3: The floating navigation bar.
           _buildFloatingNavBar(),
         ],
       ),
     );
   }
 
-  // THIS IS THE CORRECT, INTERACTIVE FLOATING NAVIGATION BAR.
+  // THIS WIDGET CONTAINS THE FIX FOR THE NAV BAR SHADOW
   Widget _buildFloatingNavBar() {
-    return Align(
+    // We use a separate Container for the shadow, *outside* the blurred container.
+    // This prevents the blur's clipping from hiding the shadow.
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
       alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(50.0),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-            child: Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(50.0),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  // Each item is now built with its index to check for selection.
-                  _buildNavItem('Home', 0),
-                  _buildNavItem('Athletics', 1),
-                  _buildNavItem('Attendance', 2),
-                  _buildNavItem('Grades', 3),
-                  _buildNavIconItem(Icons.person_outline, 4),
-                ],
-              ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50.0),
+        // NEW: The shadow is applied to this outer, transparent container.
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            spreadRadius: -2,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50.0),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            decoration: BoxDecoration(
+              // CHANGED: Using a slightly off-white color as requested.
+              color: const Color(0xFFF9F9F9).withOpacity(0.90),
+              borderRadius: BorderRadius.circular(50.0),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem('Home', 0),
+                _buildNavItem('Athletics', 1),
+                _buildNavItem('Attendance', 2),
+                _buildNavItem('Grades', 3),
+                _buildProfileNavIcon(4),
+              ],
             ),
           ),
         ),
@@ -97,15 +107,32 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // This helper widget now handles taps to change the state.
+  // THIS WIDGET CONTAINS THE FIX FOR THE CARD SHADOW
+  Widget _buildEventsCarousel() {
+    return PageView(
+      controller: _pageController,
+      // THE FIX: This property allows the children's shadows to draw outside
+      // the bounds of the PageView, preventing them from being cut off.
+      clipBehavior: Clip.none,
+      onPageChanged: (index) {
+        setState(() {
+          _currentPageIndex = index;
+        });
+      },
+      children: const [
+        _HomecomingCard(),
+        _HomecomingCard(),
+        _HomecomingCard(),
+      ],
+    );
+  }
+
+  // --- The rest of the file is unchanged, but included for completeness ---
+
   Widget _buildNavItem(String label, int index) {
     final isSelected = _navBarIndex == index;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _navBarIndex = index; // Updates the state when tapped.
-        });
-      },
+      onTap: () => setState(() => _navBarIndex = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -124,27 +151,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // This helper widget also handles taps.
-  Widget _buildNavIconItem(IconData icon, int index) {
+  Widget _buildProfileNavIcon(int index) {
     final isSelected = _navBarIndex == index;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _navBarIndex = index; // Updates the state when tapped.
-        });
-      },
+      onTap: () => setState(() => _navBarIndex = index),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          border: isSelected ? Border.all(color: const Color(0xFF007AFF), width: 1.5) : null,
+          border: Border.all(
+            color: isSelected ? const Color(0xFF007AFF) : Colors.grey.shade400,
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 28, color: isSelected ? const Color(0xFF007AFF) : Colors.grey[700]),
+        child: Icon(
+          Icons.person_outline,
+          size: 28,
+          color: isSelected ? const Color(0xFF007AFF) : Colors.grey[700],
+        ),
       ),
     );
   }
-
-  // --- The rest of the file (header, buttons, etc.) is the same. ---
 
   Widget _buildHeader() {
     return Padding(
@@ -180,22 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Flexes', onTap: () {}),
         ],
       ),
-    );
-  }
-
-  Widget _buildEventsCarousel() {
-    return PageView(
-      controller: _pageController,
-      onPageChanged: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
-      },
-      children: const [
-        _HomecomingCard(),
-        _HomecomingCard(),
-        _HomecomingCard(),
-      ],
     );
   }
 
@@ -247,8 +258,9 @@ class _HomecomingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The margin provides the space needed for the shadow to be visible.
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 10), // Margin at bottom for shadow
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
