@@ -1,28 +1,43 @@
 name: northside_app
 description: "A new Flutter project."
-publish_to: 'none'
-version: 0.1.0
+
+# Prevents accidental publishing to pub.dev.
+publish_to: 'none' 
+
+version: 1.0.0+1
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
 
+# --- Application Dependencies ---
 dependencies:
   flutter:
     sdk: flutter
+
+  # For state management and navigation
   get: ^4.6.6
+
+  # For responsive UI design
   sizer: ^2.0.15
 
+  # For the calendar on the Events page
+  table_calendar: ^3.1.2
+
+# --- Development Dependencies ---
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  # For code analysis and linting
   flutter_lints: ^3.0.0
+
+  # For making network requests (useful for backend integration)
   http: 
 
-# The flutter section must be configured exactly like this.
-# The indentation (spaces) is extremely important.
+# --- Flutter Specific Configuration ---
 flutter:
   uses-material-design: true
 
-  # This tells your app where to find your images.
+  # Declares the path for your image assets
   assets:
     - assets/images/
