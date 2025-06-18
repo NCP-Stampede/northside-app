@@ -245,4 +245,4 @@ class _GradeCard extends StatelessWidget {
     );
   }
 }
-}
+
