@@ -24,7 +24,11 @@ class GradesPage extends StatefulWidget {
 
 class _GradesPageState extends State<GradesPage> {
   // --- State and Placeholder Data ---
-  int _selectedTabIndex = 0; // 0 for "Current Year", 1 for "Current Term"
+  String _selectedYear = '2024-2025';
+  String _selectedTerm = 'Current Term';
+
+  final List<String> _years = ['2024-2025', '2023-2024', '2022-2023'];
+  final List<String> _terms = ['Current Term', 'Term 1', 'Term 2', 'Final'];
 
   final List<ClassGrade> _classGrades = const [
     ClassGrade(className: 'HS1 Algebra 1', teacherName: 'Mr George', grade: 98),
@@ -46,7 +50,7 @@ class _GradesPageState extends State<GradesPage> {
         children: [
           _buildHeader(),
           const SizedBox(height: 16),
-          _buildSegmentedControl(),
+          _buildDropdownSelectors(),
           const SizedBox(height: 24),
           _buildGradesList(),
         ],
@@ -74,58 +78,69 @@ class _GradesPageState extends State<GradesPage> {
     );
   }
 
-  Widget _buildSegmentedControl() {
+  Widget _buildDropdownSelectors() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            _buildTabItem('For Current Year', 0),
-            _buildTabItem('Current Term', 1),
-          ],
-        ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildDropdownButton(
+              value: _selectedYear,
+              items: _years,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedYear = newValue!;
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildDropdownButton(
+              value: _selectedTerm,
+              items: _terms,
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedTerm = newValue!;
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTabItem(String title, int index) {
-    final isSelected = _selectedTabIndex == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedTabIndex = index;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : [],
-          ),
-          child: Center(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.blue.shade600 : Colors.grey.shade600,
+  // --- WIDGET WITH THE FIX ---
+  Widget _buildDropdownButton({
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+          // FIX: This gives the dropdown menu itself rounded corners.
+          borderRadius: BorderRadius.circular(12),
+          items: items.map((String item) {
+            return DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ),
+            );
+          }).toList(),
+          onChanged: onChanged,
         ),
       ),
     );
@@ -145,7 +160,6 @@ class _GradeCard extends StatelessWidget {
   const _GradeCard({required this.grade});
   final ClassGrade grade;
 
-  // Helper function to get color based on grade
   Color _getGradeColor() {
     if (grade.grade >= 90) return Colors.green;
     if (grade.grade >= 80) return Colors.yellow.shade700;
@@ -186,7 +200,6 @@ class _GradeCard extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              // Class and Teacher Name
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +217,6 @@ class _GradeCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // Grade Box and Arrow
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -232,4 +244,5 @@ class _GradeCard extends StatelessWidget {
       ),
     );
   }
+}
 }
