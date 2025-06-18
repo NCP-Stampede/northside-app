@@ -1,22 +1,23 @@
 // lib/presentation/placeholder_pages/flexes_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../flexes/flexes_controller.dart';
+import '../flexes/pick_flex_page.dart';
+import '../../models/flex_choice.dart';
 
 class FlexesPage extends StatelessWidget {
   const FlexesPage({super.key});
 
-  // --- Placeholder Data ---
-  // You can easily change the number of flex periods by modifying this list.
   final List<String> _flexPeriods = const [
-    'Flex 1',
-    'Flex 2',
-    'Flex 3',
-    'Flex 4',
+    'Flex 1', 'Flex 2', 'Flex 3', 'Flex 4'
   ];
-  // --- End of Placeholder Data ---
 
   @override
   Widget build(BuildContext context) {
+    // Ensure the controller is available
+    final FlexesController controller = Get.put(FlexesController());
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
       body: ListView(
@@ -26,12 +27,23 @@ class FlexesPage extends StatelessWidget {
           const SizedBox(height: 8),
           _buildDateSubtitle(),
           const SizedBox(height: 24),
-          _buildFlexSections(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Obx(() => Column(
+              children: _flexPeriods
+                  .map((title) => _FlexRegistrationSection(
+                        title: title,
+                        pickedChoice: controller.getPickedFlexFor(title),
+                      ))
+                  .toList(),
+            )),
+          ),
         ],
       ),
     );
   }
-
+  
+  // FIX: Restored the full code for this widget.
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
@@ -52,6 +64,7 @@ class FlexesPage extends StatelessWidget {
     );
   }
 
+  // FIX: Restored the full code for this widget.
   Widget _buildDateSubtitle() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -65,25 +78,12 @@ class FlexesPage extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildFlexSections() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        // Use map to create a section for each item in the _flexPeriods list.
-        children: _flexPeriods
-            .map((title) => _FlexRegistrationSection(title: title))
-            .toList(),
-      ),
-    );
-  }
 }
 
-// A reusable widget for each "Flex" section
 class _FlexRegistrationSection extends StatelessWidget {
-  const _FlexRegistrationSection({required this.title});
-
+  const _FlexRegistrationSection({required this.title, this.pickedChoice});
   final String title;
+  final FlexChoice? pickedChoice;
 
   @override
   Widget build(BuildContext context) {
@@ -92,41 +92,69 @@ class _FlexRegistrationSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 12.0, top: 16.0),
-          child: Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
+        if (pickedChoice != null)
+          _PickedFlexCard(choice: pickedChoice!)
+        else
+          _RegisterButton(
+            title: title,
+            onTap: () => Get.to(() => PickFlexPage(flexPeriod: title)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
-              const SizedBox(width: 8),
-              Text(
-                'Register for $title',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade600,
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
+    );
+  }
+}
+
+class _PickedFlexCard extends StatelessWidget {
+  const _PickedFlexCard({required this.choice});
+  final FlexChoice choice;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(choice.teacher, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(choice.room, style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RegisterButton extends StatelessWidget {
+  const _RegisterButton({required this.title, required this.onTap});
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
+            const SizedBox(width: 8),
+            Text('Register for $title', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade600)),
+          ],
+        ),
+      ),
     );
   }
 }
