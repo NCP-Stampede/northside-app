@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_screen_content_controller.dart';
 
+// NEW: Import the AppShellController to change tabs and the new HoofBeat page.
+import '../app_shell/app_shell_controller.dart';
+import '../placeholder_pages/hoofbeat_page.dart';
+
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
@@ -59,7 +63,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
+  // --- WIDGET WITH THE FIX ---
   Widget _buildQuickActions() {
+    // Get an instance of the AppShellController to be able to change tabs.
+    final AppShellController appShellController = Get.find();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: GridView.count(
@@ -70,19 +78,39 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          _QuickActionButton(iconWidget: Image.asset('assets/images/grades_icon.png', width: 32, height: 32), label: 'Grades', onTap: () {}),
-          _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () {}),
-          _QuickActionButton(iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32), label: 'HoofBeat', onTap: () {}),
-          _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Flexes', onTap: () {}),
+          _QuickActionButton(
+            iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32),
+            label: 'Athletics',
+            // FIX: Navigate to the Athletics page (index 1)
+            onTap: () => appShellController.changePage(1),
+          ),
+          _QuickActionButton(
+            iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26),
+            label: 'Events',
+            // FIX: Navigate to the Events page (index 2)
+            onTap: () => appShellController.changePage(2),
+          ),
+          _QuickActionButton(
+            iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32),
+            label: 'HoofBeat',
+            // FIX: Push a new page for HoofBeat since it's not in the nav bar.
+            onTap: () => Get.to(() => const HoofBeatPage()),
+          ),
+          _QuickActionButton(
+            iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32),
+            label: 'Flexes',
+            // FIX: Navigate to the Flexes page (index 3)
+            onTap: () => appShellController.changePage(3),
+          ),
         ],
       ),
     );
   }
+  
+  // --- Other widgets are unchanged but included for completeness ---
 
-  // --- WIDGET WITH THE FIX ---
   Widget _buildEventsCarousel() {
     return SizedBox(
-      // FIX: Increased the height to make the event card taller.
       height: 350,
       child: PageView.builder(
         controller: controller.pageController,
