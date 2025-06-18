@@ -6,10 +6,10 @@ import 'package:get/get.dart';
 
 import 'app_shell_controller.dart';
 import '../home_screen_content/home_screen_content.dart';
-import '../placeholder_pages/athletics_page.dart';
-import '../placeholder_pages/attendance_page.dart';
-import '../placeholder_pages/grades_page.dart';
-import '../placeholder_pages/profile_page.dart';
+import '../home_screen_content/placeholder_pages/athletics_page.dart';
+import '../home_screen_content/placeholder_pages/attendance_page.dart';
+import '../home_screen_content/placeholder_pages/grades_page.dart';
+import '../home_screen_content/placeholder_pages/profile_page.dart';
 
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
