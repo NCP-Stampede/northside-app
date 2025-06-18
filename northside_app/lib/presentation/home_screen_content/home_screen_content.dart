@@ -29,8 +29,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               const SizedBox(height: 20),
               _buildQuickActions(),
               const SizedBox(height: 20),
-              // FIX: Replaced SizedBox with Expanded and added clipBehavior.
-              // This allows the card to be tall while ensuring its shadow is never clipped.
               Expanded(child: _buildEventsCarousel()),
               const SizedBox(height: 5),
               Obx(() => _buildPageIndicator()),
@@ -46,11 +44,10 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     return PageView.builder(
       controller: controller.pageController,
       itemCount: 3,
-      clipBehavior: Clip.none, // This is the essential fix for the clipped shadow.
+      clipBehavior: Clip.none,
       physics: const BouncingScrollPhysics(),
       onPageChanged: controller.onPageChanged,
       itemBuilder: (context, index) {
-        // Using a margin on the outer container ensures space for the shadow.
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
           child: _buildEventCard(),
@@ -58,6 +55,96 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
       },
     );
   }
+
+  Widget _buildEventCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 5))],
+      ),
+      // FIX 1: This ClipRRect ensures all children (image and text area)
+      // respect the card's rounded corners.
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.cover),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.25),
+                    ),
+                  ),
+                  Center(
+                    child: ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFFE474A2), Color(0xFF8A9AE4)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
+                      child: const Text(
+                        'HOMECOMING',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.5,
+                          shadows: [Shadow(blurRadius: 5.0, color: Colors.black45, offset: Offset(2, 2))],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RichText(
+                      text: const TextSpan(
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'sans-serif'),
+                        children: [
+                          TextSpan(text: 'Homecoming ', style: TextStyle(color: Color(0xFFB94056))),
+                          TextSpan(text: '2024', style: TextStyle(color: Color(0xFF2E4096))),
+                        ],
+                      ),
+                    ),
+                    // FIX 2: Increased height to add more space below the title.
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                        const SizedBox(width: 8),
+                        Text('This Friday', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+                        const Spacer(),
+                        Icon(Icons.more_horiz, size: 20, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text('More Details', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  // --- Other widgets remain the same ---
 
   Widget _buildHeader() {
     return Padding(
@@ -94,92 +181,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () {}),
           _QuickActionButton(iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32), label: 'HoofBeat', onTap: () {}),
           _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Flexes', onTap: () {}),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEventCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-                  child: Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.cover),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.25),
-                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-                  ),
-                ),
-                Center(
-                  child: ShaderMask(
-                    blendMode: BlendMode.srcIn,
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFFE474A2), Color(0xFF8A9AE4)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-                    child: const Text(
-                      'HOMECOMING',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2.5,
-                        shadows: [Shadow(blurRadius: 5.0, color: Colors.black45, offset: Offset(2, 2))],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'sans-serif'),
-                      children: [
-                        TextSpan(text: 'Homecoming ', style: TextStyle(color: Color(0xFFB94056))),
-                        TextSpan(text: '2024', style: TextStyle(color: Color(0xFF2E4096))),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
-                      const SizedBox(width: 8),
-                      Text('This Friday', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
-                      const Spacer(),
-                      Icon(Icons.more_horiz, size: 20, color: Colors.grey.shade600),
-                      const SizedBox(width: 4),
-                      Text('More Details', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -229,9 +230,4 @@ class _QuickActionButton extends StatelessWidget {
     );
   }
 }
-          ),
-        ],
-      ),
-    );
-  }
 }
