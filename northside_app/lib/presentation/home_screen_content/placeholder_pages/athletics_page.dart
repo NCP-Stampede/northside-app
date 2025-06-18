@@ -1,7 +1,9 @@
 // lib/presentation/placeholder_pages/athletics_page.dart
 
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:get/get.dart';
+import '../athletics/all_sports_page.dart';
+import '../athletics/sport_detail_page.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
@@ -17,31 +19,12 @@ class AthleticsPage extends StatelessWidget {
           const SizedBox(height: 16),
           _buildNewsCarousel(),
           const SizedBox(height: 32),
-          _buildSectionHeader(context, 'Sports', () {}),
+          _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
           const SizedBox(height: 16),
           _buildSportsGrid(),
           const SizedBox(height: 24),
           _buildRegisterButton(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNewsCarousel() {
-    return SizedBox(
-      height: 280,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.85),
-        // FIX: Added clipBehavior to prevent the shadow from being cut off.
-        clipBehavior: Clip.none,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return const _NewsCard(
-            imagePath: 'assets/images/softball_image.png',
-            title: 'Girls Softball make it to state',
-            subtitle: 'For the first time in 2 years...',
-          );
-        },
       ),
     );
   }
@@ -61,45 +44,15 @@ class AthleticsPage extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) {
-          return _SportButton(name: sports[index]);
+          final sportName = sports[index];
+          return _SportButton(
+            name: sportName,
+            onTap: () => Get.to(() => SportDetailPage(sportName: "Men's $sportName")),
+          );
         },
       ),
     );
   }
-
-  Widget _buildRegisterButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          // FIX: Added shadow to match the style of other interactive elements.
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
-            const SizedBox(width: 8),
-            Text(
-              'Register for a sport',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade600),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- Other helper widgets are unchanged but included for completeness ---
 
   Widget _buildHeader() {
     return Padding(
@@ -117,6 +70,24 @@ class AthleticsPage extends StatelessWidget {
             child: const Icon(Icons.person, color: Colors.black, size: 28),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNewsCarousel() {
+    return SizedBox(
+      height: 280,
+      child: PageView.builder(
+        controller: PageController(viewportFraction: 0.85),
+        clipBehavior: Clip.none,
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return const _NewsCard(
+            imagePath: 'assets/images/softball_image.png',
+            title: 'Girls Softball make it to state',
+            subtitle: 'For the first time in 2 years...',
+          );
+        },
       ),
     );
   }
@@ -148,6 +119,31 @@ class AthleticsPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildRegisterButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'Register for a sport',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _NewsCard extends StatelessWidget {
@@ -163,13 +159,7 @@ class _NewsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,19 +179,9 @@ class _NewsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -213,28 +193,25 @@ class _NewsCard extends StatelessWidget {
 }
 
 class _SportButton extends StatelessWidget {
-  const _SportButton({required this.name});
+  const _SportButton({required this.name, required this.onTap});
   final String name;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        // FIX: Added shadow to give the button depth.
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Center(
-        child: Text(
-          name,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Center(
+          child: Text(
+            name,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );
