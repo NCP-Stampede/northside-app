@@ -3,13 +3,31 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_screen_content_controller.dart';
-
-// NEW: Import the AppShellController to change tabs and the new HoofBeat page.
 import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart';
 
+// NEW: Import the model and sheet
+import '../../models/article.dart';
+import '../../widgets/article_detail_sheet.dart';
+
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
+
+  // Placeholder data for the carousel
+  final List<Article> _homeScreenArticles = const [
+    Article(
+      title: 'Homecoming 2024',
+      subtitle: 'This Friday',
+      imagePath: 'assets/images/homecoming_bg.png',
+      content: 'Join us for a night of fun and festivities! The annual homecoming dance will be held this Friday in the main gym. Music, food, and great memories await. Don\'t miss out!',
+    ),
+    Article(
+      title: 'Spirit Week Begins!',
+      subtitle: 'All Week',
+      imagePath: 'assets/images/homecoming_bg.png',
+      content: 'Show your school spirit! Participate in our daily themes, from Pajama Day on Monday to School Colors on Friday. Let\'s make this the best Spirit Week ever!',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +81,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  // --- WIDGET WITH THE FIX ---
   Widget _buildQuickActions() {
-    // Get an instance of the AppShellController to be able to change tabs.
     final AppShellController appShellController = Get.find();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: GridView.count(
@@ -78,57 +93,45 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          _QuickActionButton(
-            iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32),
-            label: 'Athletics',
-            // FIX: Navigate to the Athletics page (index 1)
-            onTap: () => appShellController.changePage(1),
-          ),
-          _QuickActionButton(
-            iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26),
-            label: 'Events',
-            // FIX: Navigate to the Events page (index 2)
-            onTap: () => appShellController.changePage(2),
-          ),
-          _QuickActionButton(
-            iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32),
-            label: 'HoofBeat',
-            // FIX: Push a new page for HoofBeat since it's not in the nav bar.
-            onTap: () => Get.to(() => const HoofBeatPage()),
-          ),
-          _QuickActionButton(
-            iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32),
-            label: 'Flexes',
-            // FIX: Navigate to the Flexes page (index 3)
-            onTap: () => appShellController.changePage(3),
-          ),
+          _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Athletics', onTap: () => appShellController.changePage(1)),
+          _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
+          _QuickActionButton(iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
+          _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Flexes', onTap: () => appShellController.changePage(3)),
         ],
       ),
     );
   }
-  
-  // --- Other widgets are unchanged but included for completeness ---
 
   Widget _buildEventsCarousel() {
     return SizedBox(
       height: 350,
       child: PageView.builder(
         controller: controller.pageController,
-        itemCount: 3,
+        itemCount: _homeScreenArticles.length,
         clipBehavior: Clip.none,
         physics: const BouncingScrollPhysics(),
         onPageChanged: controller.onPageChanged,
         itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: _buildEventCard(),
+          final article = _homeScreenArticles[index];
+          return GestureDetector(
+            onTap: () {
+              Get.bottomSheet(
+                ArticleDetailSheet(article: article),
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: _buildEventCard(article),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildEventCard() {
+  Widget _buildEventCard(Article article) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -142,7 +145,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           children: [
             Expanded(
               flex: 3,
-              child: Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.cover),
+              child: Image.asset(article.imagePath!, fit: BoxFit.cover),
             ),
             Expanded(
               flex: 2,
@@ -152,16 +155,16 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Homecoming 2024',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    Text(
+                      article.title,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
                         const SizedBox(width: 8),
-                        Text('This Friday', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+                        Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
                         const Spacer(),
                         Icon(Icons.more_horiz, size: 20, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
@@ -181,16 +184,14 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
+      children: List.generate(_homeScreenArticles.length, (index) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           width: 8.0,
           height: 8.0,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: controller.currentPageIndex.value == index
-                ? const Color(0xFF333333)
-                : Colors.grey.withOpacity(0.4),
+            color: controller.currentPageIndex.value == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
           ),
         );
       }),
