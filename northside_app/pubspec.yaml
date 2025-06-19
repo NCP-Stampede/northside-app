@@ -23,6 +23,9 @@ dependencies:
   # For the calendar on the Events page
   table_calendar: ^3.1.2
 
+  # For displaying web pages inside the app
+  webview_flutter: ^4.7.0
+
 # --- Development Dependencies ---
 dev_dependencies:
   flutter_test:
@@ -32,10 +35,16 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
   # For making network requests (useful for backend integration)
-  http: 
+  http: ^1.2.1
+
 
 # --- Flutter Specific Configuration ---
 flutter:
+  uses-material-design: true
+
+  # Declares the path for your image assets
+  assets:
+    - assets/images/
   uses-material-design: true
 
   # Declares the path for your image assets
