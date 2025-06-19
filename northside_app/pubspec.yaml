@@ -45,8 +45,3 @@ flutter:
   # Declares the path for your image assets
   assets:
     - assets/images/
-  uses-material-design: true
-
-  # Declares the path for your image assets
-  assets:
-    - assets/images/
