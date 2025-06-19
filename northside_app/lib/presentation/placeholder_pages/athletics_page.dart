@@ -4,9 +4,33 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../athletics/all_sports_page.dart';
 import '../athletics/sport_detail_page.dart';
+import '../../models/article.dart';
+import '../../widgets/article_detail_sheet.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
+
+  // FIX: Restored the list of articles to make the carousel scrollable again.
+  final List<Article> _athleticsArticles = const [
+    Article(
+      title: 'Girls Softball make it to state',
+      subtitle: 'For the first time in 2 years...',
+      imagePath: 'assets/images/softball_image.png',
+      content: 'An incredible season culminates in a historic state championship appearance. The team\'s hard work and dedication have paid off, inspiring the entire school community. Go Mustangs!',
+    ),
+    Article(
+      title: 'Soccer Team Wins City Finals',
+      subtitle: 'A thrilling 2-1 victory!',
+      imagePath: 'assets/images/softball_image.png', // Replace with a relevant image
+      content: 'In a nail-biting final match, our varsity soccer team clinched the city championship with a goal in the final minutes. Congratulations to the players and coaches!',
+    ),
+    Article(
+      title: 'Track & Field Season Recap',
+      subtitle: 'New records set!',
+      imagePath: 'assets/images/softball_image.png', // Replace with a relevant image
+      content: 'This season saw several school records broken in both sprinting and long-distance events. A fantastic showing from all our athletes.',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +49,31 @@ class AthleticsPage extends StatelessWidget {
           const SizedBox(height: 24),
           _buildRegisterButton(),
         ],
+      ),
+    );
+  }
+
+  // FIX: This widget now builds a horizontally scrolling PageView from the list of articles.
+  Widget _buildNewsCarousel() {
+    return SizedBox(
+      height: 280,
+      child: PageView.builder(
+        controller: PageController(viewportFraction: 0.85),
+        clipBehavior: Clip.none,
+        itemCount: _athleticsArticles.length, // Use the length of the list
+        itemBuilder: (context, index) {
+          final article = _athleticsArticles[index]; // Get the specific article
+          return GestureDetector(
+            onTap: () {
+              Get.bottomSheet(
+                ArticleDetailSheet(article: article),
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+              );
+            },
+            child: _NewsCard(article: article),
+          );
+        },
       ),
     );
   }
@@ -70,24 +119,6 @@ class AthleticsPage extends StatelessWidget {
             child: const Icon(Icons.person, color: Colors.black, size: 28),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildNewsCarousel() {
-    return SizedBox(
-      height: 280,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.85),
-        clipBehavior: Clip.none,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return const _NewsCard(
-            imagePath: 'assets/images/softball_image.png',
-            title: 'Girls Softball make it to state',
-            subtitle: 'For the first time in 2 years...',
-          );
-        },
       ),
     );
   }
@@ -147,10 +178,8 @@ class AthleticsPage extends StatelessWidget {
 }
 
 class _NewsCard extends StatelessWidget {
-  const _NewsCard({required this.imagePath, required this.title, required this.subtitle});
-  final String imagePath;
-  final String title;
-  final String subtitle;
+  const _NewsCard({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +197,7 @@ class _NewsCard extends StatelessWidget {
             flex: 3,
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Image.asset(imagePath, fit: BoxFit.cover, width: double.infinity),
+              child: Image.asset(article.imagePath!, fit: BoxFit.cover, width: double.infinity),
             ),
           ),
           Expanded(
@@ -179,9 +208,9 @@ class _NewsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(article.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
