@@ -2,24 +2,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'dart:collection'; // Required for LinkedHashMap
+import 'package:get/get.dart';
+import 'dart:collection';
+import '../../models/article.dart';
+import '../../widgets/article_detail_sheet.dart';
 
-// --- Data Models for Demonstration ---
-class Event {
-  const Event(this.title);
-  final String title;
-}
-
-// Using a LinkedHashMap to preserve the order of events
-final kEvents = LinkedHashMap<DateTime, List<Event>>(
+final kEvents = LinkedHashMap<DateTime, List<Article>>(
   equals: isSameDay,
   hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year,
 )..addAll({
-  DateTime.now().subtract(const Duration(days: 2)): [const Event('Team Meeting')],
-  DateTime.now(): [const Event('Parent-Teacher Conference'), const Event('Soccer Game @ 7PM')],
-  DateTime.now().add(const Duration(days: 5)): [const Event('School Play')],
+  DateTime.now().subtract(const Duration(days: 2)): [const Article(title: 'Team Meeting', subtitle: '3:00 PM - Room 101', content: 'Planning session for the upcoming season.')],
+  DateTime.now(): [
+    const Article(title: 'Parent-Teacher Conference', subtitle: 'All Day', content: 'Scheduled conferences to discuss student progress.'),
+    const Article(title: 'Soccer Game @ 7PM', subtitle: 'Varsity Field', content: 'Our team takes on the Taft Eagles. Come out and support!')
+  ],
+  DateTime.now().add(const Duration(days: 5)): [const Article(title: 'School Play Auditions', subtitle: 'Auditorium', content: 'Auditions for the spring production of "Hamlet" will be held after school.')],
 });
-// --- End of Data Models ---
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -29,7 +27,7 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  late final ValueNotifier<List<Article>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
@@ -46,7 +44,7 @@ class _EventsPageState extends State<EventsPage> {
     super.dispose();
   }
 
-  List<Event> _getEventsForDay(DateTime day) {
+  List<Article> _getEventsForDay(DateTime day) {
     return kEvents[day] ?? [];
   }
 
@@ -78,7 +76,69 @@ class _EventsPageState extends State<EventsPage> {
       ),
     );
   }
+  
+  Widget _buildCalendar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: TableCalendar<Article>(
+        firstDay: DateTime.utc(2020, 1, 1),
+        lastDay: DateTime.utc(2030, 12, 31),
+        focusedDay: _focusedDay,
+        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+        onDaySelected: _onDaySelected,
+        eventLoader: _getEventsForDay,
+        startingDayOfWeek: StartingDayOfWeek.sunday,
+        headerStyle: const HeaderStyle(
+          formatButtonVisible: false,
+          titleCentered: false,
+          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          leftChevronIcon: Icon(Icons.arrow_back_ios, size: 16),
+          rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 16),
+        ),
+        calendarStyle: CalendarStyle(
+          todayDecoration: BoxDecoration(color: Colors.blue.withOpacity(0.3), shape: BoxShape.circle),
+          selectedDecoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+        ),
+        onPageChanged: (focusedDay) {
+          _focusedDay = focusedDay;
+        },
+      ),
+    );
+  }
 
+  Widget _buildEventList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: ValueListenableBuilder<List<Article>>(
+        valueListenable: _selectedEvents,
+        builder: (context, value, _) {
+          if (value.isEmpty) {
+            return const _NoEventsCard();
+          }
+          return Column(
+            children: value.map((article) => GestureDetector(
+              onTap: () {
+                Get.bottomSheet(
+                  ArticleDetailSheet(article: article),
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                );
+              },
+              child: _EventDetailCard(article: article),
+            )).toList(),
+          );
+        },
+      ),
+    );
+  }
+
+  // --- FIX: Restored full widget code ---
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
@@ -118,74 +178,9 @@ class _EventsPageState extends State<EventsPage> {
       ),
     );
   }
-
-  Widget _buildCalendar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TableCalendar<Event>(
-        firstDay: DateTime.utc(2020, 1, 1),
-        lastDay: DateTime.utc(2030, 12, 31),
-        focusedDay: _focusedDay,
-        selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-        onDaySelected: _onDaySelected,
-        eventLoader: _getEventsForDay,
-        startingDayOfWeek: StartingDayOfWeek.sunday,
-        headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: false,
-          titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          leftChevronIcon: Icon(Icons.arrow_back_ios, size: 16),
-          rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 16),
-        ),
-        calendarStyle: CalendarStyle(
-          todayDecoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.3),
-            shape: BoxShape.circle,
-          ),
-          selectedDecoration: const BoxDecoration(
-            color: Colors.blue,
-            shape: BoxShape.circle,
-          ),
-        ),
-        onPageChanged: (focusedDay) {
-          _focusedDay = focusedDay;
-        },
-      ),
-    );
-  }
-
-  Widget _buildEventList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: ValueListenableBuilder<List<Event>>(
-        valueListenable: _selectedEvents,
-        builder: (context, value, _) {
-          if (value.isEmpty) {
-            return const _NoEventsCard();
-          }
-          return Column(
-            children: value
-                .map((event) => _EventDetailCard(event: event))
-                .toList(),
-          );
-        },
-      ),
-    );
-  }
 }
 
+// FIX: Restored full widget code
 class _NoEventsCard extends StatelessWidget {
   const _NoEventsCard();
 
@@ -196,22 +191,12 @@ class _NoEventsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: const Center(
         child: Text(
           'No Events Today',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
         ),
       ),
     );
@@ -219,43 +204,32 @@ class _NoEventsCard extends StatelessWidget {
 }
 
 class _EventDetailCard extends StatelessWidget {
-  const _EventDetailCard({required this.event});
-  final Event event;
+  const _EventDetailCard({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              event.title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 8),
-                Text('Details about the event...', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
-              ],
-            ),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(article.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+            ],
+          ),
+        ],
       ),
     );
   }
