@@ -62,8 +62,8 @@ class AppShellScreen extends GetView<AppShellController> {
             color: const Color(0xFFF9F9F9).withOpacity(0.85),
             child: Center(
               child: SizedBox(
-                // FIX: Increased the width to add a little more space between icons.
-                width: 320, 
+                // FIX: Increased the width for a slight adjustment in icon spacing.
+                width: 330,
                 child: NavigationBar(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
