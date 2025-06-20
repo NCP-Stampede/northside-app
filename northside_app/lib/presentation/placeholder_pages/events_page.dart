@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'dart:collection';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
+import '../../widgets/shared_header.dart';
 
 final kEvents = LinkedHashMap<DateTime, List<Article>>(
   equals: isSameDay,
@@ -65,7 +66,7 @@ class _EventsPageState extends State<EventsPage> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 120),
         children: [
-          _buildHeader(),
+          const SharedHeader(title: 'Events'),
           const SizedBox(height: 16),
           _buildFilterButton(),
           const SizedBox(height: 16),
@@ -73,6 +74,26 @@ class _EventsPageState extends State<EventsPage> {
           const SizedBox(height: 24),
           _buildEventList(),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildFilterButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            'For Current Year',
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade600),
+          ),
+        ),
       ),
     );
   }
@@ -137,53 +158,10 @@ class _EventsPageState extends State<EventsPage> {
       ),
     );
   }
-
-  // --- FIX: Restored full widget code ---
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Events',
-            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade300,
-            child: const Icon(Icons.person, color: Colors.black, size: 28),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            'For Current Year',
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade600),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-// FIX: Restored full widget code
 class _NoEventsCard extends StatelessWidget {
   const _NoEventsCard();
-
   @override
   Widget build(BuildContext context) {
     return Container(
