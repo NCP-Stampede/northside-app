@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../flexes/flexes_controller.dart';
 import '../flexes/pick_flex_page.dart';
 import '../../models/flex_choice.dart';
+import '../../widgets/shared_header.dart';
 
 class FlexesPage extends StatelessWidget {
   const FlexesPage({super.key});
@@ -15,15 +16,13 @@ class FlexesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure the controller is available
     final FlexesController controller = Get.put(FlexesController());
-
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 120),
         children: [
-          _buildHeader(),
+          const SharedHeader(title: 'Flexes'),
           const SizedBox(height: 8),
           _buildDateSubtitle(),
           const SizedBox(height: 24),
@@ -42,29 +41,7 @@ class FlexesPage extends StatelessWidget {
       ),
     );
   }
-  
-  // FIX: Restored the full code for this widget.
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Flexes',
-            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade300,
-            child: const Icon(Icons.person, color: Colors.black, size: 28),
-          ),
-        ],
-      ),
-    );
-  }
 
-  // FIX: Restored the full code for this widget.
   Widget _buildDateSubtitle() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
