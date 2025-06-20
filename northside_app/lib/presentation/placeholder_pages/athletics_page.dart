@@ -6,11 +6,11 @@ import '../athletics/all_sports_page.dart';
 import '../athletics/sport_detail_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
+import '../../widgets/shared_header.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
 
-  // FIX: Restored the list of articles to make the carousel scrollable again.
   final List<Article> _athleticsArticles = const [
     Article(
       title: 'Girls Softball make it to state',
@@ -21,14 +21,8 @@ class AthleticsPage extends StatelessWidget {
     Article(
       title: 'Soccer Team Wins City Finals',
       subtitle: 'A thrilling 2-1 victory!',
-      imagePath: 'assets/images/softball_image.png', // Replace with a relevant image
+      imagePath: 'assets/images/softball_image.png',
       content: 'In a nail-biting final match, our varsity soccer team clinched the city championship with a goal in the final minutes. Congratulations to the players and coaches!',
-    ),
-    Article(
-      title: 'Track & Field Season Recap',
-      subtitle: 'New records set!',
-      imagePath: 'assets/images/softball_image.png', // Replace with a relevant image
-      content: 'This season saw several school records broken in both sprinting and long-distance events. A fantastic showing from all our athletes.',
     ),
   ];
 
@@ -39,7 +33,7 @@ class AthleticsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 120),
         children: [
-          _buildHeader(),
+          const SharedHeader(title: 'Athletics'),
           const SizedBox(height: 16),
           _buildNewsCarousel(),
           const SizedBox(height: 32),
@@ -53,16 +47,15 @@ class AthleticsPage extends StatelessWidget {
     );
   }
 
-  // FIX: This widget now builds a horizontally scrolling PageView from the list of articles.
   Widget _buildNewsCarousel() {
     return SizedBox(
       height: 280,
       child: PageView.builder(
         controller: PageController(viewportFraction: 0.85),
         clipBehavior: Clip.none,
-        itemCount: _athleticsArticles.length, // Use the length of the list
+        itemCount: _athleticsArticles.length,
         itemBuilder: (context, index) {
-          final article = _athleticsArticles[index]; // Get the specific article
+          final article = _athleticsArticles[index];
           return GestureDetector(
             onTap: () {
               Get.bottomSheet(
@@ -99,26 +92,6 @@ class AthleticsPage extends StatelessWidget {
             onTap: () => Get.to(() => SportDetailPage(sportName: "Men's $sportName")),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Athletics',
-            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade300,
-            child: const Icon(Icons.person, color: Colors.black, size: 28),
-          ),
-        ],
       ),
     );
   }
