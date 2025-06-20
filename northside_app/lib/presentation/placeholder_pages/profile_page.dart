@@ -3,21 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// NEW: Import the widgets and models needed
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/webview_sheet.dart';
+import '../../widgets/login_sheet.dart'; // Import the new login sheet
 
 // --- UPDATED Data Model ---
-// This enum helps the UI decide what to do when a card is tapped.
-enum ProfileActionType { info, link }
+// Added a new 'login' action type
+enum ProfileActionType { info, link, login }
 
 class ProfileOption {
   const ProfileOption({
     required this.title,
     required this.subtitle,
     required this.actionType,
-    this.url, // URL is optional, only used for link types
+    this.url,
   });
   final String title;
   final String subtitle;
@@ -30,7 +30,6 @@ class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   // --- UPDATED Placeholder Data ---
-  // The data now defines the action for each card.
   final List<ProfileOption> _options = const [
     ProfileOption(
       title: 'App Info',
@@ -41,31 +40,30 @@ class ProfilePage extends StatelessWidget {
       title: 'Your Athletic Profile',
       subtitle: 'Apply to sports teams with your profile',
       actionType: ProfileActionType.link,
-      url: 'https://www.google.com', // Replace with your actual link
+      url: 'https://www.google.com',
     ),
     ProfileOption(
       title: 'Your Athletic Account',
       subtitle: 'Login with your athletic account',
       actionType: ProfileActionType.link,
-      url: 'https://www.github.com', // Replace with your actual link
+      url: 'https://www.github.com',
     ),
+    // FIX: This card now uses the 'login' action type
     ProfileOption(
       title: 'Flex Account',
       subtitle: 'Link your flex account to pick flexes',
-      actionType: ProfileActionType.link,
-      url: 'https://www.figma.com', // Replace with your actual link
+      actionType: ProfileActionType.login,
     ),
   ];
   // --- End of Placeholder Data ---
 
   @override
   Widget build(BuildContext context) {
-    // Create the static article content for the App Info sheet
     const appInfoArticle = Article(
       title: 'App Information',
-      subtitle: '', // Not shown in the sheet
+      subtitle: '',
       content: 'Version 1.0.0\nDeveloped by Northside App Team.\n\nThis application is designed to provide students and parents with easy access to school-related information. For support, please contact the school administration.',
-      imagePath: null, // No image for this one
+      imagePath: null,
     );
 
     return Scaffold(
@@ -76,13 +74,12 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 40),
           _buildProfileHeader(),
           const SizedBox(height: 32),
-          // This Column now builds cards that have different tap actions.
           ..._options.map((option) {
             return _buildInfoCard(
               title: option.title,
               subtitle: option.subtitle,
               onTap: () {
-                // Determine which action to take based on the option's type
+                // FIX: Added logic to handle the new 'login' action
                 if (option.actionType == ProfileActionType.info) {
                   Get.bottomSheet(
                     ArticleDetailSheet(article: appInfoArticle),
@@ -92,6 +89,12 @@ class ProfilePage extends StatelessWidget {
                 } else if (option.actionType == ProfileActionType.link && option.url != null) {
                   Get.bottomSheet(
                     WebViewSheet(url: option.url!),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                } else if (option.actionType == ProfileActionType.login) {
+                  Get.bottomSheet(
+                    const LoginSheet(), // Show the new login sheet
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                   );
@@ -106,7 +109,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // --- All other widgets are now updated or unchanged ---
+  // --- All other widgets are unchanged ---
 
   Widget _buildProfileHeader() {
     return Column(
@@ -131,7 +134,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // UPDATED: The info card is now a tappable button.
   Widget _buildInfoCard({required String title, required String subtitle, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -157,9 +159,7 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildLogoutButton() {
     return GestureDetector(
-      onTap: () {
-        // Placeholder for logout logic
-      },
+      onTap: () {},
       child: Container(
         margin: const EdgeInsets.only(top: 12),
         padding: const EdgeInsets.symmetric(vertical: 16),
