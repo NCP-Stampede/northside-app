@@ -5,15 +5,13 @@ import 'package:get/get.dart';
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart';
-
-// NEW: Import the model and sheet
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
+import '../../widgets/shared_header.dart'; // Import the new header
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
-  // Placeholder data for the carousel
   final List<Article> _homeScreenArticles = const [
     Article(
       title: 'Homecoming 2024',
@@ -47,7 +45,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           ListView(
             padding: const EdgeInsets.only(bottom: 120),
             children: [
-              _buildHeader(),
+              const SharedHeader(title: 'Home'),
               const SizedBox(height: 20),
               _buildQuickActions(),
               const SizedBox(height: 32),
@@ -55,26 +53,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               const SizedBox(height: 20),
               Obx(() => _buildPageIndicator()),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Home',
-            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
-          ),
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade300,
-            child: const Icon(Icons.person, color: Colors.black, size: 28),
           ),
         ],
       ),
@@ -93,10 +71,10 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Athletics', onTap: () => appShellController.changePage(1)),
+          _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Colors.black54, size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
-          _QuickActionButton(iconWidget: Image.asset('assets/images/hoofbeat_icon.png', width: 32, height: 32), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
-          _QuickActionButton(iconWidget: Image.asset('assets/images/flexes_icon.png', width: 32, height: 32), label: 'Flexes', onTap: () => appShellController.changePage(3)),
+          _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
+          _QuickActionButton(iconWidget: const Icon(Icons.assignment, color: Colors.black54, size: 26), label: 'Flexes', onTap: () => appShellController.changePage(3)),
         ],
       ),
     );
@@ -155,18 +133,15 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      article.title,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
+                    Text(article.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                        const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey),
                         const SizedBox(width: 8),
                         Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
                         const Spacer(),
-                        Icon(Icons.more_horiz, size: 20, color: Colors.grey.shade600),
+                        const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text('More Details', style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
                       ],
@@ -210,6 +185,7 @@ class _QuickActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -217,7 +193,17 @@ class _QuickActionButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [iconWidget, const SizedBox(width: 12), Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))],
+          children: [
+            iconWidget,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
