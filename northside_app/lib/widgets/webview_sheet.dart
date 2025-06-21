@@ -19,13 +19,15 @@ class _WebViewSheetState extends State<WebViewSheet> {
   void initState() {
     super.initState();
     _controller = WebViewController()
+      // This line is for native mobile apps (iOS/Android) and enables JavaScript.
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // This delegate is for native mobile apps to show a loading indicator.
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) => setState(() => _isLoading = false),
           onWebResourceError: (error) {
-            // Handle errors gracefully
             setState(() => _isLoading = false);
+            print('Webview Error: ${error.description}');
           },
         ),
       )
@@ -61,6 +63,7 @@ class _WebViewSheetState extends State<WebViewSheet> {
                 child: Stack(
                   children: [
                     WebViewWidget(controller: _controller),
+                    // This loading indicator will show on mobile but not in the web preview
                     if (_isLoading)
                       const Center(child: CircularProgressIndicator()),
                   ],
