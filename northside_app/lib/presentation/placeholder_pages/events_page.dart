@@ -7,6 +7,7 @@ import 'dart:collection';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
+import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
 
 final kEvents = LinkedHashMap<DateTime, List<Article>>(
   equals: isSameDay,
@@ -89,9 +90,9 @@ class _EventsPageState extends State<EventsPage> {
             color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
+          child: const Text(
             'For Current Year',
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade600),
+            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryBlue),
           ),
         ),
       ),
@@ -122,9 +123,9 @@ class _EventsPageState extends State<EventsPage> {
           leftChevronIcon: Icon(Icons.arrow_back_ios, size: 16),
           rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 16),
         ),
-        calendarStyle: CalendarStyle(
-          todayDecoration: BoxDecoration(color: Colors.blue.withOpacity(0.3), shape: BoxShape.circle),
-          selectedDecoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+        calendarStyle: const CalendarStyle(
+          todayDecoration: BoxDecoration(color: AppColors.primaryBlue, shape: BoxShape.circle),
+          selectedDecoration: BoxDecoration(color: AppColors.primaryBlue, shape: BoxShape.circle),
         ),
         onPageChanged: (focusedDay) {
           _focusedDay = focusedDay;
