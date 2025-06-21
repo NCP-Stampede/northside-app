@@ -34,3 +34,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+      initialBinding: AppShellBinding(),
+      home: const AppShellScreen(),
+    );
+  }
+}
