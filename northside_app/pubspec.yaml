@@ -1,7 +1,6 @@
 name: northside_app
 description: "A new Flutter project."
 
-# Prevents accidental publishing to pub.dev.
 publish_to: 'none' 
 
 version: 1.0.0+1
@@ -9,39 +8,29 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.4.3 <4.0.0'
 
-# --- Application Dependencies ---
 dependencies:
   flutter:
     sdk: flutter
 
-  # For state management and navigation
   get: ^4.6.6
-
-  # For responsive UI design
   sizer: ^2.0.15
-
-  # For the calendar on the Events page
   table_calendar: ^3.1.2
 
-  # For displaying web pages inside the app
+  # The main webview package and its web implementation
   webview_flutter: ^4.7.0
+  webview_flutter_web: ^0.2.2
 
-# --- Development Dependencies ---
+  # FIX: Add the Google Fonts package
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # For code analysis and linting
   flutter_lints: ^3.0.0
-
-  # For making network requests (useful for backend integration)
   http: ^1.2.1
 
-
-# --- Flutter Specific Configuration ---
 flutter:
   uses-material-design: true
-
-  # Declares the path for your image assets
   assets:
     - assets/images/
