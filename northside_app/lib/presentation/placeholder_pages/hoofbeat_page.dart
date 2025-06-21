@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
+import '../../core/utils/app_colors.dart';
 
 class HoofBeatPage extends StatelessWidget {
   const HoofBeatPage({super.key});
 
-  // --- Placeholder Data using the Article model ---
-  // FIX: Converted the single top story into a list to restore the carousel
   static const List<Article> _topStories = [
     Article(
       title: 'Building Damage: Insights from the Principal',
@@ -20,7 +19,7 @@ class HoofBeatPage extends StatelessWidget {
     Article(
       title: 'New Cafeteria Menu Announced',
       subtitle: 'By Jane Doe',
-      imagePath: 'assets/images/school_building.png', // Replace with a relevant image
+      imagePath: 'assets/images/school_building.png',
       content: 'The school cafeteria has announced a new and improved menu for the upcoming semester, featuring more diverse and healthy options based on student feedback.',
     ),
   ];
@@ -34,7 +33,6 @@ class HoofBeatPage extends StatelessWidget {
     Article(title: 'Debate Team Takes First Place', subtitle: 'By Jane Doe', content: 'The debate team has once again brought home the first place trophy from the state championship. Congratulations on a well-argued season!'),
     Article(title: 'New Art Exhibit Opens in Library', subtitle: 'By Art Club', content: 'Come see the latest creations from our talented student artists, now on display in the main library through the end of the month.'),
   ];
-  // --- End of Placeholder Data ---
 
   void _showArticleSheet(Article article) {
     Get.bottomSheet(
@@ -79,60 +77,6 @@ class HoofBeatPage extends StatelessWidget {
     );
   }
 
-  // --- Section Builder Widgets ---
-
-  Widget _buildTopStoryCarousel() {
-    return SizedBox(
-      height: 300,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.88),
-        clipBehavior: Clip.none,
-        itemCount: _topStories.length, // FIX: Use the list's length
-        itemBuilder: (context, index) {
-          final article = _topStories[index]; // FIX: Get the correct article
-          return GestureDetector(
-            onTap: () => _showArticleSheet(article),
-            child: _TopStoryCard(article: article),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTrendingStories() {
-    return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 24),
-        clipBehavior: Clip.none, // FIX: This allows shadows to be displayed correctly.
-        itemCount: _trendingStories.length,
-        itemBuilder: (context, index) {
-          final article = _trendingStories[index];
-          return GestureDetector(
-            onTap: () => _showArticleSheet(article),
-            child: _TrendingStoryCard(article: article),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildNewsList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: _newsItems.map((article) {
-          return GestureDetector(
-            onTap: () => _showArticleSheet(article),
-            child: _NewsListItem(article: article),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   Widget _buildHeader() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -163,6 +107,58 @@ class HoofBeatPage extends StatelessWidget {
     );
   }
 
+  Widget _buildTopStoryCarousel() {
+    return SizedBox(
+      height: 300,
+      child: PageView.builder(
+        controller: PageController(viewportFraction: 0.88),
+        clipBehavior: Clip.none,
+        itemCount: _topStories.length,
+        itemBuilder: (context, index) {
+          final article = _topStories[index];
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _TopStoryCard(article: article),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTrendingStories() {
+    return SizedBox(
+      height: 220,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 24),
+        clipBehavior: Clip.none,
+        itemCount: _trendingStories.length,
+        itemBuilder: (context, index) {
+          final article = _trendingStories[index];
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _TrendingStoryCard(article: article),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNewsList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: _newsItems.map((article) {
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _NewsListItem(article: article),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildPollsSection() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -173,8 +169,6 @@ class HoofBeatPage extends StatelessWidget {
     );
   }
 }
-
-// --- Reusable Component Widgets ---
 
 class _TopStoryCard extends StatelessWidget {
   const _TopStoryCard({required this.article});
@@ -242,7 +236,7 @@ class _TrendingStoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 150,
-      margin: const EdgeInsets.only(right: 16.0),
+      margin: const EdgeInsets.only(right: 16.0, bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -338,15 +332,15 @@ class _PollCardState extends State<_PollCard> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey.shade200,
+          color: isSelected ? AppColors.primaryBlue.withOpacity(0.1) : Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? Colors.blue : Colors.transparent, width: 1.5),
+          border: Border.all(color: isSelected ? AppColors.primaryBlue : Colors.transparent, width: 1.5),
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: isSelected ? Colors.blue : Colors.grey.shade500,
+              color: isSelected ? AppColors.primaryBlue : Colors.grey.shade500,
             ),
             const SizedBox(width: 12),
             Text(option, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
