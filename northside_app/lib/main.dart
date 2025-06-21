@@ -1,8 +1,9 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart'; // Import the package
 
-// FIX: Import your AppShellBinding file.
-// This path is based on the project structure you showed.
 import 'presentation/app_shell/app_shell_binding.dart';
 import 'presentation/app_shell/app_shell_screen.dart';
 
@@ -15,16 +16,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the base theme data
+    final ThemeData theme = ThemeData();
+
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Northside App',
 
-      // FIX: Use initialBinding to load all necessary controllers at startup.
-      // This ensures AppShellController is ready before AppShellScreen is built.
-      initialBinding: AppShellBinding(),
+      // FIX: Apply the "Inter" font to the entire application theme.
+      // This will make all text widgets automatically use the Inter font.
+      theme: theme.copyWith(
+        textTheme: GoogleFonts.interTextTheme(theme.textTheme),
+      ),
 
-      // Your starting screen. Because the binding is now handled by `initialBinding`,
-      // you can simply set AppShellScreen as the home widget.
+      initialBinding: AppShellBinding(),
       home: const AppShellScreen(),
     );
   }
