@@ -2,13 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/webview_sheet.dart';
 import '../../widgets/login_sheet.dart';
 
-// Data Model with different action types
 enum ProfileActionType { info, link, login }
 
 class ProfileOption {
@@ -27,7 +25,6 @@ class ProfileOption {
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  // --- UPDATED Placeholder Data ---
   final List<ProfileOption> _options = const [
     ProfileOption(
       title: 'App Info',
@@ -38,14 +35,13 @@ class ProfilePage extends StatelessWidget {
       title: 'Your Athletic Profile',
       subtitle: 'Apply to sports teams with your profile',
       actionType: ProfileActionType.link,
-      url: 'https://www.google.com', // This remains a placeholder
+      url: 'https://www.google.com',
     ),
-    // FIX: Updated the URL for this specific card.
     ProfileOption(
       title: 'Your Athletic Account',
       subtitle: 'Login with your athletic account',
       actionType: ProfileActionType.link,
-      url: 'https://ncp-ar.rschooltoday.com/oar', 
+      url: 'https://ncp-ar.rschooltoday.com/oar',
     ),
     ProfileOption(
       title: 'Flex Account',
@@ -53,7 +49,6 @@ class ProfilePage extends StatelessWidget {
       actionType: ProfileActionType.login,
     ),
   ];
-  // --- End of Placeholder Data ---
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +67,6 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 40),
           _buildProfileHeader(),
           const SizedBox(height: 32),
-          // The mapping logic already handles this correctly.
           ..._options.map((option) {
             return _buildInfoCard(
               title: option.title,
@@ -107,8 +101,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // --- All other widgets are unchanged ---
-
   Widget _buildProfileHeader() {
     return Column(
       children: [
@@ -123,11 +115,21 @@ class ProfilePage extends StatelessWidget {
           child: const Icon(Icons.person, size: 60, color: Colors.black),
         ),
         const SizedBox(height: 16),
-        const Text('John', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        const Text(
+          'John',
+          // This ensures the main name is bold
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 4),
-        Text('60546723', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+        Text(
+          '60546723',
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        ),
         const SizedBox(height: 4),
-        Text('Northside College Prep', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+        Text(
+          'Northside College Prep',
+          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+        ),
       ],
     );
   }
