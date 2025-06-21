@@ -2,11 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/webview_sheet.dart';
 import '../../widgets/login_sheet.dart';
 
+// Data Model with different action types
 enum ProfileActionType { info, link, login }
 
 class ProfileOption {
@@ -94,8 +96,7 @@ class ProfilePage extends StatelessWidget {
               },
             );
           }).toList(),
-          const SizedBox(height: 8),
-          _buildLogoutButton(),
+          // FIX: The SizedBox and the call to _buildLogoutButton have been removed.
         ],
       ),
     );
@@ -115,21 +116,11 @@ class ProfilePage extends StatelessWidget {
           child: const Icon(Icons.person, size: 60, color: Colors.black),
         ),
         const SizedBox(height: 16),
-        const Text(
-          'John',
-          // This ensures the main name is bold
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
+        const Text('John', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(
-          '60546723',
-          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-        ),
+        Text('60546723', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
         const SizedBox(height: 4),
-        Text(
-          'Northside College Prep',
-          style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-        ),
+        Text('Northside College Prep', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
       ],
     );
   }
@@ -157,25 +148,5 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.red.shade700,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.logout, color: Colors.white, size: 24),
-            SizedBox(width: 12),
-            Text('Log Out', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-      ),
-    );
-  }
+  // FIX: The _buildLogoutButton method has been completely removed.
 }
