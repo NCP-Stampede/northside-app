@@ -2,9 +2,47 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../models/article.dart';
+import '../../widgets/article_detail_sheet.dart';
 
 class HoofBeatPage extends StatelessWidget {
   const HoofBeatPage({super.key});
+
+  // --- Placeholder Data using the Article model ---
+  // FIX: Converted the single top story into a list to restore the carousel
+  static const List<Article> _topStories = [
+    Article(
+      title: 'Building Damage: Insights from the Principal',
+      subtitle: 'John Appleseed and Mac Pineapple',
+      imagePath: 'assets/images/school_building.png',
+      content: 'Recent structural issues have been identified in the west wing. The principal assures that student safety is the top priority and repairs are scheduled to begin next week, with minimal disruption to classes.',
+    ),
+    Article(
+      title: 'New Cafeteria Menu Announced',
+      subtitle: 'By Jane Doe',
+      imagePath: 'assets/images/school_building.png', // Replace with a relevant image
+      content: 'The school cafeteria has announced a new and improved menu for the upcoming semester, featuring more diverse and healthy options based on student feedback.',
+    ),
+  ];
+  static const List<Article> _trendingStories = [
+    Article(title: 'Hopping into Spring: Bunny Bowl 2024', subtitle: 'By John Appleseed', imagePath: 'assets/images/trending_1.png', content: 'The annual Bunny Bowl was a huge success, with students enjoying the friendly competition and spring festivities.'),
+    Article(title: '2023/2024 20 Hour Show', subtitle: 'By John Appleseed', imagePath: 'assets/images/trending_2.png', content: 'A recap of the incredible performances and talent showcased during the 20 Hour Show.'),
+    Article(title: 'The Grass is Greener on This Side', subtitle: 'By John Appleseed', imagePath: 'assets/images/trending_3.png', content: 'An opinion piece on recent campus beautification projects.'),
+  ];
+  static const List<Article> _newsItems = [
+    Article(title: 'Making a Splash: Men\'s Swim completes season', subtitle: 'By John Appleseed', content: 'The men\'s swim team concluded their season with several personal bests and a strong showing at the regional finals.'),
+    Article(title: 'Debate Team Takes First Place', subtitle: 'By Jane Doe', content: 'The debate team has once again brought home the first place trophy from the state championship. Congratulations on a well-argued season!'),
+    Article(title: 'New Art Exhibit Opens in Library', subtitle: 'By Art Club', content: 'Come see the latest creations from our talented student artists, now on display in the main library through the end of the month.'),
+  ];
+  // --- End of Placeholder Data ---
+
+  void _showArticleSheet(Article article) {
+    Get.bottomSheet(
+      ArticleDetailSheet(article: article),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +81,74 @@ class HoofBeatPage extends StatelessWidget {
 
   // --- Section Builder Widgets ---
 
+  Widget _buildTopStoryCarousel() {
+    return SizedBox(
+      height: 300,
+      child: PageView.builder(
+        controller: PageController(viewportFraction: 0.88),
+        clipBehavior: Clip.none,
+        itemCount: _topStories.length, // FIX: Use the list's length
+        itemBuilder: (context, index) {
+          final article = _topStories[index]; // FIX: Get the correct article
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _TopStoryCard(article: article),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTrendingStories() {
+    return SizedBox(
+      height: 220,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 24),
+        clipBehavior: Clip.none, // FIX: This allows shadows to be displayed correctly.
+        itemCount: _trendingStories.length,
+        itemBuilder: (context, index) {
+          final article = _trendingStories[index];
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _TrendingStoryCard(article: article),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNewsList() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: _newsItems.map((article) {
+          return GestureDetector(
+            onTap: () => _showArticleSheet(article),
+            child: _NewsListItem(article: article),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.0),
-      child: Text(
-        'HoofBeat',
-        style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'HoofBeat',
+            style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: Color(0xFFE5E5EA),
+            child: Icon(Icons.person, color: Colors.black, size: 28),
+          ),
+        ],
       ),
     );
   }
@@ -59,52 +159,6 @@ class HoofBeatPage extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
-      ),
-    );
-  }
-
-  Widget _buildTopStoryCarousel() {
-    return SizedBox(
-      height: 300,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.88),
-        clipBehavior: Clip.none,
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return const _TopStoryCard(
-            imagePath: 'assets/images/school_building.png',
-            title: 'Building Damage: Insights from the Principal',
-            authors: 'John Appleseed and Mac Pineapple',
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTrendingStories() {
-    return SizedBox(
-      height: 200,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 24),
-        children: const [
-          _TrendingStoryCard(imagePath: 'assets/images/trending_1.png', title: 'Hopping into Spring: Bunny Bowl 2024', author: 'By John Appleseed'),
-          _TrendingStoryCard(imagePath: 'assets/images/trending_2.png', title: '2023/2024 20 Hour Show', author: 'By John Appleseed'),
-          _TrendingStoryCard(imagePath: 'assets/images/trending_3.png', title: 'The Grass is Greener on This Side', author: 'By John Appleseed'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNewsList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        children: List.generate(3, (index) => const _NewsListItem(
-          imagePath: 'assets/images/news_swim.png',
-          title: 'Making a Splash: Men\'s Swim completes season',
-          author: 'By John Appleseed',
-        )),
       ),
     );
   }
@@ -123,10 +177,8 @@ class HoofBeatPage extends StatelessWidget {
 // --- Reusable Component Widgets ---
 
 class _TopStoryCard extends StatelessWidget {
-  const _TopStoryCard({required this.imagePath, required this.title, required this.authors});
-  final String imagePath;
-  final String title;
-  final String authors;
+  const _TopStoryCard({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +199,7 @@ class _TopStoryCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(imagePath, fit: BoxFit.cover),
+                  Image.asset(article.imagePath!, fit: BoxFit.cover),
                   Positioned(
                     bottom: 10,
                     left: 16,
@@ -169,9 +221,9 @@ class _TopStoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), maxLines: 2),
+                  Text(article.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), maxLines: 2),
                   const SizedBox(height: 8),
-                  Text(authors, style: TextStyle(fontSize: 14, color: Colors.grey.shade600), maxLines: 1),
+                  Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600), maxLines: 1),
                 ],
               ),
             ),
@@ -182,12 +234,9 @@ class _TopStoryCard extends StatelessWidget {
   }
 }
 
-// FIX: This widget now has a proper card background.
 class _TrendingStoryCard extends StatelessWidget {
-  const _TrendingStoryCard({required this.imagePath, required this.title, required this.author});
-  final String imagePath;
-  final String title;
-  final String author;
+  const _TrendingStoryCard({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
@@ -204,16 +253,16 @@ class _TrendingStoryCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(imagePath, height: 100, width: double.infinity, fit: BoxFit.cover),
+            child: Image.asset(article.imagePath!, height: 120, width: double.infinity, fit: BoxFit.cover),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(article.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text(author, style: TextStyle(fontSize: 12, color: Colors.grey.shade600), maxLines: 1),
+                Text(article.subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600), maxLines: 1),
               ],
             ),
           ),
@@ -223,40 +272,26 @@ class _TrendingStoryCard extends StatelessWidget {
   }
 }
 
-// FIX: Corrected the layout of this widget to prevent overflow.
 class _NewsListItem extends StatelessWidget {
-  const _NewsListItem({required this.imagePath, required this.title, required this.author});
-  final String imagePath;
-  final String title;
-  final String author;
+  const _NewsListItem({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.asset(imagePath, width: 60, height: 60, fit: BoxFit.cover),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold), softWrap: true),
-                const SizedBox(height: 4),
-                Text(author, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-              ],
-            ),
-          ),
+          Text(article.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(article.subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
         ],
       ),
     );
