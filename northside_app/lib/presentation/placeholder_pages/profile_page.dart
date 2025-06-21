@@ -6,10 +6,9 @@ import 'package:get/get.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/webview_sheet.dart';
-import '../../widgets/login_sheet.dart'; // Import the new login sheet
+import '../../widgets/login_sheet.dart';
 
-// --- UPDATED Data Model ---
-// Added a new 'login' action type
+// Data Model with different action types
 enum ProfileActionType { info, link, login }
 
 class ProfileOption {
@@ -24,7 +23,6 @@ class ProfileOption {
   final ProfileActionType actionType;
   final String? url;
 }
-// --- End of Data Model ---
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -40,15 +38,15 @@ class ProfilePage extends StatelessWidget {
       title: 'Your Athletic Profile',
       subtitle: 'Apply to sports teams with your profile',
       actionType: ProfileActionType.link,
-      url: 'https://www.google.com',
+      url: 'https://www.google.com', // This remains a placeholder
     ),
+    // FIX: Updated the URL for this specific card.
     ProfileOption(
       title: 'Your Athletic Account',
       subtitle: 'Login with your athletic account',
       actionType: ProfileActionType.link,
-      url: 'https://www.github.com',
+      url: 'https://ncp-ar.rschooltoday.com/oar', 
     ),
-    // FIX: This card now uses the 'login' action type
     ProfileOption(
       title: 'Flex Account',
       subtitle: 'Link your flex account to pick flexes',
@@ -74,12 +72,12 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 40),
           _buildProfileHeader(),
           const SizedBox(height: 32),
+          // The mapping logic already handles this correctly.
           ..._options.map((option) {
             return _buildInfoCard(
               title: option.title,
               subtitle: option.subtitle,
               onTap: () {
-                // FIX: Added logic to handle the new 'login' action
                 if (option.actionType == ProfileActionType.info) {
                   Get.bottomSheet(
                     ArticleDetailSheet(article: appInfoArticle),
@@ -94,7 +92,7 @@ class ProfilePage extends StatelessWidget {
                   );
                 } else if (option.actionType == ProfileActionType.login) {
                   Get.bottomSheet(
-                    const LoginSheet(), // Show the new login sheet
+                    const LoginSheet(),
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                   );
