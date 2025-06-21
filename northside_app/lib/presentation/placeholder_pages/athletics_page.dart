@@ -7,6 +7,7 @@ import '../athletics/sport_detail_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
+import '../../core/utils/app_colors.dart'; // Ensure this import is present
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
@@ -96,6 +97,7 @@ class AthleticsPage extends StatelessWidget {
     );
   }
 
+  // WIDGET WITH THE FIX
   Widget _buildSectionHeader(BuildContext context, String title, VoidCallback onViewAll) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -110,12 +112,13 @@ class AthleticsPage extends StatelessWidget {
             onTap: onViewAll,
             child: Row(
               children: [
-                Text(
+                const Text(
                   'View All',
-                  style: TextStyle(fontSize: 14, color: Colors.blue.shade600, fontWeight: FontWeight.w500),
+                  // FIX: Changed to use the consistent app color
+                  style: TextStyle(fontSize: 14, color: AppColors.primaryBlue, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.arrow_forward_ios, size: 12, color: Colors.blue.shade600),
+                const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.primaryBlue),
               ],
             ),
           ),
@@ -137,11 +140,11 @@ class AthleticsPage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
+            const Icon(Icons.add_circle_outline, color: AppColors.primaryBlue),
             const SizedBox(width: 8),
-            Text(
+            const Text(
               'Register for a sport',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade600),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryBlue),
             ),
           ],
         ),
