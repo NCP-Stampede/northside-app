@@ -6,6 +6,7 @@ import '../flexes/flexes_controller.dart';
 import '../flexes/pick_flex_page.dart';
 import '../../models/flex_choice.dart';
 import '../../widgets/shared_header.dart';
+import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
 
 class FlexesPage extends StatelessWidget {
   const FlexesPage({super.key});
@@ -126,9 +127,9 @@ class _RegisterButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_circle_outline, color: Colors.blue.shade600),
+            const Icon(Icons.add_circle_outline, color: AppColors.primaryBlue),
             const SizedBox(width: 8),
-            Text('Register for $title', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade600)),
+            Text('Register for $title', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryBlue)),
           ],
         ),
       ),
