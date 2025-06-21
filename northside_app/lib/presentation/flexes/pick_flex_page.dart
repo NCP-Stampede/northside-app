@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'flexes_controller.dart';
 import '../../models/flex_choice.dart';
+import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
 
 class PickFlexPage extends StatefulWidget {
   const PickFlexPage({super.key, required this.flexPeriod});
@@ -14,10 +15,7 @@ class PickFlexPage extends StatefulWidget {
 }
 
 class _PickFlexPageState extends State<PickFlexPage> {
-  // Local state to track the tapped option before confirming with "Done"
   FlexChoice? _selectedChoice;
-
-  // Placeholder data for available flex options
   final List<FlexChoice> _availableChoices = const [
     FlexChoice(teacher: 'Mr. Smith', room: 'Room 201'),
     FlexChoice(teacher: 'Ms. Jones', room: 'Library'),
@@ -27,7 +25,6 @@ class _PickFlexPageState extends State<PickFlexPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Find the controller to update the state when "Done" is pressed
     final FlexesController flexesController = Get.find();
 
     return Scaffold(
@@ -36,7 +33,7 @@ class _PickFlexPageState extends State<PickFlexPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.blue),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.primaryBlue),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -64,7 +61,6 @@ class _PickFlexPageState extends State<PickFlexPage> {
                 itemBuilder: (context, index) {
                   final choice = _availableChoices[index];
                   final isSelected = _selectedChoice == choice;
-
                   return GestureDetector(
                     onTap: () => setState(() => _selectedChoice = choice),
                     child: Container(
@@ -74,7 +70,7 @@ class _PickFlexPageState extends State<PickFlexPage> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isSelected ? Colors.blue : Colors.transparent,
+                          color: isSelected ? AppColors.primaryBlue : Colors.transparent,
                           width: 2.0,
                         ),
                       ),
@@ -96,15 +92,13 @@ class _PickFlexPageState extends State<PickFlexPage> {
                 padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: AppColors.primaryBlue,
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  // Disable button if no choice is made
                   onPressed: _selectedChoice == null
                       ? null
                       : () {
-                          // Update the central state and navigate back
                           flexesController.selectFlex(widget.flexPeriod, _selectedChoice!);
                           Get.back();
                         },
