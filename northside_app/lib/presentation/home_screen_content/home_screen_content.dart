@@ -35,7 +35,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFE8A1A1), Color(0xFFADC6E6), Colors.white],
+                colors: [Color(0xFFEA4335), Color(0xFF4285F4), Colors.white],
                 stops: [0.0, 0.25, 0.4],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
