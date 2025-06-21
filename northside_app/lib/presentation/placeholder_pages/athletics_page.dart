@@ -7,7 +7,10 @@ import '../athletics/sport_detail_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
-import '../../core/utils/app_colors.dart'; // Ensure this import is present
+import '../../core/utils/app_colors.dart';
+
+// NEW: Import the webview sheet
+import '../../widgets/webview_sheet.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
@@ -47,6 +50,48 @@ class AthleticsPage extends StatelessWidget {
       ),
     );
   }
+
+  // --- WIDGET WITH THE FIX ---
+  Widget _buildRegisterButton() {
+    // Define the URL for the registration page.
+    const String registrationUrl = 'https://ncp-ar.rschooltoday.com/oar';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      // FIX: Wrapped the button's container in a GestureDetector.
+      child: GestureDetector(
+        onTap: () {
+          // This opens the webview sheet when the card is tapped.
+          Get.bottomSheet(
+            const WebViewSheet(url: registrationUrl),
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add_circle_outline, color: AppColors.primaryBlue),
+              const SizedBox(width: 8),
+              const Text(
+                'Register for a sport',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryBlue),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- All other widgets below are unchanged but included for completeness ---
 
   Widget _buildNewsCarousel() {
     return SizedBox(
@@ -97,7 +142,6 @@ class AthleticsPage extends StatelessWidget {
     );
   }
 
-  // WIDGET WITH THE FIX
   Widget _buildSectionHeader(BuildContext context, String title, VoidCallback onViewAll) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -114,7 +158,6 @@ class AthleticsPage extends StatelessWidget {
               children: [
                 const Text(
                   'View All',
-                  // FIX: Changed to use the consistent app color
                   style: TextStyle(fontSize: 14, color: AppColors.primaryBlue, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(width: 4),
@@ -123,31 +166,6 @@ class AthleticsPage extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRegisterButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add_circle_outline, color: AppColors.primaryBlue),
-            const SizedBox(width: 8),
-            const Text(
-              'Register for a sport',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryBlue),
-            ),
-          ],
-        ),
       ),
     );
   }
