@@ -2,16 +2,44 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:table_calendar/table_calendar.dart'; // FIX: Added the missing import for isSameDay
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart'; // This is correct to keep
 import '../placeholder_pages/bulletin_page.dart';
 import '../../models/article.dart';
+import '../../models/bulletin_post.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
+
+  // This is the single source of truth for all posts.
+  static final List<BulletinPost> _allPosts = [
+    BulletinPost(title: 'Homecoming Tickets on Sale!', subtitle: 'Get them before they sell out!', date: DateTime.now().add(const Duration(days: 2)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
+    BulletinPost(title: 'Spirit Week Next Week', subtitle: 'Show your school spirit!', date: DateTime.now().add(const Duration(days: 1)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
+    BulletinPost(title: 'Parent-Teacher Conferences', subtitle: 'Sign-ups are open', date: DateTime.now(), imagePath: 'assets/images/homecoming_bg.png'),
+    BulletinPost(title: 'Soccer Team Wins!', subtitle: 'A thrilling victory', date: DateTime.now().subtract(const Duration(days: 1)), imagePath: 'assets/images/homecoming_bg.png'),
+    BulletinPost(title: 'School Play Auditions', subtitle: 'In the auditorium', date: DateTime.now().add(const Duration(days: 5)), imagePath: 'assets/images/homecoming_bg.png'),
+  ];
+  
+  // Getter to filter the posts for the home screen carousel
+  List<Article> get _homeScreenArticles {
+    final today = DateTime.now();
+    final upcomingPosts = _allPosts.where((post) {
+      // Show pinned posts, or posts from today onwards.
+      return post.isPinned || post.date.isAfter(today.subtract(const Duration(days: 1))) || isSameDay(post.date, today);
+    }).toList();
+    
+    // Convert BulletinPost to Article for the existing UI widgets
+    return upcomingPosts.map((post) => Article(
+      title: post.title,
+      subtitle: post.subtitle,
+      imagePath: post.imagePath,
+      content: post.content
+    )).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +57,12 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFF44336), Color(0xFF2196F3), Colors.white],
-                stops: [0.0, 0.25, 0.4],
+                colors: [
+                  Color(0xFFF44336),
+                  Color(0xFF2196F3),
+                  Color(0xFFF2F2F7),
+                ],
+                stops: [0.0, 0.5, 0.9],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -69,8 +101,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
           // FIX: The Hoofbeat button remains, correctly opening its own page.
           _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
-          // FIX: The Flexes button is now the Bulletin button, navigating to the correct tab.
-          _QuickActionButton(iconWidget: const Icon(Icons.article_outlined, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
+          _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
         ],
       ),
     );
