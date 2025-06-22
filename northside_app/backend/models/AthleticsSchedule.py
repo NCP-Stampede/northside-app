@@ -6,6 +6,7 @@ class AthleticsSchedule(Document):
     time = StringField(required=True)
     sport = StringField(required=True)
     team = StringField(required=True)
+    opponent = StringField(required=True)
     location = StringField(required=True)
     home = BooleanField(required=True)
     createdAt = DateTimeField(required=True, default=datetime.now)    
@@ -13,6 +14,6 @@ class AthleticsSchedule(Document):
     meta = {
         'collection': 'athletics_schedule',
         'indexes': [
-            {'fields': ['date', 'sport', 'team', 'location', 'home', 'createdAt'], 'unique': True}
+            {'fields': ['date', 'time', 'sport', 'team', 'opponent', 'location', 'home', 'createdAt'], 'unique': True}
         ]
     }
