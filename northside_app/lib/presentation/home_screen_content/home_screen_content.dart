@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart'; // FIX: Added the missing import for isSameDay
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
-import '../placeholder_pages/hoofbeat_page.dart';
+import '../placeholder_pages/hoofbeat_page.dart'; // This is correct to keep
+import '../placeholder_pages/bulletin_page.dart';
 import '../../models/article.dart';
 import '../../models/bulletin_post.dart';
 import '../../widgets/article_detail_sheet.dart';
@@ -42,6 +43,13 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
 
   @override
   Widget build(BuildContext context) {
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final upcomingAnnouncements = allAnnouncements
+        .where((article) =>
+            !article.isPinned &&
+            !article.date.isBefore(today))
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F7),
       body: Stack(
@@ -67,9 +75,9 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               const SizedBox(height: 20),
               _buildQuickActions(),
               const SizedBox(height: 32),
-              _buildEventsCarousel(),
+              _buildEventsCarousel(upcomingAnnouncements),
               const SizedBox(height: 20),
-              Obx(() => _buildPageIndicator()),
+              Obx(() => _buildPageIndicator(upcomingAnnouncements.length)),
             ],
           ),
         ],
@@ -91,6 +99,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         children: [
           _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Colors.black54, size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
+          // FIX: The Hoofbeat button remains, correctly opening its own page.
           _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
           _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
         ],
@@ -98,17 +107,31 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  Widget _buildEventsCarousel() {
+  Widget _buildEventsCarousel(List<Article> articles) {
+    if (articles.isEmpty) {
+      return Container(
+        height: 350,
+        margin: const EdgeInsets.symmetric(horizontal: 24.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
+        ),
+        child: const Center(
+          child: Text("No upcoming announcements", style: TextStyle(fontSize: 16, color: Colors.grey)),
+        ),
+      );
+    }
     return SizedBox(
       height: 350,
       child: PageView.builder(
         controller: controller.pageController,
-        itemCount: _homeScreenArticles.length,
+        itemCount: articles.length,
         clipBehavior: Clip.none,
         physics: const BouncingScrollPhysics(),
         onPageChanged: controller.onPageChanged,
         itemBuilder: (context, index) {
-          final article = _homeScreenArticles[index];
+          final article = articles[index];
           return GestureDetector(
             onTap: () {
               Get.bottomSheet(
@@ -139,10 +162,13 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 3,
-              child: Image.asset(article.imagePath!, fit: BoxFit.cover),
-            ),
+            if (article.imagePath != null)
+              Expanded(
+                flex: 3,
+                child: Image.asset(article.imagePath!, fit: BoxFit.cover),
+              )
+            else
+              const Expanded(flex: 3, child: Center(child: Icon(Icons.article, size: 50, color: Colors.grey))),
             Expanded(
               flex: 2,
               child: Padding(
@@ -174,10 +200,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildPageIndicator(int pageCount) {
+    if (pageCount == 0) return const SizedBox.shrink();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(_homeScreenArticles.length, (index) {
+      children: List.generate(pageCount, (index) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           width: 8.0,

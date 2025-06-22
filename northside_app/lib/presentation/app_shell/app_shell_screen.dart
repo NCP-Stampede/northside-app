@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:ui';
+
 import 'app_shell_controller.dart';
 import '../home_screen_content/home_screen_content.dart';
 import '../placeholder_pages/athletics_page.dart';
@@ -10,11 +11,13 @@ import '../placeholder_pages/profile_page.dart';
 import '../placeholder_pages/events_page.dart';
 import '../placeholder_pages/bulletin_page.dart'; // Import the new BulletinPage
 
+
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // FIX: The list of pages is now correct. FlexesPage is gone, BulletinPage is in.
     final List<Widget> pages = <Widget>[
       const HomeScreenContent(),
       const AthleticsPage(),
@@ -66,6 +69,7 @@ class AppShellScreen extends GetView<AppShellController> {
                   selectedIndex: controller.navBarIndex.value,
                   onDestinationSelected: controller.changePage,
                   labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+
                   destinations: const <Widget>[
                     NavigationDestination(
                       selectedIcon: Icon(Icons.home, color: Colors.white),
