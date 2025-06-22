@@ -4,8 +4,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from bs4 import BeautifulSoup
 import requests
-from datetime import datetime
-import pytz
 from backend.models.AthleticsSchedule import AthleticsSchedule
 from mongoengine import connect
 from dotenv import load_dotenv
@@ -56,31 +54,16 @@ def update_athletics_schedule():
     home = [item == "Home" for item in home]
     # print(home)
 
-    def parse_date_and_time(date_str, time_str):
-        for suffix in ['ST', 'ND', 'RD', 'TH']:
-            date_str = date_str.replace(suffix, '')
-        datetime_str = f"{date_str} {time_str}"
-
-        try:
-            dt = datetime.strptime(datetime_str, "%A, %B %d, %Y %I:%M %p")
-            central_tz = pytz.timezone('America/Chicago')
-            dt = central_tz.localize(dt)
-            return dt
-        except ValueError as e:
-            print(f"Error parsing date and time: {e}")
-            print(f"Date string: '{date_str}', Time string: '{time_str}'")
-            return datetime.now(pytz.timezone('America/Chicago'))
-
     length = len(dates)
     schedule = []
     added_count = 0
     existing_count = 0
 
     for i in range(length):
-        date_time = parse_date_and_time(dates[i], times[i])
         
         event_data = {
-            "date": date_time,
+            "date": dates[i],
+            "time": times[i],
             "sport": sports[i],
             "team": teams[i],
             "location": locations[i],
@@ -89,7 +72,8 @@ def update_athletics_schedule():
         schedule.append(event_data)
         
         existing_event = AthleticsSchedule.objects(
-            date=date_time,
+            date=dates[i],
+            time=times[i],
             sport=sports[i],
             team=teams[i],
             location=locations[i],
@@ -98,7 +82,8 @@ def update_athletics_schedule():
         
         if not existing_event:
             event = AthleticsSchedule(
-                date=date_time,
+                date=dates[i],
+                time=times[i],
                 sport=sports[i],
                 team=teams[i],
                 location=locations[i],
@@ -110,3 +95,5 @@ def update_athletics_schedule():
             existing_count += 1
 
     print(f"Athletics schedule updated: {added_count} new events added, {existing_count} events already existed")
+
+update_athletics_schedule()
