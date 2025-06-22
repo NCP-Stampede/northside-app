@@ -1,6 +1,5 @@
 from mongoengine import Document, StringField, DateTimeField, BooleanField
 from datetime import datetime
-import pytz
 
 class AthleticsSchedule(Document):
     date = DateTimeField(required=True)
