@@ -5,8 +5,17 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from bs4 import BeautifulSoup
 import requests
 from backend.models.Athlete import Athlete
+from mongoengine import connect
+from dotenv import load_dotenv
 
 def update_athletics_roster():
+    try:
+        load_dotenv()
+        connect(host=os.environ['MONGODB_URL'])
+    except Exception as e:
+        print(f"Error connecting to the database: {e}")
+        return
+    
     url = "https://www.maxpreps.com/il/chicago/northside-mustangs/"
     response = requests.get(url)
     html_content = response.text
@@ -78,3 +87,5 @@ def update_athletics_roster():
                                 existing_count += 1
 
     print(f"Added {added_count} athletes, existing {existing_count} athletes.")
+
+update_athletics_roster()

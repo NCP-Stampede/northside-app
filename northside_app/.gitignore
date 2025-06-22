@@ -46,3 +46,4 @@ app.*.map.json
 /nsapp
 .env
 /backend/__pycache__/
+/backend/models/__pycache__/
