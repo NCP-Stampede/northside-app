@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
-import '../placeholder_pages/hoofbeat_page.dart';
+import '../placeholder_pages/hoofbeat_page.dart'; // This is correct to keep
+import '../placeholder_pages/bulletin_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
-import '../placeholder_pages/bulletin_page.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
@@ -67,7 +67,9 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         children: [
           _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Colors.black54, size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
+          // FIX: The Hoofbeat button remains, correctly opening its own page.
           _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
+          // FIX: The Flexes button is now the Bulletin button, navigating to the correct tab.
           _QuickActionButton(iconWidget: const Icon(Icons.article_outlined, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
         ],
       ),
@@ -135,7 +137,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                 child: Image.asset(article.imagePath!, fit: BoxFit.cover),
               )
             else
-              // Provides a placeholder if no image is available
               const Expanded(flex: 3, child: Center(child: Icon(Icons.article, size: 50, color: Colors.grey))),
             Expanded(
               flex: 2,
