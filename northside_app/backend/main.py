@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 
 from models.Athlete import Athlete
+from models.AthleticsSchedule import AthleticsSchedule
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +18,7 @@ connect(host=os.environ.get('MONGODB_URL'))
 @app.route('/api/roster', methods=['GET'])
 def roster():
     try:
-        sport = request.args.get('sport', 'all')
+        sport = request.args.get('sport')
         gender = request.args.get('gender')
         level = request.args.get('level')
 
@@ -31,6 +32,32 @@ def roster():
         
         athletes = Athlete.objects(**query).to_json()
         return athletes
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/schedule', methods=['GET'])
+def schedule():
+    try:
+        sport = request.args.get('sport')
+        team = request.args.get('team')
+        date = request.args.get('date')
+        time = request.args.get('time')
+        home = request.args.get('home')
+
+        query = {}
+        if sport:
+            query['sport'] = sport
+        if team:
+            query['team'] = team
+        if date:
+            query['date'] = date
+        if time:
+            query['time'] = time
+        if home:
+            query['home'] = home
+        
+        events = AthleticsSchedule.objects(**query).to_json()
+        return events
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
