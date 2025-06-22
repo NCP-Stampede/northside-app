@@ -13,8 +13,6 @@ def update_athletics_schedule():
     Scrapes the athletics schedule from the Northside Prep Athletics website
     and updates the database with new events.
     """
-    print("Updating athletics schedule...")
-
     try:
         load_dotenv()
         connect(host=os.environ['MONGODB_URL'])
@@ -49,9 +47,13 @@ def update_athletics_schedule():
     teams = [p.get_text(strip=True) for p in teams]
     # print(teams)
 
+    opponents = soup.select('h2.mb-1.font-heading.text-xl')
+    opponents = [h2.get_text(strip=True).replace("vs ", "").replace("at ", "") for h2 in opponents]
+    # print(opponents)
+
     home = soup.select("div.inline-flex.items-center.gap-1")
     home = [div.get_text(strip=True) for div in home]
-    home = [item == "Home" for item in home]
+    home = [item.lower() == "home" for item in home]
     # print(home)
 
     length = len(dates)
@@ -66,6 +68,7 @@ def update_athletics_schedule():
             "time": times[i],
             "sport": sports[i],
             "team": teams[i],
+            "oppenent": opponents[i],
             "location": locations[i],
             "home": home[i]
         }
@@ -76,6 +79,7 @@ def update_athletics_schedule():
             time=times[i],
             sport=sports[i],
             team=teams[i],
+            opponent=opponents[i],
             location=locations[i],
             home=home[i]
         ).first()
@@ -86,6 +90,7 @@ def update_athletics_schedule():
                 time=times[i],
                 sport=sports[i],
                 team=teams[i],
+                opponent=opponents[i],
                 location=locations[i],
                 home=home[i]
             )

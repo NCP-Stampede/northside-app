@@ -87,3 +87,5 @@ def update_athletics_roster():
                                 existing_count += 1
 
     print(f"Added {added_count} athletes, existing {existing_count} athletes.")
+
+update_athletics_roster()
