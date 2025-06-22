@@ -9,40 +9,36 @@ import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
 
+// Import the bulletin page to access its central data source
+import '../placeholder_pages/bulletin_page.dart';
+
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
-  final List<Article> _homeScreenArticles = const [
-    Article(
-      title: 'Homecoming 2024',
-      subtitle: 'This Friday',
-      imagePath: 'assets/images/homecoming_bg.png',
-      content: 'Join us for a night of fun and festivities! The annual homecoming dance will be held this Friday in the main gym. Music, food, and great memories await. Don\'t miss out!',
-    ),
-    Article(
-      title: 'Spirit Week Begins!',
-      subtitle: 'All Week',
-      imagePath: 'assets/images/homecoming_bg.png',
-      content: 'Show your school spirit! Participate in our daily themes, from Pajama Day on Monday to School Colors on Friday. Let\'s make this the best Spirit Week ever!',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    // Filter the announcements to get only relevant items for the carousel.
+    // "Relevant" is defined here as not pinned and occurring today or in the future.
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final upcomingAnnouncements = allAnnouncements
+        .where((article) =>
+            !article.isPinned &&
+            !article.date.isBefore(today))
+        .toList();
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF2F2F7),
       body: Stack(
         children: [
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                // FIX: Using the vibrant colors you requested with your original gradient structure.
                 colors: [
-                  Color(0xFFFBC8C4), // Vibrant Red
-                  Color(0xFFC8DAF5), // Vibrant Blue
+                  Color(0xFFF44336), // Vibrant Red
+                  Color(0xFF2196F3), // Vibrant Blue
                   Colors.white
                 ],
-                // Your original stops and alignments are preserved.
-                stops: [0.0, 0.4, 0.6],
+                stops: [0.0, 0.25, 0.4],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -55,9 +51,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               const SizedBox(height: 20),
               _buildQuickActions(),
               const SizedBox(height: 32),
-              _buildEventsCarousel(),
+              // Pass the filtered list to the carousel
+              _buildEventsCarousel(upcomingAnnouncements),
               const SizedBox(height: 20),
-              Obx(() => _buildPageIndicator()),
+              // Pass the count of the filtered list to the indicator
+              Obx(() => _buildPageIndicator(upcomingAnnouncements.length)),
             ],
           ),
         ],
@@ -80,23 +78,40 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Colors.black54, size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
           _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
-          _QuickActionButton(iconWidget: const Icon(Icons.assignment, color: Colors.black54, size: 26), label: 'Flexes', onTap: () => appShellController.changePage(3)),
+          _QuickActionButton(iconWidget: const Icon(Icons.article_outlined, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
         ],
       ),
     );
   }
 
-  Widget _buildEventsCarousel() {
+  Widget _buildEventsCarousel(List<Article> articles) {
+    if (articles.isEmpty) {
+      return Container(
+        height: 350,
+        margin: const EdgeInsets.symmetric(horizontal: 24.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
+        ),
+        child: const Center(
+          child: Text(
+            "No upcoming announcements",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
     return SizedBox(
       height: 350,
       child: PageView.builder(
         controller: controller.pageController,
-        itemCount: _homeScreenArticles.length,
+        itemCount: articles.length,
         clipBehavior: Clip.none,
         physics: const BouncingScrollPhysics(),
         onPageChanged: controller.onPageChanged,
         itemBuilder: (context, index) {
-          final article = _homeScreenArticles[index];
+          final article = articles[index];
           return GestureDetector(
             onTap: () {
               Get.bottomSheet(
@@ -162,10 +177,13 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildPageIndicator(int pageCount) {
+    // If there are no pages, don't show an indicator.
+    if (pageCount == 0) return const SizedBox.shrink();
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(_homeScreenArticles.length, (index) {
+      children: List.generate(pageCount, (index) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4.0),
           width: 8.0,
@@ -214,4 +232,5 @@ class _QuickActionButton extends StatelessWidget {
       ),
     );
   }
+}
 }
