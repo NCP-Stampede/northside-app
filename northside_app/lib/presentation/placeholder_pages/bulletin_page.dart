@@ -8,7 +8,6 @@ import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
 
 // --- CENTRAL DATA SOURCE ---
-// In a real app, this would come from your backend/API.
 final List<Article> allAnnouncements = [
   // Pinned Items
   Article(
@@ -85,14 +84,13 @@ class _BulletinPageState extends State<BulletinPage> {
   @override
   void initState() {
     super.initState();
-    // This scrolls to the "Today" section automatically after the page is built.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = _todayKey.currentContext;
       if (context != null) {
         Scrollable.ensureVisible(context,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
-            alignment: 0.05 // Align near the top of the viewport
+            alignment: 0.05
         );
       }
     });
@@ -116,7 +114,6 @@ class _BulletinPageState extends State<BulletinPage> {
   Widget build(BuildContext context) {
     final pinned = allAnnouncements.where((a) => a.isPinned).toList();
     final nonPinned = allAnnouncements.where((a) => !a.isPinned).toList();
-    // Sort announcements by date, from past to future.
     nonPinned.sort((a, b) => a.date.compareTo(b.date));
 
     return Scaffold(
@@ -126,7 +123,7 @@ class _BulletinPageState extends State<BulletinPage> {
         slivers: [
           SliverAppBar(
             backgroundColor: const Color(0xFFF2F2F7),
-            expandedHeight: 200.0, // Adjust as needed
+            expandedHeight: 200.0,
             pinned: false,
             flexibleSpace: FlexibleSpaceBar(
               background: Column(
@@ -148,8 +145,6 @@ class _BulletinPageState extends State<BulletinPage> {
                 final isFirst = index == 0;
                 final previousArticleDate = isFirst ? null : nonPinned[index - 1].date;
                 final showDateHeader = isFirst || !isSameDay(article.date, previousArticleDate);
-
-                // Check if this is the first item for "Today"
                 final isToday = isSameDay(article.date, DateTime.now());
                 final isFirstToday = isToday && (isFirst || !isSameDay(previousArticleDate, DateTime.now()));
                 
@@ -264,4 +259,12 @@ class _BulletinPageState extends State<BulletinPage> {
       ),
     );
   }
+}
+
+// FIX: Added this helper function to the file to resolve the error.
+bool isSameDay(DateTime? a, DateTime? b) {
+  if (a == null || b == null) {
+    return false;
+  }
+  return a.year == b.year && a.month == b.month && a.day == b.day;
 }
