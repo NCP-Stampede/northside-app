@@ -9,20 +9,19 @@ import '../home_screen_content/home_screen_content.dart';
 import '../placeholder_pages/athletics_page.dart';
 import '../placeholder_pages/profile_page.dart';
 import '../placeholder_pages/events_page.dart';
-// FIX: Import the new BulletinPage
-import '../placeholder_pages/bulletin_page.dart';
+import '../placeholder_pages/bulletin_page.dart'; // FIX: This is the page we want
 
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // FIX: Updated the page list
+    // FIX: The list of pages is now correct. FlexesPage is gone, BulletinPage is in.
     final List<Widget> pages = <Widget>[
       const HomeScreenContent(),
       const AthleticsPage(),
       const EventsPage(),
-      const BulletinPage(), // Replaced Flexes
+      const BulletinPage(),
       const ProfilePage(),
     ];
 
@@ -43,7 +42,16 @@ class AppShellScreen extends GetView<AppShellController> {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 30),
       height: 65,
-      // ... (decoration is unchanged) ...
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 20,
+            spreadRadius: -2,
+          ),
+        ],
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(50),
         child: BackdropFilter(
@@ -60,8 +68,7 @@ class AppShellScreen extends GetView<AppShellController> {
                   selectedIndex: controller.navBarIndex.value,
                   onDestinationSelected: controller.changePage,
                   labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-
-                  // FIX: Updated destinations
+                  // FIX: The destinations list is now correct.
                   destinations: const <Widget>[
                     NavigationDestination(
                       selectedIcon: Icon(Icons.home, color: Colors.white),
@@ -79,9 +86,9 @@ class AppShellScreen extends GetView<AppShellController> {
                       label: 'Events',
                     ),
                     NavigationDestination(
-                      selectedIcon: Icon(Icons.article_outlined, color: Colors.white), // New Icon
+                      selectedIcon: Icon(Icons.article, color: Colors.white),
                       icon: Icon(Icons.article_outlined, color: Colors.black87),
-                      label: 'Bulletin',
+                      label: 'Bulletin', // Was "Flexes"
                     ),
                     NavigationDestination(
                       selectedIcon: Icon(Icons.person, color: Colors.white),
