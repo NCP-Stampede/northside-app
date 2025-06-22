@@ -8,8 +8,6 @@ import '../placeholder_pages/hoofbeat_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
-
-// Import the bulletin page to access its central data source
 import '../placeholder_pages/bulletin_page.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
@@ -17,8 +15,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter the announcements to get only relevant items for the carousel.
-    // "Relevant" is defined here as not pinned and occurring today or in the future.
     final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final upcomingAnnouncements = allAnnouncements
         .where((article) =>
@@ -33,11 +29,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFFF44336), // Vibrant Red
-                  Color(0xFF2196F3), // Vibrant Blue
-                  Colors.white
-                ],
+                colors: [Color(0xFFF44336), Color(0xFF2196F3), Colors.white],
                 stops: [0.0, 0.25, 0.4],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -51,10 +43,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               const SizedBox(height: 20),
               _buildQuickActions(),
               const SizedBox(height: 32),
-              // Pass the filtered list to the carousel
               _buildEventsCarousel(upcomingAnnouncements),
               const SizedBox(height: 20),
-              // Pass the count of the filtered list to the indicator
               Obx(() => _buildPageIndicator(upcomingAnnouncements.length)),
             ],
           ),
@@ -95,10 +85,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
         ),
         child: const Center(
-          child: Text(
-            "No upcoming announcements",
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+          child: Text("No upcoming announcements", style: TextStyle(fontSize: 16, color: Colors.grey)),
         ),
       );
     }
@@ -142,10 +129,14 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 3,
-              child: Image.asset(article.imagePath!, fit: BoxFit.cover),
-            ),
+            if (article.imagePath != null)
+              Expanded(
+                flex: 3,
+                child: Image.asset(article.imagePath!, fit: BoxFit.cover),
+              )
+            else
+              // Provides a placeholder if no image is available
+              const Expanded(flex: 3, child: Center(child: Icon(Icons.article, size: 50, color: Colors.grey))),
             Expanded(
               flex: 2,
               child: Padding(
@@ -178,9 +169,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
   }
 
   Widget _buildPageIndicator(int pageCount) {
-    // If there are no pages, don't show an indicator.
     if (pageCount == 0) return const SizedBox.shrink();
-    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(pageCount, (index) {
@@ -233,4 +222,3 @@ class _QuickActionButton extends StatelessWidget {
     );
   }
 }
-
