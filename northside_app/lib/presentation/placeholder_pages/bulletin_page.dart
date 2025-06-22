@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../models/bulletin_post.dart';
+import '../../models/article.dart';
 import '../../widgets/article_detail_sheet.dart';
 import '../../widgets/shared_header.dart';
 
@@ -38,12 +39,11 @@ class _BulletinPageState extends State<BulletinPage> {
     super.initState();
     _buildGroupedList();
   }
-  
-  // Helper to group posts by date
+
   void _buildGroupedList() {
     final today = DateTime.now();
     final nonPinnedPosts = _allPosts.where((post) => !post.isPinned).toList();
-    nonPinnedPosts.sort((a, b) => b.date.compareTo(a.date)); // Sort descending
+    nonPinnedPosts.sort((a, b) => b.date.compareTo(a.date));
 
     final Map<String, List<BulletinPost>> grouped = {};
     for (var post in nonPinnedPosts) {
@@ -61,11 +61,10 @@ class _BulletinPageState extends State<BulletinPage> {
       grouped[dateHeader]!.add(post);
     }
     
-    // Flatten the map into a single list for the ListView.builder
     final List<dynamic> flattenedList = [];
     grouped.forEach((date, posts) {
-      flattenedList.add(date); // Add the date header
-      flattenedList.addAll(posts); // Add all posts for that date
+      flattenedList.add(date);
+      flattenedList.addAll(posts);
     });
     setState(() {
       _groupedItems = flattenedList;
@@ -191,4 +190,5 @@ class _BulletinPageState extends State<BulletinPage> {
       ),
     );
   }
+}
 }
