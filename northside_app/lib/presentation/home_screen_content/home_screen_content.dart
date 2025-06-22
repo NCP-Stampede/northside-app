@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:table_calendar/table_calendar.dart'; // FIX: Added the missing import for isSameDay
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart';
@@ -14,6 +14,7 @@ import '../../widgets/shared_header.dart';
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
+  // This is the single source of truth for all posts.
   static final List<BulletinPost> _allPosts = [
     BulletinPost(title: 'Homecoming Tickets on Sale!', subtitle: 'Get them before they sell out!', date: DateTime.now().add(const Duration(days: 2)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
     BulletinPost(title: 'Spirit Week Next Week', subtitle: 'Show your school spirit!', date: DateTime.now().add(const Duration(days: 1)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
@@ -22,12 +23,15 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     BulletinPost(title: 'School Play Auditions', subtitle: 'In the auditorium', date: DateTime.now().add(const Duration(days: 5)), imagePath: 'assets/images/homecoming_bg.png'),
   ];
   
+  // Getter to filter the posts for the home screen carousel
   List<Article> get _homeScreenArticles {
     final today = DateTime.now();
     final upcomingPosts = _allPosts.where((post) {
+      // Show pinned posts, or posts from today onwards.
       return post.isPinned || post.date.isAfter(today.subtract(const Duration(days: 1))) || isSameDay(post.date, today);
     }).toList();
     
+    // Convert BulletinPost to Article for the existing UI widgets
     return upcomingPosts.map((post) => Article(
       title: post.title,
       subtitle: post.subtitle,
@@ -73,7 +77,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  // --- WIDGET WITH THE FIX ---
   Widget _buildQuickActions() {
     final AppShellController appShellController = Get.find();
     return Padding(
@@ -89,7 +92,6 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Colors.black54, size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
           _QuickActionButton(iconWidget: const Icon(Icons.calendar_today_outlined, color: Colors.black54, size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
           _QuickActionButton(iconWidget: const Icon(Icons.article, color: Colors.black54, size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
-          // FIX: The label is now "Bulletin", the icon is updated, and it correctly navigates to index 3.
           _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Colors.black54, size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
         ],
       ),
