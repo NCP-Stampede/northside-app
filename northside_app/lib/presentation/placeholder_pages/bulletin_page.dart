@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:table_calendar/table_calendar.dart'; // FIX: Added the missing import
 
 import '../../models/bulletin_post.dart';
 import '../../models/article.dart';
@@ -20,14 +20,10 @@ class BulletinPage extends StatefulWidget {
 class _BulletinPageState extends State<BulletinPage> {
   // --- Placeholder Data ---
   final List<BulletinPost> _allPosts = [
-    // Pinned Posts
     BulletinPost(title: 'Homecoming Tickets on Sale!', subtitle: 'Get them before they sell out!', date: DateTime.now().add(const Duration(days: 2)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
     BulletinPost(title: 'Spirit Week Next Week', subtitle: 'Show your school spirit!', date: DateTime.now().add(const Duration(days: 1)), imagePath: 'assets/images/homecoming_bg.png', isPinned: true),
-    // Today's Posts
     BulletinPost(title: 'Parent-Teacher Conferences', subtitle: 'Sign-ups are open', date: DateTime.now(), imagePath: 'assets/images/homecoming_bg.png'),
-    // Yesterday's Posts
     BulletinPost(title: 'Soccer Team Wins!', subtitle: 'A thrilling victory', date: DateTime.now().subtract(const Duration(days: 1)), imagePath: 'assets/images/homecoming_bg.png'),
-    // Future Posts
     BulletinPost(title: 'School Play Auditions', subtitle: 'In the auditorium', date: DateTime.now().add(const Duration(days: 5)), imagePath: 'assets/images/homecoming_bg.png'),
   ];
   // --- End Placeholder Data ---
@@ -39,7 +35,7 @@ class _BulletinPageState extends State<BulletinPage> {
     super.initState();
     _buildGroupedList();
   }
-
+  
   void _buildGroupedList() {
     final today = DateTime.now();
     final nonPinnedPosts = _allPosts.where((post) => !post.isPinned).toList();
