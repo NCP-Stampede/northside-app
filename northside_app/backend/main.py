@@ -35,8 +35,7 @@ def roster():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    tflask = threading.Thread(target=app.run(debug=True))
     tdataupdate = threading.Thread(target=update_data)
-
-    tflask.start()
     tdataupdate.start()
+
+    app.run(debug=True)
