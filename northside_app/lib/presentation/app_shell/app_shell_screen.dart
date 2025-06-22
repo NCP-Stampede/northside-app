@@ -9,7 +9,8 @@ import '../home_screen_content/home_screen_content.dart';
 import '../placeholder_pages/athletics_page.dart';
 import '../placeholder_pages/profile_page.dart';
 import '../placeholder_pages/events_page.dart';
-import '../placeholder_pages/bulletin_page.dart'; // FIX: This is the page we want
+import '../placeholder_pages/bulletin_page.dart'; // Import the new BulletinPage
+
 
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});
@@ -21,7 +22,7 @@ class AppShellScreen extends GetView<AppShellController> {
       const HomeScreenContent(),
       const AthleticsPage(),
       const EventsPage(),
-      const BulletinPage(),
+      const BulletinPage(), // Replaced FlexesPage
       const ProfilePage(),
     ];
 
@@ -68,7 +69,7 @@ class AppShellScreen extends GetView<AppShellController> {
                   selectedIndex: controller.navBarIndex.value,
                   onDestinationSelected: controller.changePage,
                   labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-                  // FIX: The destinations list is now correct.
+
                   destinations: const <Widget>[
                     NavigationDestination(
                       selectedIcon: Icon(Icons.home, color: Colors.white),
@@ -88,7 +89,7 @@ class AppShellScreen extends GetView<AppShellController> {
                     NavigationDestination(
                       selectedIcon: Icon(Icons.article, color: Colors.white),
                       icon: Icon(Icons.article_outlined, color: Colors.black87),
-                      label: 'Bulletin', // Was "Flexes"
+                      label: 'Bulletin', // Updated label and icon
                     ),
                     NavigationDestination(
                       selectedIcon: Icon(Icons.person, color: Colors.white),
