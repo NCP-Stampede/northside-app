@@ -1,42 +1,36 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart'; // Import the package
 
-// Assuming your project structure has these files.
-import 'core/app_export.dart';
-import 'core/utils/initial_bindings.dart';
+import 'presentation/app_shell/app_shell_binding.dart';
+import 'presentation/app_shell/app_shell_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]).then((value) {
-    runApp(MyApp());
-  });
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    // Sizer is used for responsive UI.
-    return Sizer(
-      builder: (context, orientation, deviceType) {
-        // GetMaterialApp is the root of a GetX application.
-        return GetMaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: theme,
-          locale: Get.deviceLocale,
-          fallbackLocale: const Locale('en', 'US'),
-          title: 'northside_app',
-          // This tells GetX how to inject your controllers.
-          initialBinding: InitialBindings(),
-          // This tells GetX where to start the app.
-          initialRoute: AppRoutes.initialRoute,
-          // This gives GetX the list of all pages.
-          getPages: AppRoutes.pages,
-        );
-      },
+    // Get the base theme data
+    final ThemeData theme = ThemeData();
+
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Northside App',
+
+      // FIX: Apply the "Inter" font to the entire application theme.
+      // This will make all text widgets automatically use the Inter font.
+      theme: theme.copyWith(
+        textTheme: GoogleFonts.interTextTheme(theme.textTheme),
+      ),
+
+      initialBinding: AppShellBinding(),
+      home: const AppShellScreen(),
     );
   }
 }

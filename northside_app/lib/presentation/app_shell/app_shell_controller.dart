@@ -8,4 +8,4 @@ class AppShellController extends GetxController {
   void changePage(int index) {
     navBarIndex.value = index;
   }
-}
+} 
