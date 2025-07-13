@@ -12,7 +12,6 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../controllers/events_controller.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_colors.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/utils/text_helper.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/shared_header.dart';
@@ -100,14 +99,49 @@ class _EventsPageState extends State<EventsPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      body: Container(
-        child: Obx(() {
-          if (eventsController.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-        return ListView(
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFFF6B6B), // Red
+                  Color(0xFF4A90E2), // True blue (less green)
+                ],
+                stops: [0.0, 1.0],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Color(0xFFF2F2F7).withOpacity(0.03),
+                  Color(0xFFF2F2F7).withOpacity(0.07),
+                  Color(0xFFF2F2F7).withOpacity(0.15),
+                  Color(0xFFF2F2F7).withOpacity(0.25),
+                  Color(0xFFF2F2F7).withOpacity(0.4),
+                  Color(0xFFF2F2F7).withOpacity(0.6),
+                  Color(0xFFF2F2F7).withOpacity(0.8),
+                  Color(0xFFF2F2F7).withOpacity(0.95),
+                  Color(0xFFF2F2F7),
+                ],
+                stops: [0.0, 0.12, 0.18, 0.25, 0.32, 0.38, 0.42, 0.45, 0.47, 0.49, 0.5],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          Obx(() {
+            if (eventsController.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            
+          return ListView(
           padding: EdgeInsets.only(bottom: screenHeight * 0.12),
           children: [
             const SharedHeader(title: 'Events'),
@@ -120,6 +154,7 @@ class _EventsPageState extends State<EventsPage> {
           ],
         );
         }),
+        ],
       ),
     );
   }

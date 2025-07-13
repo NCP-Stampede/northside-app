@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 def update_athletics_roster():
 
-    print("Updating athletics roster...")
+    print("===Updating athletics roster===")
     try:
         load_dotenv()
         connect(host=os.environ['MONGODB_URL'])
@@ -95,7 +95,7 @@ def update_athletics_roster():
                             }
                             roster.append(athlete)
 
-    if Athlete.objects.count() >= len(roster):
+    if Athlete.objects.count() == len(roster):
         print("Athletes already exist in the database, skipping addition.")
         return
     else:

@@ -11,7 +11,7 @@ from mongoengine import connect
 from dotenv import load_dotenv
 
 def update_general_events():
-    print("Updating general events...")
+    print("===Updating general events===")
 
     try:
         load_dotenv()
@@ -54,7 +54,7 @@ def update_general_events():
                         "createdBy": origin
                     })
 
-    if GeneralEvent.objects.count() >= len(schedule):
+    if GeneralEvent.objects.count() == len(schedule):
         print("No new events to add, skipping update.")
         return
     else:

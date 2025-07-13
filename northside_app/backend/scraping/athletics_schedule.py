@@ -3,7 +3,6 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from bs4 import BeautifulSoup
-import requests
 
 from backend.models.AthleticsSchedule import AthleticsSchedule
 from mongoengine import connect
@@ -12,6 +11,8 @@ from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
+
+from trackandfield import update_track_and_field_schedule
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -22,7 +23,7 @@ def update_athletics_schedule():
     and updates the database with new events.
     """
 
-    print("Updating athletics schedule...")
+    print("===Updating athletics schedule===")
     try:
         load_dotenv()
         connect(host=os.environ['MONGODB_URL'])
@@ -117,7 +118,10 @@ def update_athletics_schedule():
     # print(f"Processing {length} events")
     added_count = 0
 
-    if AthleticsSchedule.objects.count() >= length:
+    track_names, track_dates, track_time, track_gender, track_sports, track_level, track_opponent, track_locations, track_home = update_track_and_field_schedule()
+    total_track_elements = sum(len(sublist) for sublist in track_names)
+
+    if AthleticsSchedule.objects.count() == (length + total_track_elements):
         return
     else:
         AthleticsSchedule.drop_collection()
@@ -135,6 +139,22 @@ def update_athletics_schedule():
         )
         event.save()
         added_count += 1
+        
+    for i in range(len(track_sports)):
+        for j in range(len(track_names[i])):
+            event = AthleticsSchedule(
+                name=track_names[i][j],
+                date=track_dates[i][j],
+                time=track_time,
+                gender=track_gender,
+                sport=track_sports[i],
+                level=track_level,
+                opponent=track_opponent,
+                location=track_locations[i][j],
+                home=track_home[i]
+            )
+            event.save()
+            added_count += 1
 
     print(f"Athletics schedule updated: {added_count} new events added")
     # print(schedule)

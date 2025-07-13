@@ -2,6 +2,7 @@ from mongoengine import Document, StringField, DateTimeField, BooleanField
 from datetime import datetime
 
 class AthleticsSchedule(Document):
+    name = StringField(required=False)
     date = StringField(required=True)
     time = StringField(required=True)
     gender = StringField(required=True)
