@@ -326,9 +326,26 @@ class _BulletinPageState extends State<BulletinPage> {
     final double safeMinExtent = (effectiveMinExtent > effectiveInitialExtent ? effectiveInitialExtent : effectiveMinExtent) * 0.9;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
       body: Stack(
         children: [
+          // Gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF1565C0), // Deep blue
+                  Color(0xFF1976D2), // Blue
+                  Color(0xFF42A5F5), // Light blue
+                  Color(0xFF90CAF9), // Very light blue
+                  Color(0xFFF2F2F7), // Transition to background
+                  Color(0xFFF2F2F7), // Background
+                ],
+                stops: [0.0, 0.10, 0.22, 0.32, 0.45, 1.0],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
           // Main header and pinned carousel always visible
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
