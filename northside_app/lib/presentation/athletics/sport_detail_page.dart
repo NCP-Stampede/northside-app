@@ -9,6 +9,7 @@ import '../../controllers/athletics_controller.dart' as AC;
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_colors.dart';
 import '../../core/design_constants.dart';
+import '../../models/sport_data.dart';
 import '../../api.dart';
 import '../../models/athlete.dart';
 import '../../models/athletics_schedule.dart';
@@ -33,8 +34,15 @@ class Player {
 }
 
 class SportDetailPage extends StatefulWidget {
-  const SportDetailPage({super.key, required this.sportName});
+  const SportDetailPage({
+    super.key, 
+    required this.sportName,
+    this.gender,
+    this.season,
+  });
   final String sportName;
+  final String? gender;
+  final String? season;
 
   @override
   State<SportDetailPage> createState() => _SportDetailPageState();
@@ -105,26 +113,32 @@ class _SportDetailPageState extends State<SportDetailPage> {
   }
 
   void _loadSportData() async {
-    // Extract sport name (remove gender prefix if present)
+    // Use the gender and season passed from constructor, or extract from sportName as fallback
     String sportName = widget.sportName;
-    String? gender;
+    String? gender = widget.gender;
     
-    if (sportName.startsWith("Boys ")) {
-      sportName = sportName.substring(5);
-      gender = 'boys';  // Use lowercase to match backend data format
-    } else if (sportName.startsWith("Girls ")) {
-      sportName = sportName.substring(6);
-      gender = 'girls';  // Use lowercase to match backend data format
+    // Fallback logic for backwards compatibility
+    if (gender == null) {
+      if (sportName.startsWith("Boys ")) {
+        sportName = sportName.substring(5);
+        gender = 'boys';  // Use lowercase to match backend data format
+      } else if (sportName.startsWith("Girls ")) {
+        sportName = sportName.substring(6);
+        gender = 'girls';  // Use lowercase to match backend data format
+      }
     }
 
+    // Convert sport name to backend format for API calls
+    final backendSportName = SportsData.formatSportForBackend(sportName);
+
     // Convert sport name to uppercase for API compatibility
-    sportName = sportName.toUpperCase();
+    final apiSportName = backendSportName.toUpperCase();
 
     // Load all athletes for this sport/gender to get available levels
     try {
       // Use the new loadTeamData method for fresh data from API
       final teamData = await athleticsController.loadTeamData(
-        sport: sportName,
+        sport: apiSportName,
         gender: gender,
       );
       
@@ -132,29 +146,29 @@ class _SportDetailPageState extends State<SportDetailPage> {
         final freshRoster = (teamData['roster'] as List).cast<Athlete>();
         final levels = freshRoster.map((athlete) => athlete.level).toSet().toList();
         _levels = _sortLevels(levels);
-        AppLogger.debug('Available levels for $sportName ($gender): $_levels');
+        AppLogger.debug('Available levels for $apiSportName ($gender): $_levels');
       }
       
       // Also use fresh schedule data
       if (teamData['schedule'] is List) {
         final freshSchedule = (teamData['schedule'] as List).cast<AthleticsSchedule>();
         _schedules = freshSchedule.map((event) => event.toGameSchedule()).toList();
-        AppLogger.debug('Found ${_schedules.length} schedule items for sport: $sportName, gender: $gender');
+        AppLogger.debug('Found ${_schedules.length} schedule items for sport: $apiSportName, gender: $gender');
       }
     } catch (e) {
       AppLogger.debug('Error loading fresh team data: $e');
       // Fallback to controller data
-      final allAthletes = athleticsController.getAthletesBySport(sport: sportName, gender: gender);
+      final allAthletes = athleticsController.getAthletesBySport(sport: apiSportName, gender: gender);
       final levels = allAthletes.map((athlete) => athlete.level).toSet().toList();
       _levels = _sortLevels(levels);
       
       // Get schedule for this sport and gender
       final schedule = athleticsController.getScheduleByFilters(
-        sport: sportName,
+        sport: apiSportName,
         gender: gender,
       );
       _schedules = schedule.map((event) => event.toGameSchedule()).toList();
-      AppLogger.debug('Found ${_schedules.length} schedule items for sport: $sportName, gender: $gender (fallback)');
+      AppLogger.debug('Found ${_schedules.length} schedule items for sport: $apiSportName, gender: $gender (fallback)');
     }
 
     // Load initial roster
@@ -165,19 +179,23 @@ class _SportDetailPageState extends State<SportDetailPage> {
 
   void _updateRoster() async {
     String sportName = widget.sportName;
-    String? gender;
+    String? gender = widget.gender;
     String? level;
     
-    if (sportName.startsWith("Boys ")) {
-      sportName = sportName.substring(5);
-      gender = 'boys';  // Use lowercase to match backend data format
-    } else if (sportName.startsWith("Girls ")) {
-      sportName = sportName.substring(6);
-      gender = 'girls';  // Use lowercase to match backend data format
+    // Fallback logic for backwards compatibility
+    if (gender == null) {
+      if (sportName.startsWith("Boys ")) {
+        sportName = sportName.substring(5);
+        gender = 'boys';  // Use lowercase to match backend data format
+      } else if (sportName.startsWith("Girls ")) {
+        sportName = sportName.substring(6);
+        gender = 'girls';  // Use lowercase to match backend data format
+      }
     }
 
-    // Convert sport name to uppercase for API compatibility
-    sportName = sportName.toUpperCase();
+    // Convert sport name to backend format and then uppercase for API compatibility
+    final backendSportName = SportsData.formatSportForBackend(sportName);
+    final apiSportName = backendSportName.toUpperCase();
 
     if (_selectedLevel != 'All') {
       level = _selectedLevel.toLowerCase();
@@ -187,7 +205,7 @@ class _SportDetailPageState extends State<SportDetailPage> {
       }
     }
 
-    AppLogger.debug('Updating roster with filters: sport=$sportName, gender=$gender, level=$level, selectedLevel=$_selectedLevel');
+    AppLogger.debug('Updating roster with filters: sport=$apiSportName, gender=$gender, level=$level, selectedLevel=$_selectedLevel');
 
     setState(() {
       _isLoadingRoster = true;
@@ -196,22 +214,22 @@ class _SportDetailPageState extends State<SportDetailPage> {
     // Load roster dynamically from API with filters
     try {
       final athletes = await ApiService.getRoster(
-        sport: sportName,
+        sport: apiSportName,
         gender: gender,
         level: level,
       );
       _roster = athletes.map((athlete) => athlete.toPlayer()).toList();
-      AppLogger.debug('Loaded ${_roster.length} athletes from API for sport: $sportName, gender: $gender, level: $level');
+      AppLogger.debug('Loaded ${_roster.length} athletes from API for sport: $apiSportName, gender: $gender, level: $level');
     } catch (e) {
       AppLogger.debug('Error loading filtered roster: $e');
       // Fallback to client-side filtering
       final athletes = athleticsController.getAthletesBySport(
-        sport: sportName,
+        sport: apiSportName,
         gender: gender,
         level: level,
       );
       _roster = athletes.map((athlete) => athlete.toPlayer()).toList();
-      AppLogger.debug('Loaded ${_roster.length} athletes from controller fallback for sport: $sportName, gender: $gender, level: $level');
+      AppLogger.debug('Loaded ${_roster.length} athletes from controller fallback for sport: $apiSportName, gender: $gender, level: $level');
     }
 
     if (mounted) {
@@ -274,6 +292,8 @@ class _SportDetailPageState extends State<SportDetailPage> {
             _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
             SizedBox(height: screenHeight * 0.03),
             _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
+            SizedBox(height: screenHeight * 0.03),
+            _buildDataDisclaimer(context),
             SizedBox(height: screenHeight * 0.05),
           ],
         );
@@ -476,6 +496,52 @@ class _SportDetailPageState extends State<SportDetailPage> {
 
   Text _dataText(String text, double screenWidth) {
     return Text(text, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04), overflow: TextOverflow.ellipsis);
+  }
+
+  Widget _buildDataDisclaimer(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+      child: Container(
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        decoration: ShapeDecoration(
+          color: Colors.amber.shade50,
+          shape: SmoothRectangleBorder(
+            borderRadius: SmoothBorderRadius(
+              cornerRadius: DesignConstants.get16Radius(context),
+              cornerSmoothing: 1.0,
+            ),
+          ),
+          shadows: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Colors.amber.shade700,
+              size: screenWidth * 0.05,
+            ),
+            SizedBox(width: screenWidth * 0.03),
+            Expanded(
+              child: Text(
+                'Athletic data is automatically collected from multiple websites and may occasionally be inaccurate. This information is not provided by school administration.',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.035,
+                  color: Colors.amber.shade800,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

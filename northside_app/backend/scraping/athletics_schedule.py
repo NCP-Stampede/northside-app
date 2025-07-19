@@ -12,7 +12,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
 
-from trackandfield import update_track_and_field_schedule
+from backend.scraping.trackandfield import update_track_and_field_schedule
+import pandas as pd
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -118,10 +119,11 @@ def update_athletics_schedule():
     # print(f"Processing {length} events")
     added_count = 0
 
-    track_names, track_dates, track_time, track_gender, track_sports, track_level, track_opponent, track_locations, track_home = update_track_and_field_schedule()
-    total_track_elements = sum(len(sublist) for sublist in track_names)
+    track_and_field_df = update_track_and_field_schedule()
+    total_track_elements = len(track_and_field_df['name'])
 
-    if AthleticsSchedule.objects.count() == (length + total_track_elements):
+    if AthleticsSchedule.objects.count() == (length + total_track_elements) or (length + total_track_elements) == 0:
+        print("Athletics schedule already exists in the database, skipping addition.")
         return
     else:
         AthleticsSchedule.drop_collection()
@@ -139,24 +141,23 @@ def update_athletics_schedule():
         )
         event.save()
         added_count += 1
-        
-    for i in range(len(track_sports)):
-        for j in range(len(track_names[i])):
-            event = AthleticsSchedule(
-                name=track_names[i][j],
-                date=track_dates[i][j],
-                time=track_time,
-                gender=track_gender,
-                sport=track_sports[i],
-                level=track_level,
-                opponent=track_opponent,
-                location=track_locations[i][j],
-                home=track_home[i]
-            )
-            event.save()
-            added_count += 1
+    
+    # Save track and field events from DataFrame
+    for index, row in track_and_field_df.iterrows():
+        track_event = AthleticsSchedule(
+            date=row['date'],
+            time=row['time'],
+            gender=row['gender'],
+            sport=row['sport'],
+            level=row['level'],
+            opponent=row['opponent'],
+            location=row['location'],
+            home=row['home']
+        )
+        track_event.save()
+        added_count += 1
 
-    print(f"Athletics schedule updated: {added_count} new events added")
+    print(f"Athletics schedule updated: {added_count} new events added (including track and field)")
     # print(schedule)
 
 # update_athletics_schedule()

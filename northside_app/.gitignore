@@ -45,7 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Python related
-/nsapp
+/.nsapp
 .env
 /backend/__pycache__/
 /backend/models/__pycache__/

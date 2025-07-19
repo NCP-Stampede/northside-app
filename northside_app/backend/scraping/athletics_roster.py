@@ -95,7 +95,7 @@ def update_athletics_roster():
                             }
                             roster.append(athlete)
 
-    if Athlete.objects.count() == len(roster):
+    if Athlete.objects.count() == len(roster) or len(roster) == 0:
         print("Athletes already exist in the database, skipping addition.")
         return
     else:

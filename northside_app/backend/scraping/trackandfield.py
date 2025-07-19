@@ -12,6 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import time
 from datetime import datetime
+import pandas as pd
 
 from mongoengine import connect
 from dotenv import load_dotenv
@@ -19,15 +20,8 @@ from dotenv import load_dotenv
 sports = ['cross-country', 'track-and-field-outdoor', 'track-and-field-indoor']
 
 def update_track_and_field_schedule():
-    all_names = []
-    all_dates = []
-    all_locations = []
-
+    df = pd.DataFrame(columns=["name", "date", "time", "gender", "sport", "level", "opponent", "location", "home"])
     for sport in sports:
-        local_names = []
-        local_dates = []
-        local_locations = []
-
         for year in [2025, 2026]:
             try:
                 load_dotenv()
@@ -138,20 +132,47 @@ def update_track_and_field_schedule():
             # print(names)
             # print(dates)
             # print(locations)
+            for name in names:
+                if "girls" in name.lower():
+                    new_row = pd.DataFrame({
+                        "name": [name],
+                        "date": [dates[names.index(name)]],
+                        "time": ["All Day"],
+                        "gender": ["Girls"],
+                        "sport": [sport],
+                        "level": ["varsity"],
+                        "opponent": ["Multiple Schools"],
+                        "location": [locations[names.index(name)]],
+                        "home": [False],
+                    })
+                elif "boys" in name.lower():
+                    new_row = pd.DataFrame({
+                        "name": [name],
+                        "date": [dates[names.index(name)]],
+                        "time": ["All Day"],
+                        "gender": ["Boys"],
+                        "sport": [sport],
+                        "level": ["varsity"],
+                        "opponent": ["Multiple Schools"],
+                        "location": [locations[names.index(name)]],
+                        "home": [False],
+                    })
+                else:
+                    new_row = pd.DataFrame({
+                        "name": [name]*2,
+                        "date": [dates[names.index(name)]]*2,
+                        "time": ["All Day"]*2,
+                        "gender": ["girls", "boys"],
+                        "sport": [sport]*2,
+                        "level": ["varsity"]*2,
+                        "opponent": ["Multiple Schools"]*2,
+                        "location": [locations[names.index(name)]]*2,
+                        "home": [False]*2,
+                    })
+                
+                df = pd.concat([df, new_row], ignore_index=True)
 
-            driver.quit()
-            for date in dates:
-                date = f"{date.split('-')[0].split(',')[1].strip()} {year}"
-
-            local_names.append(names)
-            local_dates.append(dates)
-            local_locations.append(locations)
-
-        all_names.append(local_names)
-        all_dates.append(local_dates)
-        all_locations.append(local_locations)
-
-    return all_names, all_dates, "All Day", "Co-ed", ["Cross Country", "Outdoor Track and Field", "Indoor Track and Field"], "varsity", "Multiple Schools", all_locations, False
+    return df
 
 # update_track_and_field_schedule()
 
@@ -174,6 +195,13 @@ def update_track_and_field_roster():
             except Exception as e:
                 print(f"Error parsing HTML content: {e}")
                 return
+        
+            
             
 
-update_track_and_field_roster()
+            
+
+# returned_df = update_track_and_field_schedule()
+
+# print(returned_df.head(15))
+# print(returned_df.tail(15))

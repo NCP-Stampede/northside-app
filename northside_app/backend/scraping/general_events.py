@@ -54,7 +54,7 @@ def update_general_events():
                         "createdBy": origin
                     })
 
-    if GeneralEvent.objects.count() == len(schedule):
+    if GeneralEvent.objects.count() == len(schedule) or len(schedule) == 0:
         print("No new events to add, skipping update.")
         return
     else:

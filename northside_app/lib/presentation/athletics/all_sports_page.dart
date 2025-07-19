@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart';
 import '../../core/design_constants.dart';
+import '../../models/sport_data.dart';
 import 'sport_detail_page.dart';
 
 class AllSportsPage extends StatefulWidget {
@@ -18,54 +19,11 @@ class AllSportsPage extends StatefulWidget {
 
 class _AllSportsPageState extends State<AllSportsPage> {
   final AthleticsController athleticsController = Get.put(AthleticsController());
-  String _selectedGender = 'Girls';
-  final List<String> _genders = ['Girls', 'Boys', 'Coed'];
+  String _selectedSeason = 'Fall';
+  final List<String> _seasons = ['Fall', 'Winter', 'Spring'];
 
-  // Hardcoded sports list from the Northside Prep Athletics website
-  // This ensures all sports are always available regardless of backend status
-  static const Map<String, List<String>> _sportsByGender = {
-    'Girls': [
-      'Badminton',
-      'Basketball', 
-      'Bowling',
-      'Cross Country',
-      'Flag Football',
-      'Golf',
-      'Indoor Track',
-      'Lacrosse',
-      'Soccer',
-      'Softball',
-      'Swimming',
-      'Tennis',
-      'Track',
-      'Volleyball',
-      'Water Polo',
-    ],
-    'Boys': [
-      'Baseball',
-      'Basketball',
-      'Bowling', 
-      'Cross Country',
-      'Golf',
-      'Indoor Track',
-      'Lacrosse',
-      'Soccer',
-      'Swimming',
-      'Tennis',
-      'Track',
-      'Volleyball',
-      'Water Polo',
-      'Wrestling',
-    ],
-    'Coed': [
-      'Competitive Cheer',
-      'Dance',
-      'Pom Pon',
-    ],
-  };
-
-  List<String> _getSportsForGender(String gender) {
-    return _sportsByGender[gender] ?? [];
+  List<SportEntry> _getSportsForSeason(String season) {
+    return SportsData.getSportsBySeason(season);
   }
   @override
   Widget build(BuildContext context) {
@@ -94,45 +52,47 @@ class _AllSportsPageState extends State<AllSportsPage> {
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
         children: [
           SizedBox(height: screenHeight * 0.02),
-          _buildGenderTabs(context),
+          _buildSeasonTabs(context),
           SizedBox(height: screenHeight * 0.03),
-          _buildSportsList(context),
+          _buildSportsColumns(context),
         ],
       ),
     );
   }
 
-  Widget _buildGenderTabs(BuildContext context) {
+  Widget _buildSeasonTabs(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     return Container(
       padding: EdgeInsets.all(screenWidth * 0.01),
       decoration: ShapeDecoration(
-        color: Colors.grey.shade200,          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: DesignConstants.get32Radius(context),
-              cornerSmoothing: 1.0,
-            ),
+        color: Colors.grey.shade200,
+        shape: SmoothRectangleBorder(
+          borderRadius: SmoothBorderRadius(
+            cornerRadius: DesignConstants.get32Radius(context),
+            cornerSmoothing: 1.0,
           ),
+        ),
       ),
       child: Row(
-        children: _genders.map((gender) {
-          final isSelected = _selectedGender == gender;
+        children: _seasons.map((season) {
+          final isSelected = _selectedSeason == season;
           return Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => _selectedGender = gender),
+              onTap: () => setState(() => _selectedSeason = season),
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: screenWidth * 0.035),
                 decoration: ShapeDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,                    shape: SmoothRectangleBorder(
-                      borderRadius: SmoothBorderRadius(
-                        cornerRadius: DesignConstants.get28Radius(context),
-                        cornerSmoothing: 1.0,
-                      ),
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  shape: SmoothRectangleBorder(
+                    borderRadius: SmoothBorderRadius(
+                      cornerRadius: DesignConstants.get28Radius(context),
+                      cornerSmoothing: 1.0,
                     ),
+                  ),
                   shadows: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))] : null,
                 ),
                 child: Text(
-                  gender,
+                  season,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
@@ -148,36 +108,82 @@ class _AllSportsPageState extends State<AllSportsPage> {
     );
   }
 
-  Widget _buildSportsList(BuildContext context) {
+  Widget _buildSportsColumns(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final sports = _getSportsForGender(_selectedGender);
+    final seasonSports = _getSportsForSeason(_selectedSeason);
     
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: screenWidth * 0.04,
-        mainAxisSpacing: screenWidth * 0.04,
-        childAspectRatio: 2.5,
-      ),
-      itemCount: sports.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemBuilder: (context, index) {
-        final sportName = sports[index];
-        // Create gender-prefixed sport name for proper filtering
-        String genderPrefixedSportName = sportName;
-        if (_selectedGender == 'Girls') {
-          genderPrefixedSportName = "Girls $sportName";
-        } else if (_selectedGender == 'Boys') {
-          genderPrefixedSportName = "Boys $sportName";
-        }
-        // For Coed sports, pass without prefix to show all teams
-        
-        return _SportCard(
-          name: sportName,
-          onTap: () => Get.to(() => SportDetailPage(sportName: genderPrefixedSportName)),
-        );
-      },
+    final girlsSports = seasonSports.where((sport) => sport.gender == 'girls').toList();
+    final boysSports = seasonSports.where((sport) => sport.gender == 'boys').toList();
+    
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Girls Column
+        Expanded(
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
+                child: Center(
+                  child: Text(
+                    'Girls',
+                    style: GoogleFonts.inter(
+                      fontSize: screenWidth * 0.035,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: screenWidth * 0.02),
+              ...girlsSports.map((sport) => Padding(
+                padding: EdgeInsets.only(bottom: screenWidth * 0.03),
+                child: _SportCard(
+                  name: SportsData.getDisplaySportName(sport.sport),
+                  onTap: () => Get.to(() => SportDetailPage(
+                    sportName: SportsData.getDisplaySportName(sport.sport),
+                    gender: sport.gender,
+                    season: sport.season,
+                  )),
+                ),
+              )),
+            ],
+          ),
+        ),
+        SizedBox(width: screenWidth * 0.04),
+        // Boys Column
+        Expanded(
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
+                child: Center(
+                  child: Text(
+                    'Boys',
+                    style: GoogleFonts.inter(
+                      fontSize: screenWidth * 0.035,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: screenWidth * 0.02),
+              ...boysSports.map((sport) => Padding(
+                padding: EdgeInsets.only(bottom: screenWidth * 0.03),
+                child: _SportCard(
+                  name: SportsData.getDisplaySportName(sport.sport),
+                  onTap: () => Get.to(() => SportDetailPage(
+                    sportName: SportsData.getDisplaySportName(sport.sport),
+                    gender: sport.gender,
+                    season: sport.season,
+                  )),
+                ),
+              )),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

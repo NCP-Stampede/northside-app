@@ -105,16 +105,12 @@ class _EventsPageState extends State<EventsPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFB22222), // Dark red
-                  Color(0xFFD32F2F), // Red
-                  Color(0xFFE57373), // Light red
-                  Color(0xFFFFCDD2), // Very light red
-                  Color(0xFFF2F2F7), // Transition to background
-                  Color(0xFFF2F2F7), // Background
+                  Color(0xFFFF6B6B), // Red
+                  Color(0xFF4A90E2), // True blue (less green)
                 ],
-                stops: [0.0, 0.15, 0.3, 0.4, 0.5, 1.0],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                stops: [0.0, 1.0],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
             ),
           ),

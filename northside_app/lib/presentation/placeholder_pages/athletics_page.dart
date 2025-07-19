@@ -6,6 +6,7 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/article.dart';
+import '../../models/sport_data.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 import '../athletics/all_sports_page.dart';
 import '../athletics/sport_detail_page.dart';
@@ -58,6 +59,8 @@ class AthleticsPage extends StatelessWidget {
                 _buildSportsGrid(context, athleticsController),
                 SizedBox(height: screenHeight * 0.015),
                 _buildRegisterButton(context),
+                SizedBox(height: screenHeight * 0.03),
+                _buildDataDisclaimer(context),
               ],
             );
           }),
@@ -214,34 +217,13 @@ class AthleticsPage extends StatelessWidget {
     final double mainAxisSpacing = screenWidth * 0.04;
     final double childAspectRatio = 2.5;
     
-    // Get available sports from backend
-    final availableSports = athleticsController.getAllAvailableSports();
+    // Get top 4 sports for current season (2 girls, 2 boys)
+    final topSports = SportsData.getTopSportsForCurrentSeason();
     
-    // Take first 4 sports for the preview grid, but prioritize popular/common sports
-    // Sort to prioritize sports that are more likely to be popular
-    final sortedSports = availableSports.toList();
-    sortedSports.sort((a, b) {
-      // Prioritize common sports for the preview
-      final commonSports = ['basketball', 'football', 'soccer', 'volleyball', 'baseball', 'softball', 'tennis', 'track'];
-      final aCommon = commonSports.any((common) => a.toLowerCase().contains(common));
-      final bCommon = commonSports.any((common) => b.toLowerCase().contains(common));
-      
-      if (aCommon && !bCommon) return -1;
-      if (!aCommon && bCommon) return 1;
-      return a.compareTo(b);
-    });
+    print('=== DEBUG: Current season: ${SportsData.getCurrentSeason()}');
+    print('=== DEBUG: Top sports for current season: ${topSports.map((s) => '${s.sport} (${s.gender})').toList()}');
     
-    final displaySports = sortedSports.take(4).toList();
-    
-    // Debug: Log all available sports to see what's being filtered
-    print('=== DEBUG: Athletics preview - Total available sports: ${availableSports.length}');
-    print('=== DEBUG: All available sports: $availableSports');
-    print('=== DEBUG: Displaying sports: $displaySports');
-    
-    if (displaySports.isEmpty) {
-      // CRITICAL: If no sports are available, the backend might not be loaded yet
-      // Show a loading state instead of hiding the section entirely
-      print('=== CRITICAL: No sports available - this indicates backend data is not loaded yet');
+    if (topSports.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
         child: Container(
@@ -260,10 +242,10 @@ class AthleticsPage extends StatelessWidget {
           child: Center(
             child: Column(
               children: [
-                CircularProgressIndicator(),
+                Icon(Icons.sports_outlined, size: 48, color: Colors.grey),
                 SizedBox(height: screenWidth * 0.04),
                 Text(
-                  'Loading Sports...',
+                  'No Sports This Season',
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.w600,
@@ -272,7 +254,7 @@ class AthleticsPage extends StatelessWidget {
                 ),
                 SizedBox(height: screenWidth * 0.02),
                 Text(
-                  'Loading all sports from the athletics website',
+                  'Check back later for updates!',
                   style: TextStyle(
                     fontSize: screenWidth * 0.035,
                     color: Colors.grey.shade500,
@@ -297,28 +279,20 @@ class AthleticsPage extends StatelessWidget {
             mainAxisSpacing: mainAxisSpacing,
             childAspectRatio: childAspectRatio,
           ),
-          itemCount: displaySports.length,
+          itemCount: topSports.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
-            final sportName = displaySports[index];
-            
-            // Remove any gender prefixes from the display name
-            String displayName = sportName;
-            if (displayName.startsWith('Men\'s ')) {
-              displayName = displayName.substring(6);
-            } else if (displayName.startsWith('Women\'s ')) {
-              displayName = displayName.substring(8);
-            }
-            
-            // Capitalize sport name for display (without gender prefix)
-            displayName = displayName.split(' ').map((word) => 
-              word.isNotEmpty ? word[0].toUpperCase() + word.substring(1).toLowerCase() : word
-            ).join(' ');
+            final sport = topSports[index];
+            final displayName = SportsData.getDisplaySportName(sport.sport);
             
             return _SportButton(
               name: displayName,
-              onTap: () => Get.to(() => SportDetailPage(sportName: sportName)), // Use original name for navigation
+              onTap: () => Get.to(() => SportDetailPage(
+                sportName: displayName,
+                gender: sport.gender,
+                season: sport.season,
+              )),
             );
           },
         ),
@@ -495,4 +469,51 @@ class _SportButton extends StatelessWidget {
       ),
     );
   }
+
 }
+
+  Widget _buildDataDisclaimer(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+      child: Container(
+        padding: EdgeInsets.all(screenWidth * 0.04),
+        decoration: ShapeDecoration(
+          color: Colors.amber.shade50,
+          shape: SmoothRectangleBorder(
+            borderRadius: SmoothBorderRadius(
+              cornerRadius: DesignConstants.get16Radius(context),
+              cornerSmoothing: 1.0,
+            ),
+          ),
+          shadows: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: Colors.amber.shade700,
+              size: screenWidth * 0.05,
+            ),
+            SizedBox(width: screenWidth * 0.03),
+            Expanded(
+              child: Text(
+                'Athletic data is automatically collected from multiple websites and may occasionally be inaccurate. This information is not provided by school administration.',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.035,
+                  color: Colors.amber.shade800,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
