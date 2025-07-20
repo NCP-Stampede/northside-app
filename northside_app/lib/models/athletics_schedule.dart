@@ -116,13 +116,14 @@ class AthleticsSchedule {
       
       // If it's today, show time only
       if (eventDay.isAtSameMomentAs(today)) {
-        return time;
+        return 'Today at $time';
       }
       
-      // If it's in the future, show days away only
+      // If it's in the future, show both days away and time
       final daysDifference = eventDay.difference(today).inDays;
       if (daysDifference > 0) {
-        return daysDifference == 1 ? '1 day away' : '$daysDifference days away';
+        final daysText = daysDifference == 1 ? '1 day away' : '$daysDifference days away';
+        return '$daysText at $time';
       }
       
       // If it's in the past, show time (fallback)

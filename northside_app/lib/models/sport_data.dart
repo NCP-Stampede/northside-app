@@ -132,20 +132,23 @@ class SportsData {
     final boysSports = seasonSports.where((sport) => sport.gender == 'boys').toList();
     
     final List<SportEntry> topSports = [];
+    final Set<String> addedSports = {}; // Track sports to avoid duplicates
     
-    // Add first 2 girls sports
-    if (girlsSports.isNotEmpty) {
-      topSports.add(girlsSports[0]);
-      if (girlsSports.length > 1) {
-        topSports.add(girlsSports[1]);
+    // Add girls sports first (for left side of grid)
+    for (final sport in girlsSports) {
+      final displayName = _formatSportName(sport.sport);
+      if (!addedSports.contains(displayName) && topSports.where((s) => s.gender == 'girls').length < 2) {
+        topSports.add(sport);
+        addedSports.add(displayName);
       }
     }
     
-    // Add first 2 boys sports
-    if (boysSports.isNotEmpty) {
-      topSports.add(boysSports[0]);
-      if (boysSports.length > 1) {
-        topSports.add(boysSports[1]);
+    // Add boys sports (for right side of grid)  
+    for (final sport in boysSports) {
+      final displayName = _formatSportName(sport.sport);
+      if (!addedSports.contains(displayName) && topSports.where((s) => s.gender == 'boys').length < 2) {
+        topSports.add(sport);
+        addedSports.add(displayName);
       }
     }
     
@@ -154,6 +157,14 @@ class SportsData {
 
   // Format sport name for display (capitalize and replace hyphens)
   static String _formatSportName(String sport) {
+    // Special cases for proper formatting
+    if (sport == 'indoor-track' || sport == 'outdoor-track') {
+      return 'Track & Field';
+    }
+    if (sport == 'cross-country') {
+      return 'Cross Country';
+    }
+    
     return sport
         .replaceAll('-', ' ')
         .split(' ')

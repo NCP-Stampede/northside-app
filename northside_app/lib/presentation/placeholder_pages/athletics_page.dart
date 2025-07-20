@@ -59,8 +59,6 @@ class AthleticsPage extends StatelessWidget {
                 _buildSportsGrid(context, athleticsController),
                 SizedBox(height: screenHeight * 0.015),
                 _buildRegisterButton(context),
-                SizedBox(height: screenHeight * 0.03),
-                _buildDataDisclaimer(context),
               ],
             );
           }),
@@ -469,51 +467,4 @@ class _SportButton extends StatelessWidget {
       ),
     );
   }
-
 }
-
-  Widget _buildDataDisclaimer(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-      child: Container(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        decoration: ShapeDecoration(
-          color: Colors.amber.shade50,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: DesignConstants.get16Radius(context),
-              cornerSmoothing: 1.0,
-            ),
-          ),
-          shadows: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: Colors.amber.shade700,
-              size: screenWidth * 0.05,
-            ),
-            SizedBox(width: screenWidth * 0.03),
-            Expanded(
-              child: Text(
-                'Athletic data is automatically collected from multiple websites and may occasionally be inaccurate. This information is not provided by school administration.',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  color: Colors.amber.shade800,
-                  height: 1.3,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }

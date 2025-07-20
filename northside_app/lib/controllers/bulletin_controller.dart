@@ -126,7 +126,7 @@ class BulletinController extends GetxController {
     final List<BulletinPost> homeCarouselPosts = [];
     final Set<String> addedEventKeys = {}; // To prevent duplicates
     
-    // Add general events (filter out announcements from allPosts)
+    // Add ALL upcoming events (general events)
     final generalEventPosts = allPosts.where((post) => 
         post.imagePath != 'assets/images/flexes_icon.png').toList();
     
@@ -140,19 +140,7 @@ class BulletinController extends GetxController {
       }
     }
     
-    // Add announcements using end_date for home carousel relevance
-    for (final announcement in _announcements) {
-      final bulletinPost = announcement.toBulletinPost(useEndDate: true);
-      if (!bulletinPost.date.isBefore(todayStart)) {
-        final eventKey = '${bulletinPost.title}_${bulletinPost.date.toIso8601String()}';
-        if (!addedEventKeys.contains(eventKey)) {
-          homeCarouselPosts.add(bulletinPost);
-          addedEventKeys.add(eventKey);
-        }
-      }
-    }
-    
-    // Add athletics events for home carousel with improved duplicate detection
+    // Add ALL upcoming athletics events for home carousel with improved duplicate detection
     for (final event in _athleticsEvents) {
       final bulletinPost = event.toBulletinPost();
       if (!bulletinPost.date.isBefore(todayStart)) {
@@ -167,10 +155,33 @@ class BulletinController extends GetxController {
       }
     }
     
-    // Sort by date (earliest first for carousel)
-    homeCarouselPosts.sort((a, b) => a.date.compareTo(b.date));
+    // Add up to 3 most recent announcements (regardless of date)
+    final sortedAnnouncements = _announcements.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Most recent first
     
-    return homeCarouselPosts.take(10).toList(); // Limit to 10 for performance
+    final recentAnnouncements = sortedAnnouncements.take(3);
+    for (final announcement in recentAnnouncements) {
+      final bulletinPost = announcement.toBulletinPost(useEndDate: false); // Use created date for announcements in carousel
+      final eventKey = '${bulletinPost.title}_${bulletinPost.date.toIso8601String()}_announcement';
+      if (!addedEventKeys.contains(eventKey)) {
+        homeCarouselPosts.add(bulletinPost);
+        addedEventKeys.add(eventKey);
+      }
+    }
+    
+    // Sort by date (earliest upcoming events first, then announcements)
+    homeCarouselPosts.sort((a, b) {
+      // Prioritize upcoming events over announcements
+      final aIsUpcoming = a.date.isAfter(todayStart.subtract(const Duration(days: 1)));
+      final bIsUpcoming = b.date.isAfter(todayStart.subtract(const Duration(days: 1)));
+      
+      if (aIsUpcoming && !bIsUpcoming) return -1;
+      if (!aIsUpcoming && bIsUpcoming) return 1;
+      
+      return a.date.compareTo(b.date);
+    });
+    
+    return homeCarouselPosts.take(15).toList(); // Increased limit to accommodate events + announcements
   }
 
   @override

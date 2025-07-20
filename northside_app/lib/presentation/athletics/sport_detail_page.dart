@@ -147,6 +147,11 @@ class _SportDetailPageState extends State<SportDetailPage> {
         final levels = freshRoster.map((athlete) => athlete.level).toSet().toList();
         _levels = _sortLevels(levels);
         AppLogger.debug('Available levels for $apiSportName ($gender): $_levels');
+        AppLogger.debug('Raw roster data: ${freshRoster.map((a) => '${a.name} - ${a.level}').toList()}');
+      } else {
+        // If no roster data, ensure we have default levels
+        _levels = ['All', 'Varsity', 'JV', 'Freshman'];
+        AppLogger.debug('No roster data found, using default levels: $_levels');
       }
       
       // Also use fresh schedule data
@@ -161,6 +166,12 @@ class _SportDetailPageState extends State<SportDetailPage> {
       final allAthletes = athleticsController.getAthletesBySport(sport: apiSportName, gender: gender);
       final levels = allAthletes.map((athlete) => athlete.level).toSet().toList();
       _levels = _sortLevels(levels);
+      
+      // If still no levels found, provide default levels for testing
+      if (_levels.isEmpty || _levels.length == 1) {
+        _levels = ['All', 'Varsity', 'JV', 'Freshman'];
+        AppLogger.debug('No athlete levels found, using default levels: $_levels');
+      }
       
       // Get schedule for this sport and gender
       final schedule = athleticsController.getScheduleByFilters(
@@ -292,8 +303,6 @@ class _SportDetailPageState extends State<SportDetailPage> {
             _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
             SizedBox(height: screenHeight * 0.03),
             _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
-            SizedBox(height: screenHeight * 0.03),
-            _buildDataDisclaimer(context),
             SizedBox(height: screenHeight * 0.05),
           ],
         );
@@ -496,52 +505,6 @@ class _SportDetailPageState extends State<SportDetailPage> {
 
   Text _dataText(String text, double screenWidth) {
     return Text(text, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04), overflow: TextOverflow.ellipsis);
-  }
-
-  Widget _buildDataDisclaimer(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-      child: Container(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        decoration: ShapeDecoration(
-          color: Colors.amber.shade50,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: DesignConstants.get16Radius(context),
-              cornerSmoothing: 1.0,
-            ),
-          ),
-          shadows: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              color: Colors.amber.shade700,
-              size: screenWidth * 0.05,
-            ),
-            SizedBox(width: screenWidth * 0.03),
-            Expanded(
-              child: Text(
-                'Athletic data is automatically collected from multiple websites and may occasionally be inaccurate. This information is not provided by school administration.',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  color: Colors.amber.shade800,
-                  height: 1.3,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
