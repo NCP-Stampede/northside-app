@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend_package/core/utils/app_colors.dart';
-import 'package:backend_package/controllers/athletics_controller.dart';
+import 'package:hs_scraper_toolkit/controllers/athletics_controller.dart';
 import 'package:frontend_package/core/utils/design_constants.dart';
-import 'package:backend_package/models/sport_data.dart';
+import 'package:hs_scraper_toolkit/models/sport_data.dart';
 import 'sport_detail_page.dart';
 
 class AllSportsPage extends StatefulWidget {

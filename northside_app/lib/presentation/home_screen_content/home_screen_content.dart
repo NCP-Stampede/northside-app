@@ -7,11 +7,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_screen_content_controller.dart';
 import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart';
-import 'package:backend_package/models/article.dart';
+import 'package:hs_scraper_toolkit/models/article.dart';
 import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
 import 'package:frontend_package/core/utils/design_constants.dart';
 import 'package:frontend_package/widgets/shared_header.dart';
-import 'package:backend_package/controllers/bulletin_controller.dart';
+import 'package:hs_scraper_toolkit/controllers/bulletin_controller.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
