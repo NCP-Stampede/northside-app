@@ -80,6 +80,7 @@ class ApiService {
     String? level,
     String? date,
     String? time,
+    String? name,
     bool? home,
   }) async {
     try {
@@ -91,6 +92,7 @@ class ApiService {
       if (level != null) params.add('level=$level');
       if (date != null) params.add('date=$date');
       if (time != null) params.add('time=$time');
+      if (name != null) params.add('name=$name');
       if (home != null) params.add('home=$home');
       
       if (params.isNotEmpty) {

@@ -23,6 +23,9 @@ def update_track_and_field_schedule():
     df = pd.DataFrame(columns=["name", "date", "time", "gender", "sport", "level", "opponent", "location", "home"])
     for sport in sports:
         for year in [2025, 2026]:
+            names = []
+            dates = []
+            genders = []
             try:
                 load_dotenv()
                 connect(host=os.environ['MONGODB_URL'])
@@ -69,6 +72,18 @@ def update_track_and_field_schedule():
 
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             events = soup.select('div.px-2.w-100.d-flex.pointer')
+            for event in events:
+                if event.find('span', class_="title"):
+                    name = event.find('span', class_="title").get_text(strip=True)
+                if event.find('small', class_="date"):
+                    dates.append(event.find('small', class_="date").get_text(strip=True))
+                boy_or_girl = event.find('img')
+                if event.find('img'):
+                    if 'Girls' in boy_or_girl.get('ngbtooltip'):
+                        names.append(name + " - Girls")
+                    elif 'Boys' in boy_or_girl.get('ngbtooltip'):
+                        names.append(name + " - Boys")
+
             names = [event.find('span', class_="title").get_text(strip=True) for event in events if event.find('span', class_="title")]
             dates = [event.find('small', class_="date").get_text(strip=True) for event in events if event.find('small', class_="date")]
 
@@ -186,22 +201,22 @@ def update_track_and_field_roster():
         return
     
     for sport in sports:
-        for year in [2025, 2026]:
-            url = f"https://www.athletic.net/team/19718/{sport}/{year}"
-            try:
-                response = requests.get(url)
-                html_content = response.text
-                soup = BeautifulSoup(html_content, 'html.parser')
-            except Exception as e:
-                print(f"Error parsing HTML content: {e}")
-                return
-        
-            
-            
+        url = f"https://www.athletic.net/team/19718/{sport}"
+        try:
+            response = requests.get(url)
+            html_content = response.text
+            soup = BeautifulSoup(html_content, 'html.parser')
+        except Exception as e:
+            print(f"Error parsing HTML content: {e}")
+            continue
 
-            
+        athletes = soup.find_all('span', class_='text-truncate')
+        athletes = [athlete.get_text(strip=True) for athlete in athletes if athlete.get_text(strip=True)]
+        print(athletes)        
 
 # returned_df = update_track_and_field_schedule()
 
 # print(returned_df.head(15))
 # print(returned_df.tail(15))
+
+update_track_and_field_roster()

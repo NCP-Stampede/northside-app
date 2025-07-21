@@ -47,6 +47,7 @@ def schedule():
         date = request.args.get('date')
         time = request.args.get('time')
         home = request.args.get('home')
+        name = request.args.get('name')
 
         query = {}
         if sport:
@@ -63,6 +64,8 @@ def schedule():
             query['time'] = time
         if home:
             query['home'] = home
+        if name:
+            query['name'] = name
         
         events = AthleticsSchedule.objects(**query).to_json()
         return events

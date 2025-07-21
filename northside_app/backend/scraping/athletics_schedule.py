@@ -145,6 +145,7 @@ def update_athletics_schedule():
     # Save track and field events from DataFrame
     for index, row in track_and_field_df.iterrows():
         track_event = AthleticsSchedule(
+            name=row['name'],  # Include the event name from track and field data
             date=row['date'],
             time=row['time'],
             gender=row['gender'],

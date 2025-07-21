@@ -7,6 +7,7 @@ import 'bulletin_post.dart';
 
 class AthleticsSchedule {
   final String id;
+  final String? name;  // Optional event name
   final String date;
   final String time;
   final String sport;
@@ -19,6 +20,7 @@ class AthleticsSchedule {
 
   const AthleticsSchedule({
     required this.id,
+    this.name,  // Optional event name
     required this.date,
     required this.time,
     required this.sport,
@@ -53,6 +55,7 @@ class AthleticsSchedule {
 
     return AthleticsSchedule(
       id: json['\$oid'] ?? json['_id']?['\$oid'] ?? '',
+      name: json['name'],  // Optional event name
       date: (json['date'] ?? '').toString(),
       time: (json['time'] ?? '').toString(),
       sport: (json['sport'] ?? '').toString(),
@@ -67,6 +70,7 @@ class AthleticsSchedule {
 
   Map<String, dynamic> toJson() {
     return {
+      'name': name,  // Include optional event name
       'date': date,
       'time': time,
       'sport': sport,
@@ -81,12 +85,15 @@ class AthleticsSchedule {
 
   // Convert to GameSchedule for UI compatibility (sport_detail_page.dart)
   GameSchedule toGameSchedule() {
-    // Create a team name from gender and level
-    final teamName = '${gender.toUpperCase()} ${level.toUpperCase()}';
+    // Use event name if available, otherwise create a team name from gender and level
+    final eventName = name?.isNotEmpty == true 
+        ? name! 
+        : '${gender.toUpperCase()} ${level.toUpperCase()}';
+        
     return GameSchedule(
       date: date,
       time: time,
-      event: teamName,
+      event: eventName,
       opponent: opponent,
       location: location,
       score: '', // Score not available in schedule, only for completed games
@@ -98,8 +105,14 @@ class AthleticsSchedule {
   Article toArticle() {
     final homeAway = home ? 'vs' : 'at';
     final teamName = '${gender.toUpperCase()} ${level.toUpperCase()}';
+    
+    // Use event name for title if available, otherwise use sport vs opponent
+    final articleTitle = name?.isNotEmpty == true 
+        ? name! 
+        : '$sport $homeAway $opponent';
+        
     return Article(
-      title: '$sport $homeAway $opponent',
+      title: articleTitle,
       subtitle: _buildArticleSubtitle(),
       content: '$teamName $homeAway $opponent at $location on $date at $time.',
       imagePath: 'assets/images/flexes_icon.png', // Use flexes icon for athletics games
@@ -228,7 +241,7 @@ class AthleticsSchedule {
     }
 
     return BulletinPost(
-      title: '$sport ${home ? "vs" : "at"} $opponent',
+      title: name?.isNotEmpty == true ? name! : '$sport ${home ? "vs" : "at"} $opponent',
       subtitle: _buildSubtitle(parseEventDate()),
       date: parseEventDate(),
       content: '${gender.toUpperCase()} ${level.toUpperCase()} ${home ? "vs" : "at"} $opponent at $location on $date at $time.',
