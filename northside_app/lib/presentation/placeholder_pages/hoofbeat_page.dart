@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/design_constants.dart';
+import 'package:frontend_package/core/utils/design_constants.dart';
 
 class HoofBeatPage extends StatefulWidget {
   const HoofBeatPage({super.key});

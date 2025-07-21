@@ -5,11 +5,11 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../core/design_constants.dart';
+import 'package:frontend_package/core/utils/design_constants.dart';
 
-import '../../models/article.dart';
-import '../../widgets/article_detail_draggable_sheet.dart';
-import '../../widgets/login_sheet.dart';
+import 'package:backend_package/models/article.dart';
+import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
+import 'package:frontend_package/widgets/login_sheet.dart';
 import '../../core/utils/logger.dart';
 
 // Data Model with different action types

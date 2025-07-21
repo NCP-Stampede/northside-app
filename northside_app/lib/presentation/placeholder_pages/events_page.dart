@@ -11,11 +11,11 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../controllers/events_controller.dart';
 import '../../core/utils/logger.dart';
-import '../../core/utils/app_colors.dart';
+import 'package:frontend_package/core/utils/app_colors.dart';
 import '../../core/utils/text_helper.dart';
-import '../../widgets/article_detail_draggable_sheet.dart';
-import '../../widgets/shared_header.dart';
-import '../../core/design_constants.dart';
+import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
+import 'package:frontend_package/widgets/shared_header.dart';
+import 'package:frontend_package/core/utils/design_constants.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});

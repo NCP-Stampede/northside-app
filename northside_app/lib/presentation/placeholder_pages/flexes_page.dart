@@ -7,7 +7,7 @@ import '../app_shell/app_shell_controller.dart';
 import '../flexes/flexes_controller.dart';
 import '../flexes/pick_flex_page.dart';
 import '../../models/flex_choice.dart';
-import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
+import 'package:frontend_package/core/utils/app_colors.dart';
 
 class FlexesPage extends StatelessWidget {
   const FlexesPage({super.key});

@@ -10,7 +10,7 @@ import '../placeholder_pages/athletics_page.dart';
 import '../placeholder_pages/profile_page.dart';
 import '../placeholder_pages/events_page.dart';
 import '../placeholder_pages/bulletin_page.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:frontend_package/core/theme/app_theme.dart';
 
 class AppShellScreen extends GetView<AppShellController> {
   const AppShellScreen({super.key});

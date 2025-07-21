@@ -5,16 +5,16 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/article.dart';
-import '../../models/sport_data.dart';
-import '../../widgets/article_detail_draggable_sheet.dart';
+import 'package:backend_package/models/article.dart';
+import 'package:backend_package/models/sport_data.dart';
+import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
 import '../athletics/all_sports_page.dart';
 import '../athletics/sport_detail_page.dart';
-import '../../widgets/shared_header.dart';
-import '../../core/utils/app_colors.dart';
-import '../../controllers/athletics_controller.dart';
+import 'package:frontend_package/widgets/shared_header.dart';
+import 'package:frontend_package/core/utils/app_colors.dart';
+import 'package:backend_package/controllers/athletics_controller.dart';
 import '../../core/utils/logger.dart';
-import '../../core/design_constants.dart';
+import 'package:frontend_package/core/utils/design_constants.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});

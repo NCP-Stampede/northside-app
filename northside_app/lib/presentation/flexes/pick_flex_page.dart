@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flexes_controller.dart';
 import '../../models/flex_choice.dart';
-import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
+import 'package:frontend_package/core/utils/app_colors.dart';
 
 class PickFlexPage extends StatefulWidget {
   const PickFlexPage({super.key, required this.flexPeriod});

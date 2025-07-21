@@ -9,12 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
-import '../../controllers/bulletin_controller.dart';
-import '../../core/design_constants.dart';
-import '../../models/article.dart';
-import '../../models/bulletin_post.dart';
-import '../../widgets/article_detail_draggable_sheet.dart';
-import '../../widgets/shared_header.dart';
+import 'package:backend_package/controllers/bulletin_controller.dart';
+import 'package:frontend_package/core/utils/design_constants.dart';
+import 'package:backend_package/models/article.dart';
+import 'package:backend_package/models/bulletin_post.dart';
+import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
+import 'package:frontend_package/widgets/shared_header.dart';
 
 class BulletinPage extends StatefulWidget {
   const BulletinPage({super.key});

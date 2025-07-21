@@ -46,3 +46,15 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+# Add this for the package
+dependencies:
+  frontend_package:
+    git:
+      url: https://github.com/NCP-Stampede/frontend_package.git
+      ref: main
+
+# Add this whole section at the bottom for local development
+dependency_overrides:
+  frontend_package:
+    path: ../frontend_package # This points to the local folder in your Codespace
