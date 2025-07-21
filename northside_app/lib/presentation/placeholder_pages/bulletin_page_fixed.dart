@@ -8,7 +8,6 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 import 'package:hs_scraper_toolkit/controllers/bulletin_controller.dart';
-import '../../core/utils/logger.dart';
 import 'package:hs_scraper_toolkit/models/article.dart';
 import 'package:hs_scraper_toolkit/models/bulletin_post.dart';
 import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';

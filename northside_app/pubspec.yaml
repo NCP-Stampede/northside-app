@@ -47,21 +47,14 @@ flutter:
   assets:
     - assets/images/
 
+
 # Keep the frontend package as is
 frontend_package:
   git:
     url: https://github.com/NCP-Stampede/frontend_package.git
     ref: main
 
-# UPDATE THE BACKEND PACKAGE HERE
-hs_scraper_toolkit:
-  git:
-    url: https://github.com/NCP-Stampede/hs-scraper-toolkit.git
-    ref: main
-
 # UPDATE THE OVERRIDES SECTION AS WELL
 dependency_overrides:
   frontend_package:
     path: ../frontend_package
-  hs_scraper_toolkit:
-    path: ../hs-scraper-toolkit # Make sure you have cloned it into your Codespace

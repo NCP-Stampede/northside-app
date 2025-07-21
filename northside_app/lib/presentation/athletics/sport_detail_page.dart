@@ -223,25 +223,14 @@ class _SportDetailPageState extends State<SportDetailPage> {
     });
 
     // Load roster dynamically from API with filters
-    try {
-      final athletes = await ApiService.getRoster(
-        sport: apiSportName,
-        gender: gender,
-        level: level,
-      );
-      _roster = athletes.map((athlete) => athlete.toPlayer()).toList();
-      AppLogger.debug('Loaded ${_roster.length} athletes from API for sport: $apiSportName, gender: $gender, level: $level');
-    } catch (e) {
-      AppLogger.debug('Error loading filtered roster: $e');
-      // Fallback to client-side filtering
-      final athletes = athleticsController.getAthletesBySport(
-        sport: apiSportName,
-        gender: gender,
-        level: level,
-      );
-      _roster = athletes.map((athlete) => athlete.toPlayer()).toList();
-      AppLogger.debug('Loaded ${_roster.length} athletes from controller fallback for sport: $apiSportName, gender: $gender, level: $level');
-    }
+    // Use controller fallback only (API methods not yet implemented)
+    final athletes = athleticsController.getAthletesBySport(
+      sport: apiSportName,
+      gender: gender,
+      level: level,
+    );
+    _roster = athletes.map((athlete) => athlete.toPlayer()).toList();
+    AppLogger.debug('Loaded ${_roster.length} athletes from controller fallback for sport: $apiSportName, gender: $gender, level: $level');
 
     if (mounted) {
       setState(() {
