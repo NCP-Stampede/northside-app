@@ -142,10 +142,9 @@ def update_athletics_schedule():
         event.save()
         added_count += 1
     
-    # Save track and field events from DataFrame
     for index, row in track_and_field_df.iterrows():
         track_event = AthleticsSchedule(
-            name=row['name'],  # Include the event name from track and field data
+            name=row['name'],
             date=row['date'],
             time=row['time'],
             gender=row['gender'],

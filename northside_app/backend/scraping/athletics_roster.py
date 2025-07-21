@@ -8,6 +8,7 @@ import requests
 from backend.models.Athlete import Athlete
 from mongoengine import connect
 from dotenv import load_dotenv
+from backend.scraping.trackandfield import update_track_and_field_roster
 
 def update_athletics_roster():
 
@@ -94,8 +95,9 @@ def update_athletics_roster():
                                 "position": positions[players.index(player)]
                             }
                             roster.append(athlete)
+    track_and_field_df = update_track_and_field_roster()
 
-    if Athlete.objects.count() == len(roster) or len(roster) == 0:
+    if Athlete.objects.count() == (len(roster)+len(track_and_field_df["name"])) or (len(roster)+len(track_and_field_df["name"])) == 0:
         print("Athletes already exist in the database, skipping addition.")
         return
     else:
@@ -103,6 +105,19 @@ def update_athletics_roster():
         for athlete_data in roster:
             athlete = Athlete(**athlete_data)
             athlete.save()
-        print(f"Added {len(roster)} athletes.")
+        for index, row in track_and_field_df.iterrows():
+            athlete = Athlete(
+                name=row['name'],
+                number=row['number'],
+                sport=row['sport'],
+                season=row['season'],
+                level=row['level'],
+                gender=row['gender'],
+                grade=row['grade'],
+                position=row['position']
+            )
+            athlete.save()
+
+        print(f"Added {len(roster)+len(track_and_field_df['name'])} athletes.")
 
 # update_athletics_roster()

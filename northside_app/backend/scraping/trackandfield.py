@@ -25,7 +25,6 @@ def update_track_and_field_schedule():
         for year in [2025, 2026]:
             names = []
             dates = []
-            genders = []
             try:
                 load_dotenv()
                 connect(host=os.environ['MONGODB_URL'])
@@ -199,24 +198,65 @@ def update_track_and_field_roster():
     except Exception as e:
         print(f"Error connecting to the database: {e}")
         return
-    
+
+    df = pd.DataFrame(columns=["name", "number", "sport", "season", "level", "gender", "grade", "position"])
+
     for sport in sports:
         url = f"https://www.athletic.net/team/19718/{sport}"
         try:
-            response = requests.get(url)
-            html_content = response.text
-            soup = BeautifulSoup(html_content, 'html.parser')
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--window-size=1920,1080")
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)
+
+            print("Waiting for the page to load...")
+            time.sleep(10)
+
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
         except Exception as e:
             print(f"Error parsing HTML content: {e}")
             continue
 
-        athletes = soup.find_all('span', class_='text-truncate')
-        athletes = [athlete.get_text(strip=True) for athlete in athletes if athlete.get_text(strip=True)]
-        print(athletes)        
+        columns = soup.find_all('div', class_='col-6 ng-star-inserted')
+        # print(columns)
+
+        for column in columns:
+            athletes = column.find_all('span', class_='text-truncate')
+            athletes = [athlete.get_text(strip=True) for athlete in athletes if athlete.get_text(strip=True)]
+            
+            gender = column.find('h4').get_text(strip=True).lower()
+
+            if sport == "cross-country":
+                season = "fall"
+            elif sport == "track-and-field-outdoor":
+                season = "spring"
+            elif sport == "track-and-field-indoor":
+                season = "winter"
+            
+            for athlete in athletes:
+                new_row = pd.DataFrame({
+                    "name": [athlete],
+                    "number": [0],
+                    "sport": [sport],
+                    "season": [season],
+                    "level": ["varsity"],
+                    "gender": [gender],
+                    "grade": ["N/A"],
+                    "position": ["N/A"]
+                })
+                df = pd.concat([df, new_row], ignore_index=True)
+
+    return df
 
 # returned_df = update_track_and_field_schedule()
 
 # print(returned_df.head(15))
 # print(returned_df.tail(15))
 
-update_track_and_field_roster()
+# returned_df = update_track_and_field_roster()
+
+# print(returned_df.head(15))
+# print(returned_df.tail(15))
