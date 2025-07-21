@@ -1,9 +1,11 @@
 // lib/main.dart
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/theme/app_theme.dart'; // Import the new theme
 import 'presentation/app_shell/app_shell_binding.dart';
@@ -12,21 +14,24 @@ import 'presentation/app_shell/app_shell_screen.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set preferred orientations to portrait only
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  // Load environment variables
+  dotenv.load(fileName: ".env").then((_) {
+    // Set preferred orientations to portrait only
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
-  // Ensure text scaling doesn't break layouts on S9 and other devices
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
+    // Ensure text scaling doesn't break layouts on S9 and other devices
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
