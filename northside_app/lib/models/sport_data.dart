@@ -32,10 +32,10 @@ class SportsData {
     {'sport': 'softball', 'season': 'spring', 'gender': 'girls'},
     {'sport': 'basketball', 'season': 'winter', 'gender': 'girls'},
     {'sport': 'basketball', 'season': 'winter', 'gender': 'boys'},
-    {'sport': 'indoor-track', 'season': 'winter', 'gender': 'girls'},
-    {'sport': 'indoor-track', 'season': 'winter', 'gender': 'boys'},
-    {'sport': 'outdoor-track', 'season': 'spring', 'gender': 'girls'},
-    {'sport': 'outdoor-track', 'season': 'spring', 'gender': 'boys'},
+    {'sport': 'track-and-field-indoor', 'season': 'winter', 'gender': 'girls'},
+    {'sport': 'track-and-field-indoor', 'season': 'winter', 'gender': 'boys'},
+    {'sport': 'track-and-field-outdoor', 'season': 'spring', 'gender': 'girls'},
+    {'sport': 'track-and-field-outdoor', 'season': 'spring', 'gender': 'boys'},
     {'sport': 'soccer', 'season': 'spring', 'gender': 'girls'},
     {'sport': 'soccer', 'season': 'fall', 'gender': 'boys'},
     {'sport': 'volleyball', 'season': 'fall', 'gender': 'girls'},
@@ -158,8 +158,11 @@ class SportsData {
   // Format sport name for display (capitalize and replace hyphens)
   static String _formatSportName(String sport) {
     // Special cases for proper formatting
-    if (sport == 'indoor-track' || sport == 'outdoor-track') {
-      return 'Track & Field';
+    if (sport == 'track-and-field-indoor') {
+      return 'Indoor Track & Field';
+    }
+    if (sport == 'track-and-field-outdoor') {
+      return 'Outdoor Track & Field';
     }
     if (sport == 'cross-country') {
       return 'Cross Country';
@@ -173,14 +176,35 @@ class SportsData {
         .join(' ');
   }
 
-  // Convert back to backend format (lowercase with hyphens)
+  // Convert back to backend format (track sports lowercase, others uppercase)
   static String formatSportForBackend(String sport) {
-    return sport.toLowerCase().replaceAll(' ', '-');
+    final normalized = sport.toLowerCase().trim();
+    
+    // Handle track sports - they use lowercase with hyphens
+    if (normalized == 'indoor track & field' || normalized == 'indoor track and field') {
+      return 'track-and-field-indoor';
+    }
+    if (normalized == 'outdoor track & field' || normalized == 'outdoor track and field') {
+      return 'track-and-field-outdoor';
+    }
+    if (normalized == 'cross country') {
+      return 'cross-country';
+    }
+    
+    // For non-track sports, convert to UPPERCASE (as backend expects)
+    // Basketball -> BASKETBALL, Flag Football -> FLAG FOOTBALL, etc.
+    return sport.toUpperCase().replaceAll('-', ' ').replaceAll('&', 'AND');
   }
 
   // Get display sport name from backend format
   static String getDisplaySportName(String backendSport) {
     return _formatSportName(backendSport);
+  }
+
+  // Get display sport name in ALL CAPS for athletics titles
+  static String getDisplaySportNameCaps(String backendSport) {
+    final displayName = _formatSportName(backendSport);
+    return displayName.toUpperCase();
   }
 
   // Check if a sport exists for a given gender and season

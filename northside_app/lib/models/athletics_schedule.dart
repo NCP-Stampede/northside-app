@@ -1,5 +1,6 @@
 // lib/models/athletics_schedule.dart
 import '../core/utils/logger.dart';
+import 'sport_data.dart';
 
 import '../presentation/athletics/sport_detail_page.dart';
 import 'article.dart';
@@ -103,18 +104,28 @@ class AthleticsSchedule {
 
   // Convert to Article for events display
   Article toArticle() {
-    final homeAway = home ? 'vs' : 'at';
     final teamName = '${gender.toUpperCase()} ${level.toUpperCase()}';
     
-    // Use event name for title if available, otherwise use sport vs opponent
-    final articleTitle = name?.isNotEmpty == true 
-        ? name! 
-        : '$sport $homeAway $opponent';
+    // Format sport name for display in ALL CAPS (cross-country -> CROSS COUNTRY)
+    final displaySport = SportsData.getDisplaySportNameCaps(sport);
+    
+    // Use event name for title if available, otherwise format based on home/away
+    String articleTitle;
+    if (name?.isNotEmpty == true) {
+      articleTitle = name!;
+    } else {
+      // For away games, show "[SPORT] at [location]", for home games show "[SPORT] vs [opponent]"
+      if (home) {
+        articleTitle = '$displaySport vs $opponent';
+      } else {
+        articleTitle = '$displaySport at $location';
+      }
+    }
         
     return Article(
       title: articleTitle,
       subtitle: _buildArticleSubtitle(),
-      content: '$teamName $homeAway $opponent at $location on $date at $time.',
+      content: '$teamName ${home ? "vs" : "at"} $opponent at $location on $date at $time.',
       imagePath: 'assets/images/flexes_icon.png', // Use flexes icon for athletics games
     );
   }
@@ -181,6 +192,37 @@ class AthleticsSchedule {
         }
       }
 
+      // Try parsing track sports format: "Mon, Aug 18" or "Wed, Apr 2"
+      if (date.contains(',') && date.contains(' ')) {
+        final parts = date.split(', ');
+        if (parts.length == 2) {
+          final datePart = parts[1].trim();
+          final dateComponents = datePart.split(' ');
+          if (dateComponents.length == 2) {
+            final monthStr = dateComponents[0];
+            final day = int.tryParse(dateComponents[1]) ?? 1;
+            final currentYear = DateTime.now().year;
+            
+            // Map month abbreviations to numbers
+            final monthMap = {
+              'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+              'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+            };
+            
+            final month = monthMap[monthStr] ?? 1;
+            
+            // Determine year - if month is before current month, assume next year
+            final now = DateTime.now();
+            int year = currentYear;
+            if (month < now.month || (month == now.month && day < now.day)) {
+              year = currentYear + 1;
+            }
+            
+            return DateTime(year, month, day);
+          }
+        }
+      }
+
       return DateTime.parse(date);
     } catch (e) {
       return createdAt;
@@ -232,6 +274,37 @@ class AthleticsSchedule {
           }
         }
 
+        // Try parsing track sports format: "Mon, Aug 18" or "Wed, Apr 2"
+        if (date.contains(',') && date.contains(' ')) {
+          final parts = date.split(', ');
+          if (parts.length == 2) {
+            final datePart = parts[1].trim();
+            final dateComponents = datePart.split(' ');
+            if (dateComponents.length == 2) {
+              final monthStr = dateComponents[0];
+              final day = int.tryParse(dateComponents[1]) ?? 1;
+              final currentYear = DateTime.now().year;
+              
+              // Map month abbreviations to numbers
+              final monthMap = {
+                'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+                'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+              };
+              
+              final month = monthMap[monthStr] ?? 1;
+              
+              // Determine year - if month is before current month, assume next year
+              final now = DateTime.now();
+              int year = currentYear;
+              if (month < now.month || (month == now.month && day < now.day)) {
+                year = currentYear + 1;
+              }
+              
+              return DateTime(year, month, day);
+            }
+          }
+        }
+
         // Fallback to trying DateTime.parse
         return DateTime.parse(date);
       } catch (e) {
@@ -240,8 +313,24 @@ class AthleticsSchedule {
       }
     }
 
+    // Format sport name for display in ALL CAPS (cross-country -> CROSS COUNTRY)  
+    final displaySport = SportsData.getDisplaySportNameCaps(sport);
+
+    // Format title based on name availability and home/away
+    String bulletinTitle;
+    if (name?.isNotEmpty == true) {
+      bulletinTitle = name!;
+    } else {
+      // For away games, show "[SPORT] at [location]", for home games show "[SPORT] vs [opponent]"
+      if (home) {
+        bulletinTitle = '$displaySport vs $opponent';
+      } else {
+        bulletinTitle = '$displaySport at $location';
+      }
+    }
+
     return BulletinPost(
-      title: name?.isNotEmpty == true ? name! : '$sport ${home ? "vs" : "at"} $opponent',
+      title: bulletinTitle,
       subtitle: _buildSubtitle(parseEventDate()),
       date: parseEventDate(),
       content: '${gender.toUpperCase()} ${level.toUpperCase()} ${home ? "vs" : "at"} $opponent at $location on $date at $time.',

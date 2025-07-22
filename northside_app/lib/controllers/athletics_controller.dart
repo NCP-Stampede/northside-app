@@ -366,6 +366,14 @@ class AthleticsController extends GetxController {
     if (dateString.isEmpty) return null;
     
     try {
+      // Handle date ranges like "Fri, May 23-Sat, May 24" by taking the first date
+      if (dateString.contains('-') && dateString.contains(',')) {
+        final dateParts = dateString.split('-');
+        if (dateParts.isNotEmpty) {
+          dateString = dateParts[0].trim(); // Take the first date
+        }
+      }
+      
       // Try parsing M/D/YYYY format first (most common in our data)
       if (dateString.contains('/')) {
         final parts = dateString.split('/');
@@ -374,6 +382,29 @@ class AthleticsController extends GetxController {
           final day = int.tryParse(parts[1]) ?? 1;
           final year = int.tryParse(parts[2]) ?? DateTime.now().year;
           return DateTime(year, month, day);
+        }
+      }
+      
+      // Try parsing "Fri, May 23" format (day of week with date)
+      if (dateString.contains(',')) {
+        final parts = dateString.split(',');
+        if (parts.length == 2) {
+          final datePart = parts[1].trim(); // "May 23"
+          final dateSubParts = datePart.split(' ');
+          if (dateSubParts.length == 2) {
+            final monthStr = dateSubParts[0];
+            final day = int.tryParse(dateSubParts[1]) ?? 1;
+            final year = DateTime.now().year; // Default to current year
+            
+            // Map month abbreviations to numbers
+            final monthMap = {
+              'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+              'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+            };
+            
+            final month = monthMap[monthStr] ?? 1;
+            return DateTime(year, month, day);
+          }
         }
       }
       
@@ -565,7 +596,8 @@ class AthleticsController extends GetxController {
         .replaceAll('16in', '')
         .replaceAll('16 in', '')
         .replaceAll('  ', ' ')
-        .replaceAll('track and field', 'track & field') // Standardize track & field
+        // DON'T convert backend format - keep it as is since our hardcoded data now matches
+        .replaceAll('track and field', 'track & field') // Standardize track & field display
         .replaceAll('cheer leading', 'cheerleading') // Standardize cheerleading
         .trim();
   }

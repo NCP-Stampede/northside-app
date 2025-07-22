@@ -237,12 +237,16 @@ def update_track_and_field_roster():
                 season = "winter"
             
             for athlete in athletes:
+                # Try to determine level from athlete info or use default
+                # For now, we'll assume varsity since the site doesn't clearly distinguish levels
+                athlete_level = "varsity"  # Default to varsity
+                
                 new_row = pd.DataFrame({
                     "name": [athlete],
                     "number": [0],
                     "sport": [sport],
                     "season": [season],
-                    "level": ["varsity"],
+                    "level": [athlete_level],
                     "gender": [gender],
                     "grade": ["N/A"],
                     "position": ["N/A"]

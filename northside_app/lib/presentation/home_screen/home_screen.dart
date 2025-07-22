@@ -2,7 +2,11 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../controllers/events_controller.dart';
+import '../../models/article.dart';
+import '../../widgets/article_detail_draggable_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
+  final EventsController eventsController = Get.put(EventsController());
   int _currentPageIndex = 0;
   // This variable TRACKS which nav item is selected. It's the key to making it interactive.
   int _navBarIndex = 0;
@@ -196,36 +201,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEventsCarousel() {
-    return PageView(
-      controller: _pageController,
-      onPageChanged: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
-      },
-      children: const [
-        _HomecomingCard(),
-        _HomecomingCard(),
-        _HomecomingCard(),
-      ],
-    );
+    return Obx(() {
+      if (eventsController.isLoading.value) {
+        return const Center(child: CircularProgressIndicator(color: Colors.white));
+      }
+      
+      final carouselEvents = eventsController.getHomeCarouselEvents();
+      
+      if (carouselEvents.isEmpty) {
+        return const Center(
+          child: Text(
+            'No events available',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        );
+      }
+      
+      return PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
+        itemCount: carouselEvents.length,
+        itemBuilder: (context, index) {
+          final article = carouselEvents[index];
+          return GestureDetector(
+            onTap: () {
+              Get.bottomSheet(
+                ArticleDetailDraggableSheet(article: article),
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                useRootNavigator: false,
+                enableDrag: true,
+              );
+            },
+            child: _EventCard(article: article),
+          );
+        },
+      );
+    });
   }
 
   Widget _buildPageIndicator(double screenWidth) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(3, (index) {
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-          width: screenWidth * 0.02,
-          height: screenWidth * 0.02,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
-          ),
-        );
-      }),
-    );
+    return Obx(() {
+      final carouselEvents = eventsController.getHomeCarouselEvents();
+      final eventCount = carouselEvents.length;
+      
+      if (eventCount <= 1) return const SizedBox.shrink();
+      
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(eventCount, (index) {
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
+            width: screenWidth * 0.02,
+            height: screenWidth * 0.02,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+            ),
+          );
+        }),
+      );
+    });
   }
 }
 
@@ -257,16 +297,17 @@ class _QuickActionButton extends StatelessWidget {
   }
 }
 
-class _HomecomingCard extends StatelessWidget {
-  const _HomecomingCard();
+class _EventCard extends StatelessWidget {
+  const _EventCard({required this.article});
+  final Article article;
 
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double cardRadius = screenWidth * 0.06;
-    final double fontSizeTitle = screenWidth * 0.055;
     final double fontSizeSubtitle = screenWidth * 0.04;
     final double iconSize = screenWidth * 0.045;
+    
     return Container(
       margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
       decoration: BoxDecoration(
@@ -284,7 +325,17 @@ class _HomecomingCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(cardRadius), topRight: Radius.circular(cardRadius)),
-                  child: Image.asset('assets/images/homecoming_bg.png', fit: BoxFit.contain),
+                  child: article.imagePath != null 
+                    ? Image.asset(article.imagePath!, fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey.shade200,
+                          child: Icon(Icons.event, size: 48, color: Colors.grey),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey.shade200,
+                        child: Icon(Icons.event, size: 48, color: Colors.grey),
+                      ),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -293,22 +344,17 @@ class _HomecomingCard extends StatelessWidget {
                   ),
                 ),
                 Center(
-                  child: ShaderMask(
-                    blendMode: BlendMode.srcIn,
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFFE474A2), Color(0xFF8A9AE4)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
-                    child: Text(
-                      'HOMECOMING',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenWidth * 0.085,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2.5,
-                      ),
+                  child: Text(
+                    article.title.toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.06,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
                     ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -322,25 +368,28 @@ class _HomecomingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-                      children: [
-                        TextSpan(text: 'Homecoming ', style: TextStyle(color: Color(0xFFB94056))),
-                        TextSpan(text: '2024', style: TextStyle(color: Color(0xFF2E4096))),
-                      ],
-                    ),
+                  Text(
+                    article.subtitle,
+                    style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black87),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: screenWidth * 0.03),
                   Row(
                     children: [
                       Icon(Icons.calendar_today_outlined, size: iconSize, color: Colors.black),
                       SizedBox(width: screenWidth * 0.02),
-                      Text('This Friday', style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const Spacer(),
+                      Expanded(
+                        child: Text(
+                          article.content,
+                          style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.black),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       Icon(Icons.more_horiz, size: iconSize * 1.2, color: Colors.black),
                       SizedBox(width: screenWidth * 0.01),
-                      Text('More Details', style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text('Tap for Details', style: TextStyle(fontSize: fontSizeSubtitle * 0.9, color: Colors.grey.shade600), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ],
