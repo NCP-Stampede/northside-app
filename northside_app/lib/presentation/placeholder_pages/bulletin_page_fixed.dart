@@ -452,7 +452,22 @@ class _BulletinPageState extends State<BulletinPage> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         itemCount: posts.length,
         itemBuilder: (context, index) {
-          return _PinnedPostCard(post: posts[index]);
+          final post = posts[index];
+          return _PinnedPostCard(
+            post: post,
+            onTap: () {
+              Get.bottomSheet(
+                ArticleDetailDraggableSheet(article: Article(
+                  title: post.title,
+                  subtitle: post.subtitle,
+                  imagePath: post.imagePath,
+                  content: post.content,
+                )),
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+              );
+            },
+          );
         },
       ),
     );
@@ -563,21 +578,9 @@ class _BulletinEventCard extends StatelessWidget {
 }
 
 class _PinnedPostCard extends StatelessWidget {
-  const _PinnedPostCard({required this.post});
+  const _PinnedPostCard({required this.post, required this.onTap});
   final BulletinPost post;
-
-  void _showArticleSheet(BulletinPost post) {
-    Get.bottomSheet(
-      ArticleDetailDraggableSheet(article: Article(
-        title: post.title,
-        subtitle: post.subtitle,
-        imagePath: post.imagePath,
-        content: post.content,
-      )),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -588,7 +591,7 @@ class _PinnedPostCard extends StatelessWidget {
     final double fontSizeTitle = screenWidth * 0.045;
     final double fontSizeSubtitle = screenWidth * 0.035;
     return GestureDetector(
-      onTap: () => _showArticleSheet(post),
+      onTap: onTap,
       child: Container(
         width: cardWidth,
         margin: EdgeInsets.only(right: screenWidth * 0.04, bottom: screenWidth * 0.01),
