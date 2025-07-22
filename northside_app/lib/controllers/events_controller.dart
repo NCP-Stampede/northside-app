@@ -13,7 +13,7 @@ import '../core/utils/logger.dart';
   final RxList<GeneralEvent> generalEvents = <GeneralEvent>[].obs;
   final RxList<AthleticsSchedule> athleticsEvents = <AthleticsSchedule>[].obs;
   final RxBool isLoading = false.obs;
-  final RxString error = ''.obs;
+  final RxString errorMessage = ''.obs;
 
   @override
   void onInit() {

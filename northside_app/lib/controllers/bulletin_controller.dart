@@ -12,6 +12,7 @@ import '../core/utils/logger.dart';
   final ApiService _apiService = ApiService();
   final RxList<BulletinPost> _allPosts = <BulletinPost>[].obs;
   final RxBool _isLoading = false.obs;
+  final RxString errorMessage = ''.obs;
   List<Announcement> _announcements = [];
   List<AthleticsSchedule> _athleticsEvents = [];
 
@@ -28,10 +29,12 @@ import '../core/utils/logger.dart';
   Future<void> loadData() async {
     try {
       _isLoading.value = true;
+      errorMessage.value = '';
       // TODO: Replace with actual API calls using _apiService
     // TODO: Use new ApiService instance methods for bulletin posts when implemented
       // _allPosts.assignAll(posts);
     } catch (e) {
+      errorMessage.value = 'Could not load bulletin. Please try again later.';
       AppLogger.error('Error loading bulletin data', e);
     } finally {
       _isLoading.value = false;

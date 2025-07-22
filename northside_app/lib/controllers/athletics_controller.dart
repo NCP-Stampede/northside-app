@@ -13,7 +13,7 @@ import '../core/utils/logger.dart';
   final RxList<AthleticsSchedule> schedule = <AthleticsSchedule>[].obs;
   final RxList<SportEntry> sports = <SportEntry>[].obs;
   final RxBool isLoading = false.obs;
-  final RxString error = ''.obs;
+  final RxString errorMessage = ''.obs;
 
   @override
   void onInit() {
@@ -24,10 +24,11 @@ import '../core/utils/logger.dart';
   void fetchSports() async {
     try {
       isLoading(true);
+      errorMessage.value = '';
       var result = await _apiService.fetchSportsData();
       sports.assignAll(result);
     } catch (e) {
-      error.value = 'Failed to load sports data: $e';
+      errorMessage.value = 'Could not load sports. Please try again later.';
       AppLogger.error('Error loading sports data', e);
     } finally {
       isLoading(false);
