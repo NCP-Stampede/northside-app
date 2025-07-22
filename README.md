@@ -1,6 +1,12 @@
 # Northside App
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<a href="https://opensource.org/licenses/MIT">
+<img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black">
+<img alt="Expo" src="https://img.shields.io/badge/Expo-000020?logo=expo&logoColor=white">
+<img alt="Python" src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white">
+<img alt="Dart" src="https://img.shields.io/badge/Dart-0175C2?logo=dart&logoColor=white">
+</p>
 
 An unofficial, student-developed mobile application for Northside College Prep High School. This app aims to consolidate all of the school's resources and information, including announcements, into one convenient place.
 
