@@ -25,29 +25,17 @@ Before you begin, ensure you have the following installed:
  - Git
 
 ### Installation
-1. Clone the repository:
-
-``
-git clone https://github.com/NCP-Stampede/northside-app.git
+1. Clone the repository: ``git clone https://github.com/NCP-Stampede/northside-app.git
 ``
 
-2. Navigate to the project directory:
-
-``
-cd northside-app
+2. Navigate to the project directory: ``cd northside-app
 ``
 
-3. Install the dependencies:
-
-``
-npm install
+3. Install the dependencies: ``npm install
 ``
 
 ### Running the App
-To run the app on your local machine, use the following command:
-
-``
-npx expo start
+To run the app on your local machine, use the following command: ``npx expo start
 ``
 
 This will start the Metro Bundler. You can then run the app on an iOS simulator, Android emulator, or on your physical device using the Expo Go app.
