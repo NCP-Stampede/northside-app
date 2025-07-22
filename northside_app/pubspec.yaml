@@ -1,5 +1,5 @@
-name: stampede
-description: "Stampede - Unofficial mobile app for Northside High School - Stay connected with announcements, athletics, events, and school news."
+name: packex
+description: "PackEx - Experimental build of the Northside app for package structure testing."
 
 publish_to: 'none' 
 
