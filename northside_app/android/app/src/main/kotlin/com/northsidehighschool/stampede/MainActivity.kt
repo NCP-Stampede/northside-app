@@ -1,4 +1,4 @@
-package com.northsidehighschool.stampede
+package com.ncpstampede.northside_app
 
 import io.flutter.embedding.android.FlutterActivity
 
