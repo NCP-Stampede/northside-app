@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from backend.gsheets.connection import sheet
+from backend.gsheets.connection import connect_to_gsheets
 
 from backend.models.GeneralEvent import GeneralEvent
 from backend.models.Announcement import Announcement
@@ -10,6 +10,7 @@ from mongoengine import connect
 from dotenv import load_dotenv
 
 def update_submissions():
+    sheet = connect_to_gsheets()
     if not sheet:
         print("Google Sheets connection not established. Please check your credentials.")
         return

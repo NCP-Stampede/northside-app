@@ -7,6 +7,7 @@ import '../models/general_event.dart';
 import '../models/athletics_schedule.dart';
 import '../api.dart';
 import '../core/utils/logger.dart';
+import 'athletics_controller.dart';
 
 class BulletinController extends GetxController {
   // Observable lists for reactive UI
@@ -140,28 +141,64 @@ class BulletinController extends GetxController {
       }
     }
     
-    // Add ALL upcoming athletics events for home carousel with improved duplicate detection
-    for (final event in _athleticsEvents) {
-      final bulletinPost = event.toBulletinPost();
-      if (!bulletinPost.date.isBefore(todayStart)) {
-        // Create a more specific event key to detect true duplicates
-        final eventKey = '${bulletinPost.title}_${event.location}_${bulletinPost.date.toIso8601String()}_${event.time}';
-        
-        // Only skip if we have seen this exact same event (same title, location, date, and time)
+    // Use AthleticsController to get athletics news (includes track sports)
+    try {
+      final athleticsController = Get.find<AthleticsController>();
+      final athleticsNews = athleticsController.getAthleticsNews();
+      
+      // Convert athletics articles to bulletin posts
+      for (final article in athleticsNews) {
+        final eventKey = '${article.title}_${article.subtitle}';
         if (!addedEventKeys.contains(eventKey)) {
+          final bulletinPost = BulletinPost(
+            title: article.title,
+            subtitle: article.subtitle,
+            date: _parseArticleDate(article.subtitle),
+            content: article.content,
+            imagePath: article.imagePath ?? 'assets/images/flexes_icon.png',
+            isPinned: false,
+          );
           homeCarouselPosts.add(bulletinPost);
           addedEventKeys.add(eventKey);
         }
       }
+    } catch (e) {
+      AppLogger.warning('Athletics controller not found, falling back to original athletics events: $e');
+      
+      // Fallback to original athletics events if athletics controller is not available
+      for (final event in _athleticsEvents) {
+        final bulletinPost = event.toBulletinPost();
+        if (!bulletinPost.date.isBefore(todayStart)) {
+          final eventKey = '${bulletinPost.title}_${event.location}_${bulletinPost.date.toIso8601String()}_${event.time}';
+          
+          if (!addedEventKeys.contains(eventKey)) {
+            homeCarouselPosts.add(bulletinPost);
+            addedEventKeys.add(eventKey);
+          }
+        }
+      }
     }
     
-    // Add up to 3 most recent announcements (regardless of date)
-    final sortedAnnouncements = _announcements.toList()
+    // Add up to 3 most recent announcements that are currently active
+    final sortedAnnouncements = _announcements.where((announcement) {
+      try {
+        // Parse start and end dates to check if announcement is currently active
+        final startDate = _parseAnnouncementDate(announcement.startDate);
+        final endDate = _parseAnnouncementDate(announcement.endDate);
+        final today = DateTime(now.year, now.month, now.day);
+        
+        // Check if announcement is currently active (today is between start and end date)
+        return !today.isBefore(startDate) && !today.isAfter(endDate);
+      } catch (e) {
+        // If date parsing fails, include the announcement
+        return true;
+      }
+    }).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Most recent first
     
     final recentAnnouncements = sortedAnnouncements.take(3);
     for (final announcement in recentAnnouncements) {
-      final bulletinPost = announcement.toBulletinPost(useEndDate: false); // Use created date for announcements in carousel
+      final bulletinPost = announcement.toBulletinPost(useEndDate: false); // Use start date for announcements in carousel
       final eventKey = '${bulletinPost.title}_${bulletinPost.date.toIso8601String()}_announcement';
       if (!addedEventKeys.contains(eventKey)) {
         homeCarouselPosts.add(bulletinPost);
@@ -169,19 +206,59 @@ class BulletinController extends GetxController {
       }
     }
     
-    // Sort by date (earliest upcoming events first, then announcements)
-    homeCarouselPosts.sort((a, b) {
-      // Prioritize upcoming events over announcements
-      final aIsUpcoming = a.date.isAfter(todayStart.subtract(const Duration(days: 1)));
-      final bIsUpcoming = b.date.isAfter(todayStart.subtract(const Duration(days: 1)));
-      
-      if (aIsUpcoming && !bIsUpcoming) return -1;
-      if (!aIsUpcoming && bIsUpcoming) return 1;
-      
-      return a.date.compareTo(b.date);
-    });
+    // Sort by date only (earliest first, regardless of type)
+    homeCarouselPosts.sort((a, b) => a.date.compareTo(b.date));
     
     return homeCarouselPosts.take(15).toList(); // Increased limit to accommodate events + announcements
+  }
+
+  // Helper method to parse date from article subtitle
+  DateTime _parseArticleDate(String subtitle) {
+    final now = DateTime.now();
+    
+    if (subtitle.contains('Today')) {
+      return DateTime(now.year, now.month, now.day);
+    }
+    
+    if (subtitle.contains('day away')) {
+      final match = RegExp(r'(\d+) day').firstMatch(subtitle);
+      if (match != null) {
+        final days = int.tryParse(match.group(1) ?? '0') ?? 0;
+        return now.add(Duration(days: days));
+      }
+    }
+    
+    // Default to tomorrow if we can't parse
+    return now.add(const Duration(days: 1));
+  }
+
+  // Helper method to parse announcement dates
+  DateTime _parseAnnouncementDate(String dateStr) {
+    try {
+      if (dateStr.isEmpty) return DateTime.now();
+      
+      // Try to parse formats like "6/27/2025"
+      final parts = dateStr.split('/');
+      if (parts.length == 3) {
+        int month = int.tryParse(parts[0]) ?? 1;
+        int day = int.tryParse(parts[1]) ?? 1;
+        int year = int.tryParse(parts[2]) ?? DateTime.now().year;
+        
+        // Validate ranges
+        if (month > 12) month = 12;
+        if (month < 1) month = 1;
+        if (day < 1) day = 1;
+        if (day > 31) day = 31;
+        
+        return DateTime(year, month, day);
+      }
+      
+      // Fallback to trying DateTime.parse
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      AppLogger.warning('Error parsing announcement date "$dateStr"', e);
+      return DateTime.now();
+    }
   }
 
   @override
