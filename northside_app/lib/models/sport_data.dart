@@ -159,10 +159,10 @@ class SportsData {
   static String _formatSportName(String sport) {
     // Special cases for proper formatting
     if (sport == 'track-and-field-indoor') {
-      return 'Indoor Track & Field';
+      return 'Indoor Track';
     }
     if (sport == 'track-and-field-outdoor') {
-      return 'Outdoor Track & Field';
+      return 'Outdoor Track';
     }
     if (sport == 'cross-country') {
       return 'Cross Country';
@@ -181,10 +181,10 @@ class SportsData {
     final normalized = sport.toLowerCase().trim();
     
     // Handle track sports - they use lowercase with hyphens
-    if (normalized == 'indoor track & field' || normalized == 'indoor track and field') {
+    if (normalized == 'indoor track & field' || normalized == 'indoor track and field' || normalized == 'indoor track') {
       return 'track-and-field-indoor';
     }
-    if (normalized == 'outdoor track & field' || normalized == 'outdoor track and field') {
+    if (normalized == 'outdoor track & field' || normalized == 'outdoor track and field' || normalized == 'outdoor track') {
       return 'track-and-field-outdoor';
     }
     if (normalized == 'cross country') {
