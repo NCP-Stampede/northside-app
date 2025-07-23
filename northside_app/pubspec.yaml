@@ -1,5 +1,5 @@
-name: packex
-description: "PackEx - Experimental build of the Northside app for package structure testing."
+name: northside_app
+description: "Northside App - Experimental build for package structure testing."
 
 publish_to: 'none' 
 
@@ -49,13 +49,15 @@ flutter:
     - assets/images/
 
 
+
 # Keep the frontend package as is
 frontend_package:
   git:
     url: https://github.com/NCP-Stampede/frontend_package.git
     ref: main
 
-# UPDATE THE OVERRIDES SECTION AS WELL
-dependency_overrides:
-  frontend_package:
-    path: ../frontend_package
+# Add this section for the backend toolkit
+hs-app-toolkit:
+  git:
+    url: https://github.com/NCP-Stampede/hs-app-toolkit.git
+    ref: main
