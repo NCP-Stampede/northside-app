@@ -9,10 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
-import 'package:hs_scraper_toolkit/controllers/bulletin_controller.dart';
+import 'package:hs_app_toolkit/controllers/bulletin_controller.dart';
 import 'package:frontend_package/core/utils/design_constants.dart';
-import 'package:hs_scraper_toolkit/models/article.dart';
-import 'package:hs_scraper_toolkit/models/bulletin_post.dart';
+import 'package:hs_app_toolkit/models/article.dart';
+import 'package:hs_app_toolkit/models/bulletin_post.dart';
 import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
 import 'package:frontend_package/widgets/shared_header.dart';
 

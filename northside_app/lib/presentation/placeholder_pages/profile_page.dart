@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend_package/core/utils/design_constants.dart';
 
-import 'package:hs_scraper_toolkit/models/article.dart';
+import 'package:hs_app_toolkit/models/article.dart';
 import 'package:frontend_package/widgets/article_detail_draggable_sheet.dart';
 import 'package:frontend_package/widgets/login_sheet.dart';
 import '../../core/utils/logger.dart';

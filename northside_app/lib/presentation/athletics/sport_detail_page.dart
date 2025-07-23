@@ -5,11 +5,11 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:hs_scraper_toolkit/controllers/athletics_controller.dart' as AC;
+import 'package:hs_app_toolkit/controllers/athletics_controller.dart' as AC;
 import '../../core/utils/logger.dart';
 import 'package:frontend_package/core/utils/app_colors.dart';
 import 'package:frontend_package/core/utils/design_constants.dart';
-import 'package:hs_scraper_toolkit/models/sport_data.dart';
+import 'package:hs_app_toolkit/models/sport_data.dart';
 import '../../api.dart';
 import '../../models/athlete.dart';
 import '../../models/athletics_schedule.dart';
