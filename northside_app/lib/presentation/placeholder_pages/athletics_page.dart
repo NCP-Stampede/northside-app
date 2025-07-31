@@ -56,6 +56,7 @@ class AthleticsPage extends StatelessWidget {
                 _buildNewsCarousel(context, athleticsController),
                 SizedBox(height: screenHeight * 0.04),
                 _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
+                SizedBox(height: screenHeight * 0.025), // ADDED: This adds the necessary spacing.
                 _buildSportsGrid(context, athleticsController),
                 SizedBox(height: screenHeight * 0.015),
                 _buildRegisterButton(context),

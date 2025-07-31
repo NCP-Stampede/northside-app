@@ -134,54 +134,106 @@ class _BulletinPageState extends State<BulletinPage> {
     nonPinnedPosts.sort((a, b) => a.date.compareTo(b.date));
     final Map<String, List<BulletinPost>> grouped = {};
     for (var post in nonPinnedPosts) {
-      String dateHeader;
-      if (isSameDay(post.date, today)) dateHeader = 'Today';
-      else if (isSameDay(post.date, today.subtract(const Duration(days: 1)))) dateHeader = 'Yesterday';
-      else if (isSameDay(post.date, today.add(const Duration(days: 1)))) dateHeader = 'Tomorrow';
-      else dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
+      String dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
       if (grouped[dateHeader] == null) grouped[dateHeader] = [];
       grouped[dateHeader]!.add(post);
     }
     setState(() => _groupedPosts = grouped);
-    
-    // Find the most relevant section to show (Today, or closest to today)
+
+    // Find the most relevant section to show (Today, Tomorrow, Yesterday, closest future, closest past)
     final keys = grouped.keys.toList();
     int? targetSectionIndex;
-    
-    // First try to find 'Today'
-    targetSectionIndex = keys.indexOf('Today');
-    
+
+    // Format header strings for today, tomorrow, yesterday
+    final todayHeader = DateFormat('EEEE, MMMM d').format(today);
+    final tomorrowHeader = DateFormat('EEEE, MMMM d').format(today.add(const Duration(days: 1)));
+    final yesterdayHeader = DateFormat('EEEE, MMMM d').format(today.subtract(const Duration(days: 1)));
+
+    // Try to find 'Today'
+    targetSectionIndex = keys.indexOf(todayHeader);
     // If no 'Today', try 'Tomorrow'
     if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf('Tomorrow');
+      targetSectionIndex = keys.indexOf(tomorrowHeader);
     }
-    
     // If no 'Tomorrow', try 'Yesterday'
     if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf('Yesterday');
+      targetSectionIndex = keys.indexOf(yesterdayHeader);
     }
-    
-    // If none of the above, find the section with date closest to today
-    if (targetSectionIndex == -1 && keys.isNotEmpty) {
-      int closestIndex = 0;
-      Duration closestDifference = Duration.zero;
-      
+
+    // If still not found, find closest future date using header strings
+    if ((targetSectionIndex == null || targetSectionIndex < 0) && keys.isNotEmpty) {
+      int? futureIndex;
+      Duration? minFutureDiff;
       for (int i = 0; i < keys.length; i++) {
-        final sectionPosts = grouped[keys[i]]!;
-        if (sectionPosts.isNotEmpty) {
-          final sectionDate = sectionPosts.first.date;
-          final difference = sectionDate.difference(today).abs();
-          
-          if (i == 0 || difference < closestDifference) {
-            closestIndex = i;
-            closestDifference = difference;
+        // Parse header string to DateTime (assume current year)
+        DateTime? headerDate;
+        try {
+          headerDate = DateFormat('EEEE, MMMM d').parse(keys[i]);
+          headerDate = DateTime(today.year, headerDate.month, headerDate.day);
+        } catch (e) {
+          continue;
+        }
+        final diff = headerDate.difference(today);
+        if (diff.inMilliseconds > 0) {
+          if (minFutureDiff == null || diff < minFutureDiff) {
+            minFutureDiff = diff;
+            futureIndex = i;
           }
         }
       }
-      targetSectionIndex = closestIndex;
+      if (futureIndex != null) {
+        targetSectionIndex = futureIndex;
+      }
     }
-    
+
+    // If no future date, find closest past date using header strings
+    if ((targetSectionIndex == null || targetSectionIndex < 0) && keys.isNotEmpty) {
+      int? pastIndex;
+      Duration? minPastDiff;
+      for (int i = 0; i < keys.length; i++) {
+        // Parse header string to DateTime (assume current year)
+        DateTime? headerDate;
+        try {
+          headerDate = DateFormat('EEEE, MMMM d').parse(keys[i]);
+          headerDate = DateTime(today.year, headerDate.month, headerDate.day);
+        } catch (e) {
+          continue;
+        }
+        final diff = today.difference(headerDate);
+        if (diff.inMilliseconds > 0) {
+          if (minPastDiff == null || diff < minPastDiff) {
+            minPastDiff = diff;
+            pastIndex = i;
+          }
+        }
+      }
+      if (pastIndex != null) {
+        targetSectionIndex = pastIndex;
+      }
+    }
+
+    // If still not found, fallback to first section (not last)
+    if (targetSectionIndex == null || targetSectionIndex < 0) {
+      targetSectionIndex = 0;
+    }
+
     _todaySectionIndex = targetSectionIndex;
+
+    // Debug: print all section headers and their dates
+    print('--- Bulletin Section Headers ---');
+    for (int i = 0; i < keys.length; i++) {
+      final sectionPosts = grouped[keys[i]]!;
+      if (sectionPosts.isNotEmpty) {
+        print('Index $i: ${keys[i]} | Date: ${sectionPosts.first.date}');
+      }
+    }
+    print('Grouped keys: $keys');
+
+    print('Selected section index: $targetSectionIndex');
+    if (targetSectionIndex != null && targetSectionIndex >= 0 && targetSectionIndex < keys.length) {
+      print('Selected section header: ${keys[targetSectionIndex]}');
+      print('Selected section date: ${grouped[keys[targetSectionIndex]]![0].date}');
+    }
   }
 
   void _onScroll() {

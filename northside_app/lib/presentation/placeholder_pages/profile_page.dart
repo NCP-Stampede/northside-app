@@ -101,82 +101,46 @@ class ProfilePage extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFFF6B6B), // Red
-                  Color(0xFF4A90E2), // True blue (less green)
-                ],
-                stops: [0.0, 1.0],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
+      body: Container(
+        color: const Color(0xFFF2F2F7),
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06).copyWith(bottom: screenHeight * 0.12),
+            children: [
+              SizedBox(height: screenHeight * 0.05),
+              _buildProfileHeader(context),
+              SizedBox(height: screenHeight * 0.04),
+              ..._options.map((option) {
+                return _buildInfoCard(
+                  context: context,
+                  title: option.title,
+                  subtitle: option.subtitle,
+                  onTap: () {
+                    if (option.actionType == ProfileActionType.info) {
+                      Get.bottomSheet(
+                        ArticleDetailDraggableSheet(article: appInfoArticle),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        useRootNavigator: false,
+                        enableDrag: true,
+                      );
+                    } else if (option.actionType == ProfileActionType.link && option.url != null) {
+                      _launchInExternalBrowser(option.url!);
+                    } else if (option.actionType == ProfileActionType.login) {
+                      Get.bottomSheet(
+                        const LoginSheet(),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        useRootNavigator: false,
+                        enableDrag: true,
+                      );
+                    }
+                  },
+                );
+              }).toList(),
+            ],
           ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Color(0xFFF2F2F7).withOpacity(0.03),
-                  Color(0xFFF2F2F7).withOpacity(0.07),
-                  Color(0xFFF2F2F7).withOpacity(0.15),
-                  Color(0xFFF2F2F7).withOpacity(0.25),
-                  Color(0xFFF2F2F7).withOpacity(0.4),
-                  Color(0xFFF2F2F7).withOpacity(0.6),
-                  Color(0xFFF2F2F7).withOpacity(0.8),
-                  Color(0xFFF2F2F7).withOpacity(0.95),
-                  Color(0xFFF2F2F7),
-                ],
-                stops: [0.0, 0.12, 0.18, 0.25, 0.32, 0.38, 0.42, 0.45, 0.47, 0.49, 0.5],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          SafeArea(
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06).copyWith(bottom: screenHeight * 0.12),
-              children: [
-            SizedBox(height: screenHeight * 0.05),
-            _buildProfileHeader(context),
-            SizedBox(height: screenHeight * 0.04),
-            ..._options.map((option) {
-              return _buildInfoCard(
-                context: context,
-                title: option.title,
-                subtitle: option.subtitle,
-                onTap: () {
-                  if (option.actionType == ProfileActionType.info) {
-                    Get.bottomSheet(
-                      ArticleDetailDraggableSheet(article: appInfoArticle),
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      useRootNavigator: false,
-                      enableDrag: true,
-                    );
-                  } else if (option.actionType == ProfileActionType.link && option.url != null) {
-                    _launchInExternalBrowser(option.url!);
-                  } else if (option.actionType == ProfileActionType.login) {
-                    Get.bottomSheet(
-                      const LoginSheet(),
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      useRootNavigator: false,
-                      enableDrag: true,
-                    );
-                  }
-                },
-              );
-            }).toList(),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

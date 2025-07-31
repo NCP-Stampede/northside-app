@@ -29,6 +29,8 @@ dependencies:
   figma_squircle: ^0.6.3
   url_launcher: ^6.3.1
 
+  scrollable_positioned_list: ^0.3.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
