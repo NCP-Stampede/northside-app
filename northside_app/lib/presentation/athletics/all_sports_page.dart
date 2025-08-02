@@ -8,6 +8,7 @@ import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart';
 import '../../core/design_constants.dart';
 import '../../models/sport_data.dart';
+import '../../widgets/animated_segmented_control.dart';
 import 'sport_detail_page.dart';
 
 class AllSportsPage extends StatefulWidget {
@@ -54,56 +55,26 @@ class _AllSportsPageState extends State<AllSportsPage> {
           SizedBox(height: screenHeight * 0.02),
           _buildSeasonTabs(context),
           SizedBox(height: screenHeight * 0.03),
-          _buildSportsColumns(context),
+          AnimatedContentSwitcher(
+            switchKey: _selectedSeason,
+            child: _buildSportsColumns(context),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSeasonTabs(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.01),
-      decoration: ShapeDecoration(
-        color: Colors.grey.shade200,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get32Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),
-      ),
-      child: Row(
-        children: _seasons.map((season) {
-          final isSelected = _selectedSeason == season;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedSeason = season),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.035),
-                decoration: ShapeDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,
-                  shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                      cornerRadius: DesignConstants.get28Radius(context),
-                      cornerSmoothing: 1.0,
-                    ),
-                  ),
-                  shadows: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))] : null,
-                ),
-                child: Text(
-                  season,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? AppColors.primaryBlue : Colors.grey.shade600,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.06),
+      child: AnimatedSegmentedControl(
+        segments: _seasons,
+        selectedSegment: _selectedSeason,
+        onSelectionChanged: (season) {
+          setState(() {
+            _selectedSeason = season;
+          });
+        },
       ),
     );
   }

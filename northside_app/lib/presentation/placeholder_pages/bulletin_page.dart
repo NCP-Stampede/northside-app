@@ -34,6 +34,9 @@ class _BulletinPageState extends State<BulletinPage> {
   bool _isAutoScrolling = false;
   double? _lastSheetExtent;
   double? _initialSheetExtent;
+  
+  // Track section headers with GlobalKeys for precise measurement
+  Map<String, GlobalKey> _sectionKeys = {};
 
   // Calculate responsive sheet extents based on screen dimensions
   double get responsiveInitialExtent {
@@ -134,85 +137,80 @@ class _BulletinPageState extends State<BulletinPage> {
     nonPinnedPosts.sort((a, b) => a.date.compareTo(b.date));
     final Map<String, List<BulletinPost>> grouped = {};
     for (var post in nonPinnedPosts) {
-      String dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
+      String dateHeader;
+      if (isSameDay(post.date, today)) dateHeader = 'Today';
+      else if (isSameDay(post.date, today.subtract(const Duration(days: 1)))) dateHeader = 'Yesterday';
+      else if (isSameDay(post.date, today.add(const Duration(days: 1)))) dateHeader = 'Tomorrow';
+      else dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
       if (grouped[dateHeader] == null) grouped[dateHeader] = [];
       grouped[dateHeader]!.add(post);
     }
     setState(() => _groupedPosts = grouped);
 
+    // Generate GlobalKeys for each section header to track their positions
+    _sectionKeys.clear();
+    for (String sectionKey in grouped.keys) {
+      _sectionKeys[sectionKey] = GlobalKey();
+    }
+
     // Find the most relevant section to show (Today, Tomorrow, Yesterday, closest future, closest past)
     final keys = grouped.keys.toList();
     int? targetSectionIndex;
 
-    // Format header strings for today, tomorrow, yesterday
-    final todayHeader = DateFormat('EEEE, MMMM d').format(today);
-    final tomorrowHeader = DateFormat('EEEE, MMMM d').format(today.add(const Duration(days: 1)));
-    final yesterdayHeader = DateFormat('EEEE, MMMM d').format(today.subtract(const Duration(days: 1)));
-
-    // Try to find 'Today'
-    targetSectionIndex = keys.indexOf(todayHeader);
+    // First try to find 'Today'
+    targetSectionIndex = keys.indexOf('Today');
+    
     // If no 'Today', try 'Tomorrow'
     if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf(tomorrowHeader);
+      targetSectionIndex = keys.indexOf('Tomorrow');
     }
+    
     // If no 'Tomorrow', try 'Yesterday'
     if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf(yesterdayHeader);
+      targetSectionIndex = keys.indexOf('Yesterday');
     }
 
-    // If still not found, find closest future date using header strings
-    if ((targetSectionIndex == null || targetSectionIndex < 0) && keys.isNotEmpty) {
-      int? futureIndex;
-      Duration? minFutureDiff;
+    // If none of the above, find the closest future date, or if no future dates, the closest past date
+    if (targetSectionIndex == -1 && keys.isNotEmpty) {
+      int? closestFutureIndex;
+      int? closestPastIndex;
+      Duration? closestFutureDifference;
+      Duration? closestPastDifference;
+      
       for (int i = 0; i < keys.length; i++) {
-        // Parse header string to DateTime (assume current year)
-        DateTime? headerDate;
-        try {
-          headerDate = DateFormat('EEEE, MMMM d').parse(keys[i]);
-          headerDate = DateTime(today.year, headerDate.month, headerDate.day);
-        } catch (e) {
-          continue;
-        }
-        final diff = headerDate.difference(today);
-        if (diff.inMilliseconds > 0) {
-          if (minFutureDiff == null || diff < minFutureDiff) {
-            minFutureDiff = diff;
-            futureIndex = i;
+        final sectionPosts = grouped[keys[i]]!;
+        if (sectionPosts.isNotEmpty) {
+          final sectionDate = sectionPosts.first.date;
+          final difference = sectionDate.difference(today);
+          
+          if (difference.inDays > 0) {
+            // Future date
+            if (closestFutureIndex == null || difference < closestFutureDifference!) {
+              closestFutureIndex = i;
+              closestFutureDifference = difference;
+            }
+          } else if (difference.inDays < 0) {
+            // Past date
+            final pastDifference = difference.abs();
+            if (closestPastIndex == null || pastDifference < closestPastDifference!) {
+              closestPastIndex = i;
+              closestPastDifference = pastDifference;
+            }
           }
         }
       }
-      if (futureIndex != null) {
-        targetSectionIndex = futureIndex;
+      
+      // Prefer future dates over past dates
+      if (closestFutureIndex != null) {
+        targetSectionIndex = closestFutureIndex;
+      } else if (closestPastIndex != null) {
+        targetSectionIndex = closestPastIndex;
+      } else {
+        targetSectionIndex = 0; // Fallback to first section
       }
     }
 
-    // If no future date, find closest past date using header strings
-    if ((targetSectionIndex == null || targetSectionIndex < 0) && keys.isNotEmpty) {
-      int? pastIndex;
-      Duration? minPastDiff;
-      for (int i = 0; i < keys.length; i++) {
-        // Parse header string to DateTime (assume current year)
-        DateTime? headerDate;
-        try {
-          headerDate = DateFormat('EEEE, MMMM d').parse(keys[i]);
-          headerDate = DateTime(today.year, headerDate.month, headerDate.day);
-        } catch (e) {
-          continue;
-        }
-        final diff = today.difference(headerDate);
-        if (diff.inMilliseconds > 0) {
-          if (minPastDiff == null || diff < minPastDiff) {
-            minPastDiff = diff;
-            pastIndex = i;
-          }
-        }
-      }
-      if (pastIndex != null) {
-        targetSectionIndex = pastIndex;
-      }
-    }
-
-    // If still not found, fallback to first section (not last)
+    // If still not found, fallback to first section
     if (targetSectionIndex == null || targetSectionIndex < 0) {
       targetSectionIndex = 0;
     }
@@ -220,20 +218,27 @@ class _BulletinPageState extends State<BulletinPage> {
     _todaySectionIndex = targetSectionIndex;
 
     // Debug: print all section headers and their dates
-    print('--- Bulletin Section Headers ---');
+    print('=== BULLETIN DEBUG INFO ===');
+    print('Today is: $today');
+    print('Total sections found: ${keys.length}');
+    print('--- All Section Headers ---');
     for (int i = 0; i < keys.length; i++) {
       final sectionPosts = grouped[keys[i]]!;
       if (sectionPosts.isNotEmpty) {
-        print('Index $i: ${keys[i]} | Date: ${sectionPosts.first.date}');
+        final sectionDate = sectionPosts.first.date;
+        final daysDiff = sectionDate.difference(today).inDays;
+        print('Index $i: "${keys[i]}" | Date: $sectionDate | Days from today: $daysDiff');
       }
     }
-    print('Grouped keys: $keys');
-
-    print('Selected section index: $targetSectionIndex');
-    if (targetSectionIndex != null && targetSectionIndex >= 0 && targetSectionIndex < keys.length) {
-      print('Selected section header: ${keys[targetSectionIndex]}');
-      print('Selected section date: ${grouped[keys[targetSectionIndex]]![0].date}');
+    print('--- Selection Process ---');
+    print('Looking for "Today": ${keys.contains("Today") ? "FOUND" : "NOT FOUND"}');
+    print('Looking for "Tomorrow": ${keys.contains("Tomorrow") ? "FOUND" : "NOT FOUND"}');
+    print('Looking for "Yesterday": ${keys.contains("Yesterday") ? "FOUND" : "NOT FOUND"}');
+    print('Selected target section index: $targetSectionIndex');
+    if (targetSectionIndex >= 0 && targetSectionIndex < keys.length) {
+      print('Selected section header: "${keys[targetSectionIndex]}"');
     }
+    print('===========================');
   }
 
   void _onScroll() {
@@ -258,63 +263,174 @@ class _BulletinPageState extends State<BulletinPage> {
   }
 
   void _scrollToTodaySection({bool animate = false}) {
-    // TODO: Minor UI issue - first card gets partially cut off by sticky header
-    // Multiple approaches tested: buffer adjustments, spacing, offset modifications
-    // Non-fatal issue - card content still accessible and readable
-    if (_todaySectionIndex == null || _todaySectionIndex! < 0) return;
-    if (_draggableSheetController == null) return;
-    double offset = 0;
-    final keys = _groupedPosts.keys.toList();
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    print('🎯 _scrollToTodaySection called - animate: $animate');
+    print('   _todaySectionIndex: $_todaySectionIndex');
+    print('   _draggableSheetController: ${_draggableSheetController != null ? 'exists' : 'null'}');
     
-    // Calculate dynamic header height based on screen size
-    final double dateHeaderHeight = screenWidth * 0.13; // Responsive header height
-    final bool isNarrowScreen = screenWidth < 360;
-    
-    // Calculate actual card height based on the new compact design
-    final double cardPadding = (isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04) * 2; // top + bottom padding
-    final double titleHeight = (isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.055) * 2.2; // title (2 lines max) with line height
-    final double spacingBetween = isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02; // spacing between title and subtitle
-    final double subtitleHeight = isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.045; // subtitle row with icon
-    final double cardHeight = cardPadding + titleHeight + spacingBetween + subtitleHeight;
-    final double cardMargin = isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04; // Same as used in _BulletinEventCard
-    
-    // Calculate offset for the target section
-    for (int i = 0; i < _todaySectionIndex!; i++) {
-      offset += dateHeaderHeight; // Use responsive header height
-      offset += (_groupedPosts[keys[i]]!.length) * (cardHeight + cardMargin);
+    if (_todaySectionIndex == null || _todaySectionIndex! < 0) {
+      print('❌ Invalid target section index: $_todaySectionIndex');
+      return;
+    }
+    if (_draggableSheetController == null) {
+      print('❌ Draggable sheet controller is null');
+      return;
     }
     
-    // Debug information
-    print('📍 Scroll to Today Debug:');
-    print('   Target section: ${keys.isNotEmpty && _todaySectionIndex! < keys.length ? keys[_todaySectionIndex!] : "N/A"}');
-    print('   Card height: ${cardHeight.toStringAsFixed(1)}px');
-    print('   Card margin: ${cardMargin.toStringAsFixed(1)}px');
-    print('   Date header height: ${dateHeaderHeight.toStringAsFixed(1)}px');
-    print('   Calculated offset: ${offset.toStringAsFixed(1)}px');
+    final keys = _groupedPosts.keys.toList();
+    if (_todaySectionIndex! >= keys.length) {
+      print('❌ Target index $_todaySectionIndex >= keys length ${keys.length}');
+      return;
+    }
     
-    // Account for ListView padding and ensure perfect visibility
-    final double listViewTopPadding = screenWidth * 0.02; // Same as ListView padding
-    // NEW APPROACH: Add the height of one full card + margin to scroll past the first card
-    // This ensures the first card is fully visible below the sticky header
-    final double cardWithMargin = cardHeight + cardMargin;
-    offset = (offset - listViewTopPadding + cardWithMargin).clamp(0.0, double.infinity);
+    final targetSectionKey = keys[_todaySectionIndex!];
+    final targetGlobalKey = _sectionKeys[targetSectionKey];
     
-    print('   ListView top padding: ${listViewTopPadding.toStringAsFixed(1)}px');
-    print('   Card + margin height: ${cardWithMargin.toStringAsFixed(1)}px');
-    print('� NEW APPROACH: Adding full card height to scroll past first card');
-    print('   Final offset after adjustments: ${offset.toStringAsFixed(1)}px');
+    print('   Target section key: "$targetSectionKey"');
+    print('   Target GlobalKey: ${targetGlobalKey != null ? 'exists' : 'null'}');
+    
+    if (targetGlobalKey == null) {
+      print('❌ No GlobalKey found for target section: $targetSectionKey');
+      print('   Available section keys: ${_sectionKeys.keys.toList()}');
+      return;
+    }
+    
+    // Wait for next frame to ensure widgets are rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSectionWithPixelMeasurement(targetGlobalKey, targetSectionKey, animate);
+    });
+  }
+  
+  void _scrollToSectionWithPixelMeasurement(GlobalKey targetKey, String targetSectionKey, bool animate) {
+    final scrollPosition = _draggableSheetController!.position;
+    
+    print('🔍 COLLECTING FRESH POSITION DATA:');
+    print('   Target section: "$targetSectionKey" (index $_todaySectionIndex)');
+    print('   Current scroll position: ${scrollPosition.pixels.toStringAsFixed(1)}px');
+    print('   Max scroll extent: ${scrollPosition.maxScrollExtent.toStringAsFixed(1)}px');
+    
+    // Collect fresh position data from all rendered sections
+    _collectFreshPositionData(targetKey, targetSectionKey, animate);
+  }
+  
+  void _collectFreshPositionData(GlobalKey targetKey, String targetSectionKey, bool animate) {
+    final scrollPosition = _draggableSheetController!.position;
+    final keys = _groupedPosts.keys.toList();
+    final double screenWidth = MediaQuery.of(context).size.width;
+    
+    print('📊 COLLECTING REAL POSITION DATA:');
+    
+    // Get the ListView's RenderBox to establish coordinate system
+    final RenderBox? listViewBox = _draggableSheetController!.position.context.notificationContext?.findRenderObject() as RenderBox?;
+    
+    if (listViewBox == null) {
+      print('❌ Could not find ListView RenderBox, falling back to estimated calculation');
+      _fallbackToEstimatedScroll(targetSectionKey, animate);
+      return;
+    }
+    
+    // Get the target section's RenderBox
+    final RenderBox? targetRenderBox = targetKey.currentContext?.findRenderObject() as RenderBox?;
+    
+    if (targetRenderBox == null) {
+      print('❌ Could not find target RenderBox for: $targetSectionKey');
+      _fallbackToEstimatedScroll(targetSectionKey, animate);
+      return;
+    }
+    
+    try {
+      // Get the target section's position relative to the ListView
+      final Offset targetPosition = targetRenderBox.localToGlobal(Offset.zero);
+      final Offset listViewPosition = listViewBox.localToGlobal(Offset.zero);
+      
+      // Calculate the relative position within the ListView
+      final double targetOffsetInList = targetPosition.dy - listViewPosition.dy;
+      
+      // Account for current scroll position to get the absolute offset
+      final double absoluteTargetOffset = targetOffsetInList + scrollPosition.pixels;
+      
+      // Add visual offset for comfortable positioning
+      final double dragHandleHeight = screenWidth * 0.029 + screenWidth * 0.019 + screenWidth * 0.012;
+      final double topBuffer = screenWidth * 0.02;
+      final double visualOffset = dragHandleHeight + topBuffer + (screenWidth * 0.03); // Slightly more spacing
+      
+      // Calculate final scroll position
+      final double finalOffset = (absoluteTargetOffset - visualOffset).clamp(0.0, scrollPosition.maxScrollExtent);
+      
+      print('📍 FRESH POSITION CALCULATION:');
+      print('   Target global position: ${targetPosition.dy.toStringAsFixed(1)}px');
+      print('   ListView global position: ${listViewPosition.dy.toStringAsFixed(1)}px');
+      print('   Target offset in list: ${targetOffsetInList.toStringAsFixed(1)}px');
+      print('   Absolute target offset: ${absoluteTargetOffset.toStringAsFixed(1)}px');
+      print('   Visual offset: ${visualOffset.toStringAsFixed(1)}px');
+      print('   Final scroll offset: ${finalOffset.toStringAsFixed(1)}px');
+      
+      if (animate) {
+        _isAutoScrolling = true;
+        _draggableSheetController!.animateTo(
+          finalOffset,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        ).then((_) => _isAutoScrolling = false);
+      } else {
+        _draggableSheetController!.jumpTo(finalOffset);
+      }
+      
+    } catch (e) {
+      print('❌ Error calculating fresh positions: $e');
+      print('   Falling back to estimated calculation...');
+      _fallbackToEstimatedScroll(targetSectionKey, animate);
+    }
+  }
+  
+  double _calculateCardHeight(double screenWidth, bool isNarrowScreen) {
+    final double cardPadding = (isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04) * 2;
+    final double titleHeight = (isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.055) * 2.2;
+    final double spacingBetween = isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02;
+    final double subtitleHeight = isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.045;
+    return cardPadding + titleHeight + spacingBetween + subtitleHeight;
+  }
+  
+  void _fallbackToEstimatedScroll(String targetSectionKey, bool animate) {
+    print('🔄 Using fallback estimated scroll for: $targetSectionKey');
+    final scrollPosition = _draggableSheetController!.position;
+    final keys = _groupedPosts.keys.toList();
+    final double screenWidth = MediaQuery.of(context).size.width;
+    
+    double targetOffset = 0.0;
+    
+    // Calculate estimated position
+    for (int i = 0; i < _todaySectionIndex!; i++) {
+      targetOffset += screenWidth * 0.13; // Header height
+      final cardsCount = _groupedPosts[keys[i]]!.length;
+      final bool isNarrowScreen = screenWidth < 360;
+      final double cardHeight = _calculateCardHeight(screenWidth, isNarrowScreen);
+      final double cardMargin = isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04;
+      targetOffset += cardsCount * (cardHeight + cardMargin);
+    }
+    
+    // Add visual offset to account for drag handle and padding
+    // This ensures the target section appears nicely positioned, not at the very top
+    final double dragHandleHeight = screenWidth * 0.029 + screenWidth * 0.019 + screenWidth * 0.012; // top + bottom + handle height
+    final double topBuffer = screenWidth * 0.02; // ListView top padding
+    final double visualOffset = dragHandleHeight + topBuffer + (screenWidth * 0.02); // Extra visual spacing
+    
+    // Subtract the visual offset so the section appears positioned nicely
+    final double adjustedOffset = (targetOffset - visualOffset).clamp(0.0, scrollPosition.maxScrollExtent);
+    
+    print('📍 FALLBACK SCROLL:');
+    print('   Raw target offset: ${targetOffset.toStringAsFixed(1)}px');
+    print('   Visual offset: ${visualOffset.toStringAsFixed(1)}px');
+    print('   Final adjusted offset: ${adjustedOffset.toStringAsFixed(1)}px');
     
     if (animate) {
       _isAutoScrolling = true;
       _draggableSheetController!.animateTo(
-        offset,
+        adjustedOffset,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       ).then((_) => _isAutoScrolling = false);
     } else {
-      _draggableSheetController!.jumpTo(offset);
+      _draggableSheetController!.jumpTo(adjustedOffset);
     }
   }
 
@@ -424,9 +540,11 @@ class _BulletinPageState extends State<BulletinPage> {
               expand: false, // Allow sheet to retract from any scroll position
               builder: (context, scrollController) {
                 _draggableSheetController = scrollController;
-                // Delay the scroll slightly to ensure the sheet is fully rendered with new compact cards
+                // Ensure ListView is fully built before attempting to scroll
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Future.delayed(const Duration(milliseconds: 100), () {
+                  // Add a longer delay to ensure all widgets are rendered
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    print('🚀 Triggering initial scroll to today section...');
                     _scrollToTodaySection(animate: false);
                   });
                 });
@@ -509,7 +627,7 @@ class _BulletinPageState extends State<BulletinPage> {
                             final date = dateKeys[index];
                             final postsForDate = _groupedPosts[date]!;
                             return StickyHeader(
-                              header: _buildDateHeader(date),
+                              header: _buildDateHeader(date, key: _sectionKeys[date]),
                               content: Column(
                                 children: postsForDate.map((post) => _BulletinEventCard(post: post)).toList(),
                               ),
@@ -540,7 +658,7 @@ class _BulletinPageState extends State<BulletinPage> {
     );
   }
 
-  Widget _buildDateHeader(String date) {
+  Widget _buildDateHeader(String date, {Key? key}) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     
@@ -550,13 +668,14 @@ class _BulletinPageState extends State<BulletinPage> {
     final double horizontalPadding = screenWidth * 0.06;
     
     return Container(
+      key: key, // Use the provided GlobalKey
       width: double.infinity,
       height: headerHeight,
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
         vertical: verticalPadding,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Color(0xFFF2F2F7),
       ),
       child: Align(
@@ -566,6 +685,7 @@ class _BulletinPageState extends State<BulletinPage> {
           style: GoogleFonts.inter(
             fontSize: MediaQuery.of(context).size.width * 0.045, 
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
       ),

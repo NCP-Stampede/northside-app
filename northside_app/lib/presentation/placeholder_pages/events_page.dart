@@ -106,9 +106,9 @@ class _EventsPageState extends State<EventsPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFFF6B6B), // Main Red
-                  Color(0xFFFF8C8C), // Lighter Red
-                  Color(0xFFFFBDBD), // Very Light Red
+                  Color(0xFFDC143C), // Darker, more vibrant red (Crimson)
+                  Color(0xFFE74C3C), // Rich red
+                  Color(0xFFFF5733), // Bright red-orange
                   Color(0xFFF2F2F7), // Transition Color
                   Color(0xFFF2F2F7), // Final Background Color
                 ],
