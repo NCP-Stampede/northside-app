@@ -1,6 +1,8 @@
 from datetime import datetime
 
 def tenevents(announcements, events, athletics):
+    now = datetime.now()
+
     carousel = []
 
     announcement_dates = [{"date":announcement['end_date'], "index": index, "type": "Announcement"} for index, announcement in enumerate(announcements)]
@@ -18,6 +20,12 @@ def tenevents(announcements, events, athletics):
 
     all_dates = announcement_dates + event_dates + athletics_dates
     all_dates.sort(key=lambda x: datetime.strptime(x['date'], '%m/%d/%Y'))
+    
+    for date in all_dates:
+        if datetime.strptime(date['date'], '%m/%d/%Y') >= now:
+            i = all_dates.index(date)
+            all_dates = all_dates[i:i+10]
+            break
 
     for date in all_dates[-10:]:
         if date["type"] == "Announcement":
