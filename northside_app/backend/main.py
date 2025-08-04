@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import threading
+# import threading
 # from dataUpdate import update_data
 from mongoengine import connect
 import os
@@ -10,6 +10,7 @@ from models.Athlete import Athlete
 from models.AthleticsSchedule import AthleticsSchedule
 from models.GeneralEvent import GeneralEvent
 from models.Announcement import Announcement
+from carousel import tenevents
 
 app = Flask(__name__)
 CORS(app)
@@ -103,6 +104,17 @@ def announcements():
         
         announcements = Announcement.objects(**query).to_json()
         return announcements
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/home', methods=['GET'])
+def home():
+    try:
+        announcements = [announcement.to_mongo().to_dict() for announcement in Announcement.objects().exclude('id')]
+        events = [event.to_mongo().to_dict() for event in GeneralEvent.objects().exclude('id')]
+        athletics_schedule = [schedule.to_mongo().to_dict() for schedule in AthleticsSchedule.objects().exclude('id')]
+        carousel = tenevents(announcements, events, athletics_schedule)
+        return jsonify(carousel)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -3,7 +3,7 @@ description: "Stampede - Unofficial mobile app for Northside High School - Stay 
 
 publish_to: 'none' 
 
-version: 1.0.0+4
+version: 1.0.0+11
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -47,4 +47,8 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
+    - assets/images/flexes_icon.png
+    - assets/images/grades_icon.png
+    - assets/images/homecoming_bg.png
+    - assets/images/hoofbeat_icon.png
+    - assets/images/icon.PNG
