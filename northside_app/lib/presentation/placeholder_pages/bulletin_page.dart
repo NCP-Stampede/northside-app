@@ -211,7 +211,7 @@ class _BulletinPageState extends State<BulletinPage> {
     }
 
     // If still not found, fallback to first section
-    if (targetSectionIndex == null || targetSectionIndex < 0) {
+    if (targetSectionIndex < 0) {
       targetSectionIndex = 0;
     }
 

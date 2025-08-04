@@ -172,40 +172,8 @@ class ApiService {
             // Enhanced logging for debugging
             AppLogger.debug('Processing carousel item: $json');
             
-            String title = '';
-            if (json['title'] != null) {
-              title = json['title'].toString();
-            } else if (json['sport'] != null) {
-              List<String> parts = [];
-              if (json['sport'] != null) parts.add(json['sport'].toString());
-              if (json['gender'] != null) parts.add(json['gender'].toString()); 
-              if (json['level'] != null) parts.add(json['level'].toString());
-              if (json['opponent'] != null) parts.add('vs ${json['opponent']}');
-              title = parts.join(' ');
-            } else if (json['name'] != null) {
-              title = json['name'].toString();
-            } else {
-              title = 'Northside Event';
-            }
-            
-            // Create a clean item
-            final item = HomeCarouselItem(
-              id: json['_id']?.toString() ?? '',
-              title: title,
-              description: json['description']?.toString(),
-              content: json['content']?.toString(),
-              date: json['date']?.toString() ?? json['start_date']?.toString() ?? '',
-              time: json['time']?.toString(),
-              sport: json['sport']?.toString(),
-              gender: json['gender']?.toString(),
-              level: json['level']?.toString(),
-              name: json['name']?.toString(),
-              opponent: json['opponent']?.toString(),
-              home: json['home'] as bool?,
-              location: json['location']?.toString(),
-              type: json['type']?.toString() ?? 'Event',
-              createdAt: DateTime.now(),
-            );
+            // Let HomeCarouselItem.fromJson() handle title generation with proper sport formatting
+            final item = HomeCarouselItem.fromJson(json);
             items.add(item);
           } catch (e) {
             AppLogger.error('Error processing carousel item', e);
@@ -252,48 +220,17 @@ class ApiService {
           // Process these items with our existing parsing logic
           final processedItems = items.map((json) {
             try {
-              // Create a clean item - reuse our custom item creation logic
-              String title = '';
-              if (json['title'] != null) {
-                title = json['title'].toString();
-              } else if (json['sport'] != null) {
-                List<String> parts = [];
-                if (json['sport'] != null) parts.add(json['sport'].toString());
-                if (json['gender'] != null) parts.add(json['gender'].toString()); 
-                if (json['level'] != null) parts.add(json['level'].toString());
-                if (json['opponent'] != null) parts.add('vs ${json['opponent']}');
-                title = parts.join(' ');
-              } else {
-                title = 'Northside Event';
-              }
-              
-              return HomeCarouselItem(
-                id: json['_id']?.toString() ?? '',
-                title: title,
-                description: json['description']?.toString(),
-                content: json['content']?.toString(),
-                date: json['date']?.toString() ?? json['start_date']?.toString() ?? '',
-                time: json['time']?.toString(),
-                sport: json['sport']?.toString(),
-                gender: json['gender']?.toString(),
-                level: json['level']?.toString(),
-                name: json['name']?.toString(),
-                opponent: json['opponent']?.toString(),
-                home: json['home'] as bool?,
-                location: json['location']?.toString(),
-                type: json['type']?.toString() ?? 'Event',
-                createdAt: DateTime.now(),
-              );
+              // Let HomeCarouselItem.fromJson() handle title generation with proper formatting
+              return HomeCarouselItem.fromJson(json);
             } catch (e) {
               AppLogger.error('Error processing carousel fallback item', e);
               // Return a default item in case of error
-              return HomeCarouselItem(
-                id: '0',
-                title: 'Northside Update',
-                date: DateTime.now().toString().substring(0, 10),
-                type: 'Announcement',
-                createdAt: DateTime.now(),
-              );
+              return HomeCarouselItem.fromJson({
+                '_id': '0',
+                'title': 'Northside Update',
+                'date': DateTime.now().toString().substring(0, 10),
+                'type': 'Announcement',
+              });
             }
           }).toList();
           

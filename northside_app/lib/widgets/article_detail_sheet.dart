@@ -127,18 +127,17 @@ class ArticleDetailSheet extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               children: [
-                // Conditionally display the image if it exists
-                if (article.imagePath != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: ClipSmoothRect(
-                      radius: SmoothBorderRadius(
-                        cornerRadius: DesignConstants.get24Radius(context),
-                        cornerSmoothing: 1.0,
-                      ),
-                      child: Image.asset(article.imagePath!, fit: BoxFit.contain),
+                // Always display the flexes_icon.png image
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: ClipSmoothRect(
+                    radius: SmoothBorderRadius(
+                      cornerRadius: DesignConstants.get24Radius(context),
+                      cornerSmoothing: 1.0,
                     ),
+                    child: Image.asset('assets/images/flexes_icon.png', fit: BoxFit.contain),
                   ),
+                ),
                 // Title
                 Text(
                   article.title,

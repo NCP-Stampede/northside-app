@@ -2,6 +2,7 @@
 
 import 'article.dart';
 import 'bulletin_post.dart';
+import 'sport_data.dart';
 import '../core/utils/logger.dart';
 
 class HomeCarouselItem {
@@ -105,9 +106,14 @@ class HomeCarouselItem {
       if (json['sport'] != null) {
         final parts = <String>[];
         
-        if (json['sport'] != null) parts.add(json['sport'].toString());
-        if (json['gender'] != null) parts.add(json['gender'].toString());
-        if (json['level'] != null) parts.add(json['level'].toString());
+        // Format sport name for display (e.g., "cross-country" to "Cross Country")
+        if (json['sport'] != null) {
+          final sportName = json['sport'].toString();
+          parts.add(SportsData.getDisplaySportName(sportName));
+        }
+        
+        if (json['gender'] != null) parts.add(_capitalizeFirst(json['gender'].toString()));
+        if (json['level'] != null) parts.add(_capitalizeFirst(json['level'].toString()));
         
         if (json['opponent'] != null) {
           parts.add("vs ${json['opponent']}");
@@ -199,6 +205,12 @@ class HomeCarouselItem {
     // Format subtitle based on item type
     switch (type) {
       case 'Athletics':
+        // Add formatted sport name if available
+        if (sport != null) {
+          String formattedSport = SportsData.getDisplaySportName(sport!);
+          parts.add(formattedSport);
+        }
+        
         // Date and time
         if (date.isNotEmpty) parts.add(date);
         if (time != null && time!.isNotEmpty) parts.add(time!);
@@ -281,9 +293,9 @@ class HomeCarouselItem {
     switch (type) {
       case 'Athletics':
         // Add sports details in structured format
-        if (sport != null) contentParts.add('Sport: $sport');
-        if (gender != null) contentParts.add('Gender: $gender');
-        if (level != null) contentParts.add('Level: $level');
+        if (sport != null) contentParts.add('Sport: ${SportsData.getDisplaySportName(sport!)}');
+        if (gender != null) contentParts.add('Gender: ${_capitalizeFirst(gender!)}');
+        if (level != null) contentParts.add('Level: ${_capitalizeFirst(level!)}');
         if (opponent != null) contentParts.add('Opponent: $opponent');
         if (location != null) contentParts.add('Location: $location');
         if (date.isNotEmpty) contentParts.add('Date: $date');
@@ -355,5 +367,11 @@ class HomeCarouselItem {
       AppLogger.warning('Error parsing date: $date', e);
     }
     return DateTime.now();
+  }
+  
+  // Helper method to capitalize first letter of a string
+  static String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 }

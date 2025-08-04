@@ -259,24 +259,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             Container(
               height: imageHeight, // Dynamic height based on screen size
               padding: const EdgeInsets.only(top: 17.0, bottom: 0.0),
-              child: article.imagePath != null 
-                ? Image.asset(
-                    article.imagePath!, 
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: const Center(
-                          child: Icon(
-                            Icons.event,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Container(
+              child: Image.asset(
+                'assets/images/flexes_icon.png', 
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
                     color: Colors.grey.shade200,
                     child: const Center(
                       child: Icon(
@@ -285,7 +272,9 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                         color: Colors.grey,
                       ),
                     ),
-                  ),
+                  );
+                },
+              ),
             ),
             Transform.translate(
               offset: const Offset(0, -1),
