@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../controllers/events_controller.dart';
+import '../../controllers/home_carousel_controller.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 
@@ -17,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
-  final EventsController eventsController = Get.put(EventsController());
+  final HomeCarouselController carouselController = Get.put(HomeCarouselController());
   int _currentPageIndex = 0;
   // This variable TRACKS which nav item is selected. It's the key to making it interactive.
   int _navBarIndex = 0;
@@ -202,11 +202,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildEventsCarousel() {
     return Obx(() {
-      if (eventsController.isLoading.value) {
+      if (carouselController.isLoading) {
         return const Center(child: CircularProgressIndicator(color: Colors.white));
       }
       
-      final carouselEvents = eventsController.getHomeCarouselEvents();
+      final carouselEvents = carouselController.getCarouselAsArticles();
       
       if (carouselEvents.isEmpty) {
         return const Center(
@@ -246,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPageIndicator(double screenWidth) {
     return Obx(() {
-      final carouselEvents = eventsController.getHomeCarouselEvents();
+      final carouselEvents = carouselController.getCarouselAsArticles();
       final eventCount = carouselEvents.length;
       
       if (eventCount <= 1) return const SizedBox.shrink();
