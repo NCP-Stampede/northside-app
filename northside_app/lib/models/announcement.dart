@@ -103,12 +103,17 @@ class Announcement {
     // Use end_date for home carousel, start_date for bulletin
     final dateToUse = useEndDate ? endDate : startDate;
 
+    // FIX: Use homecoming image for homecoming announcements
+    final image = title.toLowerCase().contains('homecoming')
+        ? 'assets/images/homecoming_bg.png'
+        : 'assets/images/flexes_icon.png';
+
     return BulletinPost(
       title: title,
       subtitle: description ?? 'Posted by $createdBy',
       date: parseAnnouncementDate(dateToUse),
       content: description ?? title,
-      imagePath: 'assets/images/flexes_icon.png', // Default image for announcements
+      imagePath: image, // Default image for announcements
       isPinned: false,
     );
   }
