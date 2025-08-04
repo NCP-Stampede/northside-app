@@ -4,7 +4,7 @@ import 'models/announcement.dart';
 import 'models/athlete.dart';
 import 'models/athletics_schedule.dart';
 import 'models/general_event.dart';
-import 'models/home_carousel_item.dart';
+import 'models/home_carousel_item.dart' as carousel;
 import 'core/utils/logger.dart';
 
 class ApiService {
@@ -149,7 +149,7 @@ class ApiService {
   }
 
   // Fetch home carousel items (10 events/announcements/games)
-  static Future<List<HomeCarouselItem>> getHomeCarousel() async {
+  static Future<List<carousel.HomeCarouselItem>> getHomeCarousel() async {
     try {
       const url = '/home';
       final fullUrl = "$baseUrl$url";

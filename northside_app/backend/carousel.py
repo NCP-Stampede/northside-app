@@ -19,7 +19,7 @@ def tenevents(announcements, events, athletics):
     all_dates = announcement_dates + event_dates + athletics_dates
     all_dates.sort(key=lambda x: datetime.strptime(x['date'], '%m/%d/%Y'))
 
-    for date in all_dates[:10]:
+    for date in all_dates[-10:]:
         if date["type"] == "Announcement":
             carousel.append(announcements[date["index"]])
         elif date["type"] == "Event":

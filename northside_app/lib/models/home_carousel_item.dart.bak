@@ -146,7 +146,7 @@ class HomeCarouselItem {
       level: json['level']?.toString(),
       name: json['name']?.toString(),
       opponent: json['opponent']?.toString(),
-      home: json['home'] as bool?,
+      home: json['home'],
       location: json['location']?.toString(),
       type: type,
       createdAt: parseCreatedAt(),
@@ -176,13 +176,46 @@ class HomeCarouselItem {
   // Convert to Article for compatibility with existing UI
   Article toArticle() {
     // Generate a subtitle based on available fields
-    String subtitle = _generateSubtitle();
+    String subtitle = "";
+    
+    if (date.isNotEmpty) {
+      subtitle = date;
+      
+      if (time != null && time!.isNotEmpty) {
+        subtitle += " • $time";
+      }
+      
+      if (location != null && location!.isNotEmpty) {
+        subtitle += " • $location";
+      }
+    } else {
+      subtitle = type;
+    }
     
     // Select image based on type
-    String imagePath = _getImagePath();
+    String imagePath = 'assets/images/icon.png';
+    if (type == 'Athletics') {
+      imagePath = 'assets/images/flexes_icon.png';
+    } else if (type == 'Event') {
+      imagePath = 'assets/images/grades_icon.png';
+    }
     
     // Generate content
-    String articleContent = _generateContent();
+    String articleContent = title;
+    
+    if (description != null && description!.isNotEmpty) {
+      articleContent += "\n\n" + description!;
+    }
+    
+    if (date.isNotEmpty) articleContent += "\n\nDate: $date";
+    if (time != null && time!.isNotEmpty) articleContent += "\n\nTime: $time";
+    if (location != null && location!.isNotEmpty) articleContent += "\n\nLocation: $location";
+    
+    if (type == 'Athletics') {
+      if (sport != null) articleContent += "\n\nSport: $sport";
+      if (opponent != null) articleContent += "\n\nOpponent: $opponent";
+      if (home != null) articleContent += "\n\n" + (home! ? "Home Game" : "Away Game");
+    }
 
     return Article(
       title: title,
@@ -190,128 +223,6 @@ class HomeCarouselItem {
       imagePath: imagePath,
       content: articleContent,
     );
-  }
-
-  // Generate a subtitle for display in the carousel
-  String _generateSubtitle() {
-    List<String> parts = [];
-    
-    // Format subtitle based on item type
-    switch (type) {
-      case 'Athletics':
-        // Date and time
-        if (date.isNotEmpty) parts.add(date);
-        if (time != null && time!.isNotEmpty) parts.add(time!);
-        
-        // Location if available
-        if (location != null && location!.isNotEmpty) {
-          parts.add(location!);
-        }
-        break;
-        
-      case 'Announcement':
-        // Add date and a brief description
-        if (date.isNotEmpty) parts.add(date);
-        
-        // Add first part of description if available
-        if (description != null && description!.isNotEmpty) {
-          String brief = description!;
-          if (brief.length > 30) {
-            brief = '${brief.substring(0, 27)}...';
-          }
-          parts.add(brief);
-        }
-        break;
-        
-      case 'Event':
-        // Add date, time and location
-        if (date.isNotEmpty) parts.add(date);
-        if (time != null && time!.isNotEmpty) parts.add(time!);
-        if (location != null && location!.isNotEmpty) {
-          parts.add(location!);
-        }
-        break;
-        
-      default:
-        // Default to date if available
-        if (date.isNotEmpty) parts.add(date);
-        break;
-    }
-    
-    // If we have no parts, return a default
-    if (parts.isEmpty) {
-      return type;
-    }
-    
-    return parts.join(' • ');
-  }
-
-  // Select appropriate image based on item type
-  String _getImagePath() {
-    switch (type) {
-      case 'Athletics':
-        return 'assets/images/flexes_icon.png';
-      case 'Announcement':
-        return 'assets/images/hoofbeat_icon.png';
-      case 'Event':
-        return 'assets/images/grades_icon.png';
-      default:
-        return 'assets/images/icon.png';
-    }
-  }
-
-  // Generate detailed content for the article view
-  String _generateContent() {
-    List<String> contentParts = [];
-    
-    // Always start with title
-    contentParts.add(title);
-    
-    // Add description if available
-    if (description != null && description!.isNotEmpty) {
-      contentParts.add(description!);
-    }
-    
-    // Add content if available
-    if (content != null && content!.isNotEmpty) {
-      contentParts.add(content!);
-    }
-    
-    // Add type-specific details
-    switch (type) {
-      case 'Athletics':
-        // Add sports details in structured format
-        if (sport != null) contentParts.add('Sport: $sport');
-        if (gender != null) contentParts.add('Gender: $gender');
-        if (level != null) contentParts.add('Level: $level');
-        if (opponent != null) contentParts.add('Opponent: $opponent');
-        if (location != null) contentParts.add('Location: $location');
-        if (date.isNotEmpty) contentParts.add('Date: $date');
-        if (time != null && time!.isNotEmpty) contentParts.add('Time: $time');
-        if (home != null) {
-          contentParts.add(home! ? 'Home Game' : 'Away Game');
-        }
-        break;
-        
-      case 'Announcement':
-        // Add dates in structured format
-        if (date.isNotEmpty) contentParts.add('Date: $date');
-        break;
-        
-      case 'Event':
-        // Add event details in structured format
-        if (location != null) contentParts.add('Location: $location');
-        if (date.isNotEmpty) contentParts.add('Date: $date');
-        if (time != null && time!.isNotEmpty) contentParts.add('Time: $time');
-        break;
-    }
-    
-    // Default message if no content
-    if (contentParts.length <= 1) {
-      contentParts.add('Additional details will be available soon.');
-    }
-    
-    return contentParts.join('\n\n');
   }
 
   // Convert to BulletinPost for compatibility with existing UI
@@ -330,7 +241,117 @@ class HomeCarouselItem {
     );
   }
 
-  // Parse date string to DateTime
+  String _generateSubtitle() {
+    List<String> parts = [];
+    
+    switch (type) {
+      case 'Athletics':
+        // Sport details
+        if (sport != null) parts.add(sport!);
+        
+        // Opponent info
+        if (opponent != null) {
+          parts.add('vs ${opponent!}');
+        }
+        
+        // Date and time
+        if (date.isNotEmpty) parts.add(date);
+        if (time != null && time!.isNotEmpty) parts.add(time!);
+        
+        // Location if available
+        if (location != null && location!.isNotEmpty) {
+          parts.add(location!);
+        }
+        break;
+        
+      case 'Announcement':
+        if (date.isNotEmpty) parts.add(date);
+        break;
+        
+      case 'Event':
+        if (date.isNotEmpty) parts.add(date);
+        if (time != null && time!.isNotEmpty) parts.add(time!);
+        if (location != null && location!.isNotEmpty) parts.add(location!);
+        break;
+        
+      default:
+        if (date.isNotEmpty) parts.add(date);
+        break;
+    }
+    
+    return parts.isEmpty ? type : parts.join(' • ');
+      case 'Announcement':
+        // Add any description summary if available
+        if (description != null && description!.isNotEmpty && description!.length <= 30) {
+          parts.add(description!);
+        }
+        break;
+        
+      case 'Event':
+        // Add location for events
+        if (location != null) {
+          parts.add(location!);
+        }
+        break;
+        
+      default:
+        break;
+    }
+    
+    // If we have no parts, return a default
+    if (parts.isEmpty) {
+      return type;
+    }
+    
+    return parts.join(' • ');
+  }
+  }
+
+  String _getImagePath() {
+    switch (type) {
+      case 'Athletics':
+        return 'assets/images/flexes_icon.png';
+      case 'Announcement':
+        return 'assets/images/icon.png';
+      case 'Event':
+        return 'assets/images/grades_icon.png';
+      default:
+        return 'assets/images/icon.png';
+    }
+  }
+
+  String _generateContent() {
+    List<String> contentParts = [];
+    
+    if (description != null && description!.isNotEmpty) {
+      contentParts.add(description!);
+    }
+    
+    if (content != null && content!.isNotEmpty) {
+      contentParts.add(content!);
+    }
+
+    switch (type) {
+      case 'Athletics':
+        if (sport != null) contentParts.add('Sport: $sport');
+        if (opponent != null) contentParts.add('Opponent: $opponent');
+        if (location != null) contentParts.add('Location: $location');
+        if (home != null) {
+          contentParts.add(home! ? 'Home Game' : 'Away Game');
+        }
+        break;
+      case 'Event':
+        if (location != null) contentParts.add('Location: $location');
+        break;
+    }
+    
+    if (contentParts.isEmpty) {
+      contentParts.add('Details will be available soon.');
+    }
+    
+    return contentParts.join('\n\n');
+  }
+
   DateTime _parseDate() {
     try {
       // Try parsing different date formats
