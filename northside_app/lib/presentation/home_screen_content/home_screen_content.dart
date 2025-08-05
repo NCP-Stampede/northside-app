@@ -64,6 +64,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height for consistent spacing
               _buildQuickActions(),
               SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 4% of screen height
+              // Carousel moved to overlay, leaving space for it
               Obx(() => _buildEventsCarousel(context, homeCarouselController)),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height
               Obx(() => _buildPageIndicator(homeCarouselController)),
@@ -253,59 +254,64 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                         cornerRadius: DesignConstants.get32Radius(context),
                         cornerSmoothing: 1.0,
                       ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Container(
-              height: imageHeight, // Dynamic height based on screen size
-              padding: const EdgeInsets.only(top: 17.0, bottom: 0.0),
-              child: Image.asset(
-                'assets/images/flexes_icon.png', 
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade200,
-                    child: const Center(
-                      child: Icon(
-                        Icons.event,
-                        size: 48,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -1),
-              child: Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            article.subtitle,
-                            style: const TextStyle(fontSize: 14, color: Colors.grey),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  height: imageHeight, // Dynamic height based on screen size
+                  padding: const EdgeInsets.only(top: 17.0, bottom: 0.0),
+                  child: Image.asset(
+                    'assets/images/flexes_icon.png', // Always use flexes icon regardless of content type
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Center(
+                          child: Icon(
+                            Icons.event,
+                            size: 48,
+                            color: Colors.grey,
                           ),
                         ),
-                        const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
-                      ],
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
+                Transform.translate(
+                  offset: const Offset(0, -1),
+                  child: Container(
+                    height: carouselHeight - imageHeight, // Use remaining height
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                article.subtitle,
+                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
+                          ],
+                        ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
