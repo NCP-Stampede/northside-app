@@ -101,36 +101,18 @@ class _EventsPageState extends State<EventsPage> {
     return Scaffold(
       body: Stack(
         children: [
+          // Single gradient container for background
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFFF6B6B), // Red
-                  Color(0xFF4A90E2), // True blue (less green)
+                  Color(0xFFDC143C), // Darker, more vibrant red (Crimson)
+                  Color(0xFFE74C3C), // Rich red
+                  Color(0xFFFF5733), // Bright red-orange
+                  Color(0xFFF2F2F7), // Transition Color
+                  Color(0xFFF2F2F7), // Final Background Color
                 ],
-                stops: [0.0, 1.0],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Color(0xFFF2F2F7).withOpacity(0.03),
-                  Color(0xFFF2F2F7).withOpacity(0.07),
-                  Color(0xFFF2F2F7).withOpacity(0.15),
-                  Color(0xFFF2F2F7).withOpacity(0.25),
-                  Color(0xFFF2F2F7).withOpacity(0.4),
-                  Color(0xFFF2F2F7).withOpacity(0.6),
-                  Color(0xFFF2F2F7).withOpacity(0.8),
-                  Color(0xFFF2F2F7).withOpacity(0.95),
-                  Color(0xFFF2F2F7),
-                ],
-                stops: [0.0, 0.12, 0.18, 0.25, 0.32, 0.38, 0.42, 0.45, 0.47, 0.49, 0.5],
+                stops: [0.0, 0.15, 0.3, 0.45, 1.0],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),

@@ -26,7 +26,7 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
   void _showComingSoonDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return Dialog(
           shape: SmoothRectangleBorder(
@@ -69,7 +69,7 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: Colors.black54,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -78,7 +78,7 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop(); // Close dialog
-                      Get.offAllNamed('/'); // Navigate to homepage and clear stack
+                      Get.back(); // Pop HoofBeat page, triggers left-to-right animation
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,

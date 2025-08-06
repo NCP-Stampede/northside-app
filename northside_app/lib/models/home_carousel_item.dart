@@ -1,0 +1,377 @@
+// lib/models/home_carousel_item.dart
+
+import 'article.dart';
+import 'bulletin_post.dart';
+import 'sport_data.dart';
+import '../core/utils/logger.dart';
+
+class HomeCarouselItem {
+  final String id;
+  final String title;
+  final String? description;
+  final String? content;
+  final String date;
+  final String? time;
+  final String? sport;
+  final String? gender;
+  final String? level;
+  final String? name;
+  final String? opponent;
+  final bool? home;
+  final String? location;
+  final String type; // "Announcement", "Event", or "Athletics"
+  final DateTime createdAt;
+
+  const HomeCarouselItem({
+    required this.id,
+    required this.title,
+    this.description,
+    this.content,
+    required this.date,
+    this.time,
+    this.sport,
+    this.gender,
+    this.level,
+    this.name,
+    this.opponent,
+    this.home,
+    this.location,
+    required this.type,
+    required this.createdAt,
+  });
+
+  factory HomeCarouselItem.fromJson(Map<String, dynamic> json) {
+    // Log full item for debugging
+    AppLogger.debug('Parsing HomeCarouselItem from: $json');
+    
+    DateTime parseCreatedAt() {
+      try {
+        final createdAtField = json['createdAt'];
+        if (createdAtField is Map && createdAtField.containsKey('\$date')) {
+          // MongoDB timestamp format: {"$date": 1751022383799}
+          final timestamp = createdAtField['\$date'];
+          if (timestamp is int) {
+            return DateTime.fromMillisecondsSinceEpoch(timestamp);
+          }
+        } else if (createdAtField is String) {
+          // String format
+          return DateTime.parse(createdAtField);
+        }
+        return DateTime.now();
+      } catch (e) {
+        AppLogger.warning('Error parsing createdAt', e);
+        return DateTime.now();
+      }
+    }
+
+    // Determine type based on presence of certain fields or explicit type field
+    String determineType() {
+      // First check if type is explicitly provided
+      if (json.containsKey('type')) {
+        return json['type'].toString();
+      }
+      
+      // Otherwise infer from fields
+      if (json.containsKey('sport') || json.containsKey('opponent')) {
+        return 'Athletics';
+      } else if (json.containsKey('start_date') || json.containsKey('end_date')) {
+        return 'Announcement';
+      } else {
+        return 'Event';
+      }
+    }
+
+    // Extract ID from different possible formats
+    String getId() {
+      if (json.containsKey('_id')) {
+        final id = json['_id'];
+        if (id is Map && id.containsKey('\$oid')) {
+          return id['\$oid'].toString();
+        } else {
+          return id.toString();
+        }
+      } else if (json.containsKey('id')) {
+        return json['id'].toString();
+      }
+      return '';
+    }
+    
+    // Get the most descriptive title available
+    String getTitle() {
+      if (json['title'] != null && json['title'].toString().isNotEmpty) {
+        return json['title'].toString();
+      }
+      
+      // For athletics events, create a descriptive title
+      if (json['sport'] != null) {
+        final parts = <String>[];
+        
+        // Format sport name for display (e.g., "cross-country" to "Cross Country")
+        if (json['sport'] != null) {
+          final sportName = json['sport'].toString();
+          parts.add(SportsData.getDisplaySportName(sportName));
+        }
+        
+        if (json['gender'] != null) parts.add(_capitalizeFirst(json['gender'].toString()));
+        if (json['level'] != null) parts.add(_capitalizeFirst(json['level'].toString()));
+        
+        if (json['opponent'] != null) {
+          parts.add("vs ${json['opponent']}");
+        }
+        
+        if (parts.isNotEmpty) {
+          return parts.join(' ');
+        }
+      }
+      
+      return json['name']?.toString() ?? 'Event';
+    }
+    
+    // Get date from various possible fields
+    String getDate() {
+      return json['date']?.toString() ?? 
+             json['start_date']?.toString() ?? 
+             json['startDate']?.toString() ?? 
+             '';
+    }
+    
+    final type = determineType();
+    final id = getId();
+    final title = getTitle();
+    final date = getDate();
+    
+    return HomeCarouselItem(
+      id: id,
+      title: title,
+      description: json['description']?.toString(),
+      content: json['content']?.toString(),
+      date: date,
+      time: json['time']?.toString(),
+      sport: json['sport']?.toString(),
+      gender: json['gender']?.toString(),
+      level: json['level']?.toString(),
+      name: json['name']?.toString(),
+      opponent: json['opponent']?.toString(),
+      home: json['home'] as bool?,
+      location: json['location']?.toString(),
+      type: type,
+      createdAt: parseCreatedAt(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'content': content,
+      'date': date,
+      'time': time,
+      'sport': sport,
+      'gender': gender,
+      'level': level,
+      'name': name,
+      'opponent': opponent,
+      'home': home,
+      'location': location,
+      'type': type,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  // Convert to Article for compatibility with existing UI
+  Article toArticle() {
+    // Generate a subtitle based on available fields
+    String subtitle = _generateSubtitle();
+    
+    // Select image based on type
+    String imagePath = _getImagePath();
+    
+    // Generate content
+    String articleContent = _generateContent();
+
+    return Article(
+      title: title,
+      subtitle: subtitle,
+      imagePath: imagePath,
+      content: articleContent,
+    );
+  }
+
+  // Generate a subtitle for display in the carousel
+  String _generateSubtitle() {
+    List<String> parts = [];
+    
+    // Format subtitle based on item type
+    switch (type) {
+      case 'Athletics':
+        // Add formatted sport name if available
+        if (sport != null) {
+          String formattedSport = SportsData.getDisplaySportName(sport!);
+          parts.add(formattedSport);
+        }
+        
+        // Date and time
+        if (date.isNotEmpty) parts.add(date);
+        if (time != null && time!.isNotEmpty) parts.add(time!);
+        
+        // Location if available
+        if (location != null && location!.isNotEmpty) {
+          parts.add(location!);
+        }
+        break;
+        
+      case 'Announcement':
+        // Add date and a brief description
+        if (date.isNotEmpty) parts.add(date);
+        
+        // Add first part of description if available
+        if (description != null && description!.isNotEmpty) {
+          String brief = description!;
+          if (brief.length > 30) {
+            brief = '${brief.substring(0, 27)}...';
+          }
+          parts.add(brief);
+        }
+        break;
+        
+      case 'Event':
+        // Add date, time and location
+        if (date.isNotEmpty) parts.add(date);
+        if (time != null && time!.isNotEmpty) parts.add(time!);
+        if (location != null && location!.isNotEmpty) {
+          parts.add(location!);
+        }
+        break;
+        
+      default:
+        // Default to date if available
+        if (date.isNotEmpty) parts.add(date);
+        break;
+    }
+    
+    // If we have no parts, return a default
+    if (parts.isEmpty) {
+      return type;
+    }
+    
+    return parts.join(' • ');
+  }
+
+  // Select appropriate image based on item type
+  String _getImagePath() {
+    switch (type) {
+      case 'Athletics':
+        return 'assets/images/flexes_icon.png';
+      case 'Announcement':
+        return 'assets/images/hoofbeat_icon.png';
+      case 'Event':
+        return 'assets/images/grades_icon.png';
+      default:
+        return 'assets/images/icon.png';
+    }
+  }
+
+  // Generate detailed content for the article view
+  String _generateContent() {
+    List<String> contentParts = [];
+    
+    // Always start with title
+    contentParts.add(title);
+    
+    // Add description if available
+    if (description != null && description!.isNotEmpty) {
+      contentParts.add(description!);
+    }
+    
+    // Add content if available
+    if (content != null && content!.isNotEmpty) {
+      contentParts.add(content!);
+    }
+    
+    // Add type-specific details
+    switch (type) {
+      case 'Athletics':
+        // Add sports details in structured format
+        if (sport != null) contentParts.add('Sport: ${SportsData.getDisplaySportName(sport!)}');
+        if (gender != null) contentParts.add('Gender: ${_capitalizeFirst(gender!)}');
+        if (level != null) contentParts.add('Level: ${_capitalizeFirst(level!)}');
+        if (opponent != null) contentParts.add('Opponent: $opponent');
+        if (location != null) contentParts.add('Location: $location');
+        if (date.isNotEmpty) contentParts.add('Date: $date');
+        if (time != null && time!.isNotEmpty) contentParts.add('Time: $time');
+        if (home != null) {
+          contentParts.add(home! ? 'Home Game' : 'Away Game');
+        }
+        break;
+        
+      case 'Announcement':
+        // Add dates in structured format
+        if (date.isNotEmpty) contentParts.add('Date: $date');
+        break;
+        
+      case 'Event':
+        // Add event details in structured format
+        if (location != null) contentParts.add('Location: $location');
+        if (date.isNotEmpty) contentParts.add('Date: $date');
+        if (time != null && time!.isNotEmpty) contentParts.add('Time: $time');
+        break;
+    }
+    
+    // Default message if no content
+    if (contentParts.length <= 1) {
+      contentParts.add('Additional details will be available soon.');
+    }
+    
+    return contentParts.join('\n\n');
+  }
+
+  // Convert to BulletinPost for compatibility with existing UI
+  BulletinPost toBulletinPost() {
+    String subtitle = _generateSubtitle();
+    String imagePath = _getImagePath();
+    String bulletinContent = _generateContent();
+    DateTime eventDate = _parseDate();
+
+    return BulletinPost(
+      title: title,
+      subtitle: subtitle,
+      date: eventDate,
+      content: bulletinContent,
+      imagePath: imagePath,
+    );
+  }
+
+  // Parse date string to DateTime
+  DateTime _parseDate() {
+    try {
+      // Try parsing different date formats
+      if (date.contains('/')) {
+        // MM/dd/yyyy format
+        final parts = date.split('/');
+        if (parts.length == 3) {
+          return DateTime(
+            int.parse(parts[2]),
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+          );
+        }
+      } else if (date.contains('-')) {
+        // yyyy-mm-dd format
+        return DateTime.parse(date);
+      } else {
+        // Try parsing as is
+        return DateTime.parse(date);
+      }
+    } catch (e) {
+      AppLogger.warning('Error parsing date: $date', e);
+    }
+    return DateTime.now();
+  }
+  
+  // Helper method to capitalize first letter of a string
+  static String _capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+}

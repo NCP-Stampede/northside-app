@@ -128,8 +128,7 @@ class BulletinController extends GetxController {
     final Set<String> addedEventKeys = {}; // To prevent duplicates
     
     // Add ALL upcoming events (general events)
-    final generalEventPosts = allPosts.where((post) => 
-        post.imagePath != 'assets/images/flexes_icon.png').toList();
+    final generalEventPosts = allPosts.toList();
     
     for (final post in generalEventPosts) {
       if (!post.date.isBefore(todayStart)) {

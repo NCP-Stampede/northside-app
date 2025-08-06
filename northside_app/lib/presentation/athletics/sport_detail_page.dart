@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../../controllers/athletics_controller.dart' as AC;
-import '../../core/utils/logger.dart';
-import '../../core/utils/app_colors.dart';
-import '../../core/design_constants.dart';
 import '../../models/sport_data.dart';
-import '../../api.dart';
 import '../../models/athletics_schedule.dart';
+import '../../models/athlete.dart';
+import '../../core/utils/app_colors.dart';
+import '../../controllers/athletics_controller.dart' as AC;
+import '../../core/design_constants.dart';
+import '../../core/utils/logger.dart';
+import '../../widgets/animated_segmented_control.dart';
+import '../../api.dart';
 
 class GameSchedule {
   const GameSchedule({required this.date, required this.time, required this.event, required this.opponent, required this.location, required this.score, required this.result});
@@ -112,7 +113,7 @@ class _SportDetailPageState extends State<SportDetailPage> {
       
       // Also use fresh schedule data
       if (teamData['schedule'] is List) {
-        final freshSchedule = (teamData['schedule'] as List).cast<AthleticsSchedule>();
+        final freshSchedule = (teamData['schedule'] as List<AthleticsSchedule>);
         _schedules = freshSchedule.map((event) => event.toGameSchedule()).toList();
         AppLogger.debug('Found ${_schedules.length} schedule items for sport: $apiSportName, gender: $gender');
       }
@@ -301,71 +302,33 @@ class _SportDetailPageState extends State<SportDetailPage> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-              child: _buildTeamLevelTabs(context),
+              child: AnimatedSegmentedControl(
+                segments: _levels,
+                selectedSegment: _selectedLevel,
+                onSelectionChanged: (level) {
+                  setState(() {
+                    _selectedLevel = level;
+                    _updateRoster(); // Update roster when level changes
+                    _updateSchedule(); // Update schedule when level changes
+                  });
+                },
+              ),
             ),
             SizedBox(height: screenHeight * 0.03),
-            _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
-            SizedBox(height: screenHeight * 0.03),
-            _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
-            SizedBox(height: screenHeight * 0.05),
+            AnimatedContentSwitcher(
+              switchKey: _selectedLevel,
+              child: Column(
+                children: [
+                  _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
+                  SizedBox(height: screenHeight * 0.03),
+                  _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
+                  SizedBox(height: screenHeight * 0.05),
+                ],
+              ),
+            ),
           ],
         );
       }),
-    );
-  }
-
-  Widget _buildTeamLevelTabs(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.01),
-      decoration: ShapeDecoration(
-        color: Colors.grey.shade200,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get32Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),
-      ),
-      child: Row(
-        children: _levels.map((level) {
-          final isSelected = _selectedLevel == level;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedLevel = level;
-                  _updateRoster(); // Update roster when level changes
-                  _updateSchedule(); // Update schedule when level changes
-                });
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
-                decoration: ShapeDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,
-                  shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                      cornerRadius: DesignConstants.get28Radius(context),
-                      cornerSmoothing: 1.0,
-                    ),
-                  ),
-                  shadows: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))] : [],
-                ),
-                child: Center(
-                  child: Text(
-                    _formatLevelName(level),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? AppColors.primaryBlue : Colors.black,
-                      fontSize: screenWidth * 0.045,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 

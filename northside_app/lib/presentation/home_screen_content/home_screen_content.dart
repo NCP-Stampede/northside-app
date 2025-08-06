@@ -11,14 +11,14 @@ import '../../models/article.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../core/design_constants.dart';
 import '../../widgets/shared_header.dart';
-import '../../controllers/bulletin_controller.dart';
+import '../../controllers/home_carousel_controller.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final BulletinController bulletinController = Get.find();
+    final HomeCarouselController homeCarouselController = Get.find<HomeCarouselController>();
     return Scaffold(
       body: Stack(
         children: [
@@ -64,9 +64,10 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height for consistent spacing
               _buildQuickActions(),
               SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 4% of screen height
-              Obx(() => _buildEventsCarousel(context, bulletinController)),
+              // Carousel moved to overlay, leaving space for it
+              Obx(() => _buildEventsCarousel(context, homeCarouselController)),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height
-              Obx(() => _buildPageIndicator(bulletinController)),
+              Obx(() => _buildPageIndicator(homeCarouselController)),
             ],
           ),
         ],
@@ -99,8 +100,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  Widget _buildEventsCarousel(BuildContext context, BulletinController bulletinController) {
-    final events = bulletinController.upcomingEvents;
+  Widget _buildEventsCarousel(BuildContext context, HomeCarouselController carouselController) {
+    final events = carouselController.getCarouselAsArticles();
     final double screenHeight = MediaQuery.of(context).size.height;
     final double carouselHeight = screenHeight * 0.4; // 40% of screen height
     
@@ -108,7 +109,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
       return SizedBox(
         height: carouselHeight,
         child: Center(
-          child: bulletinController.isLoading 
+          child: carouselController.isLoading 
             ? const CircularProgressIndicator()
             : Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -159,7 +160,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
       return SizedBox(
         height: carouselHeight,
         child: PageView.builder(
-          controller: controller.pageController,
+          controller: PageController(),
           itemCount: 1,
           clipBehavior: Clip.none,
           physics: const NeverScrollableScrollPhysics(),
@@ -201,7 +202,9 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         itemCount: null, // Infinite
         clipBehavior: Clip.none,
         physics: const BouncingScrollPhysics(),
-        onPageChanged: controller.onPageChanged,
+        onPageChanged: (index) {
+          controller.onPageChanged(index);
+        },
         itemBuilder: (context, index) {
           final actualIndex = index % events.length;
           final post = events[actualIndex];
@@ -251,15 +254,16 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                         cornerRadius: DesignConstants.get32Radius(context),
                         cornerSmoothing: 1.0,
                       ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Container(
-              height: imageHeight, // Dynamic height based on screen size
-              padding: const EdgeInsets.only(top: 17.0, bottom: 0.0),
-              child: article.imagePath != null 
-                ? Image.asset(
-                    article.imagePath!, 
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  height: imageHeight, // Dynamic height based on screen size
+                  padding: const EdgeInsets.only(top: 17.0, bottom: 0.0),
+                  child: Image.asset(
+                    'assets/images/flexes_icon.png', // Always use flexes icon regardless of content type
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -273,48 +277,41 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                         ),
                       );
                     },
-                  )
-                : Container(
-                    color: Colors.grey.shade200,
-                    child: const Center(
-                      child: Icon(
-                        Icons.event,
-                        size: 48,
-                        color: Colors.grey,
+                  ),
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -1),
+                  child: Container(
+                    height: carouselHeight - imageHeight, // Use remaining height
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                article.subtitle,
+                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
+                          ],
+                        ),
+                        ],
                       ),
                     ),
                   ),
-            ),
-            Transform.translate(
-              offset: const Offset(0, -1),
-              child: Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            article.subtitle,
-                            style: const TextStyle(fontSize: 14, color: Colors.grey),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
-                      ],
-                    ),
-                  ],
                 ),
-              ),
-            ),
+              ],
             ),
           ],
         ),
@@ -322,17 +319,18 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     );
   }
 
-  Widget _buildPageIndicator(BulletinController bulletinController) {
-    final events = bulletinController.upcomingEvents;
+  Widget _buildPageIndicator(HomeCarouselController carouselController) {
+    final events = carouselController.getCarouselAsArticles();
     if (events.isEmpty || events.length == 1) {
       return const SizedBox.shrink(); // Don't show indicator if no events or single event
     }
     
+    // Use the controller's currentPageIndex directly, normalizing it to the actual item count
     return Obx(() {
+      final currentIndex = controller.currentPageIndex.value % events.length;
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(events.length, (index) {
-          final currentIndex = controller.currentPageIndex.value;
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 4.0),
             width: 8.0,

@@ -17,29 +17,45 @@ class AppShellScreen extends GetView<AppShellController> {
 
   @override
   Widget build(BuildContext context) {
-    // This list of pages is now correct and will match the new nav bar.
-    final List<Widget> pages = <Widget>[
-      const HomeScreenContent(),
-      const AthleticsPage(),
-      const EventsPage(),
-      const BulletinPage(),
-      const ProfilePage(),
-    ];
+    return Obx(() {
+      // Create the pages list inside Obx to ensure fresh instances
+      final List<Widget> pages = <Widget>[
+        const HomeScreenContent(),
+        const AthleticsPage(),
+        const EventsPage(),
+        const BulletinPage(),
+        const ProfilePage(),
+      ];
 
-    return Obx(() => Scaffold(
-          body: Stack(
-            children: [
-              // The main page content
-              pages[controller.navBarIndex.value],
-
-              // The floating navigation bar at the bottom
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: _buildFloatingM3NavBar(context),
+      return Scaffold(
+        body: Stack(
+          children: [
+            // The main page content with Cupertino fade transition
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              switchInCurve: Curves.easeInOut,
+              switchOutCurve: Curves.easeInOut,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(controller.navBarIndex.value),
+                child: pages[controller.navBarIndex.value],
               ),
-            ],
-          ),
-        ));
+            ),
+
+            // The floating navigation bar at the bottom
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: _buildFloatingM3NavBar(context),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   // --- DEFINITIVELY PROPORTIONAL FLOATING NAVIGATION BAR ---
@@ -109,6 +125,24 @@ class AppShellScreen extends GetView<AppShellController> {
                 ),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, int index, IconData selectedIcon, IconData unselectedIcon, double iconSize) {
+    final isSelected = controller.navBarIndex.value == index;
+    
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => controller.changePage(index),
+        behavior: HitTestBehavior.opaque,
+        child: Center(
+          child: Icon(
+            isSelected ? selectedIcon : unselectedIcon,
+            color: isSelected ? Colors.white : Colors.black87,
+            size: iconSize,
           ),
         ),
       ),
