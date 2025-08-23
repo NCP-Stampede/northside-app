@@ -32,7 +32,7 @@ class _BulletinPageState extends State<BulletinPage> {
   Timer? _inactivityTimer;
   Timer? _midnightTimer;
   bool _isAutoScrolling = false;
-  double? _lastSheetExtent;
+  // double? _lastSheetExtent;
   double? _initialSheetExtent;
   
   // Track section headers with GlobalKeys for precise measurement
@@ -59,14 +59,14 @@ class _BulletinPageState extends State<BulletinPage> {
     }
     
     _initialSheetExtent = baseExtent;
-    _lastSheetExtent = baseExtent;
+    // _lastSheetExtent = baseExtent;
     return baseExtent;
   }
 
   // For drag handle
   final DraggableScrollableController _sheetController = DraggableScrollableController();
   double? dragStartExtent;
-  bool _isDraggingHandle = false;
+  // bool _isDraggingHandle = false;
 
   final GlobalKey _headerKey = GlobalKey();
   final GlobalKey _sectionHeaderKey = GlobalKey();
@@ -314,7 +314,7 @@ class _BulletinPageState extends State<BulletinPage> {
   
   void _collectFreshPositionData(GlobalKey targetKey, String targetSectionKey, bool animate) {
     final scrollPosition = _draggableSheetController!.position;
-    final keys = _groupedPosts.keys.toList();
+    // final keys = _groupedPosts.keys.toList();
     final double screenWidth = MediaQuery.of(context).size.width;
     
     print('📊 COLLECTING REAL POSITION DATA:');
@@ -434,20 +434,20 @@ class _BulletinPageState extends State<BulletinPage> {
     }
   }
 
-  void _showArticleSheet(BulletinPost post) {
-    Get.bottomSheet(
-      ArticleDetailDraggableSheet(article: Article(
-        title: post.title,
-        subtitle: post.subtitle,
-        imagePath: post.imagePath,
-        content: post.content,
-      )),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useRootNavigator: false,
-      enableDrag: true,
-    );
-  }
+  // void _showArticleSheet(BulletinPost post) {
+  //   Get.bottomSheet(
+  //     ArticleDetailDraggableSheet(article: Article(
+  //       title: post.title,
+  //       subtitle: post.subtitle,
+  //       imagePath: post.imagePath,
+  //       content: post.content,
+  //     )),
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     useRootNavigator: false,
+  //     enableDrag: true,
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -464,7 +464,7 @@ class _BulletinPageState extends State<BulletinPage> {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
     final double topSpacer = screenWidth * 0.057; // ~24px at 420px width
-    final double betweenSpacer = 0; // Set to 0 to remove gap
+    // final double betweenSpacer = 0; // Set to 0 to remove gap
 
     // Calculate dynamic minimum extent to avoid covering pinned section (always present now)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -582,7 +582,7 @@ class _BulletinPageState extends State<BulletinPage> {
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onVerticalDragStart: (details) {
-                          _isDraggingHandle = true;
+                          // _isDraggingHandle = true;
                           dragStartExtent = _sheetController.size;
                         },
                         onVerticalDragUpdate: (details) {
@@ -593,7 +593,7 @@ class _BulletinPageState extends State<BulletinPage> {
                           }
                         },
                         onVerticalDragEnd: (details) {
-                          _isDraggingHandle = false;
+                          // _isDraggingHandle = false;
                           dragStartExtent = null;
                           // Snap to snap-back extent if swiped down fast
                           if (details.primaryVelocity != null && details.primaryVelocity! > 500) {
@@ -660,7 +660,7 @@ class _BulletinPageState extends State<BulletinPage> {
 
   Widget _buildDateHeader(String date, {Key? key}) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    // final double screenHeight = MediaQuery.of(context).size.height;
     
     // Make header height responsive to screen size
     final double headerHeight = screenWidth * 0.13; // 13% of screen width
@@ -836,7 +836,7 @@ class _PinnedPostCard extends StatelessWidget {
     final double cardRadius = DesignConstants.get32Radius(context);
     final double cardWidth = screenWidth * 0.65;
     final double imageHeight = screenWidth * 0.32;
-    final double fontSizeTitle = screenWidth * 0.045;
+    // final double fontSizeTitle = screenWidth * 0.045;
     final double fontSizeSubtitle = screenWidth * 0.035;
     return GestureDetector(
       onTap: () => _showArticleSheet(post),

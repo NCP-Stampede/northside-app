@@ -22,7 +22,7 @@ class AthleticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AthleticsController athleticsController = Get.put(AthleticsController());
-    final double screenWidth = MediaQuery.of(context).size.width;
+    // final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
@@ -70,7 +70,7 @@ class AthleticsPage extends StatelessWidget {
 
   Widget _buildRegisterButton(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double fontSize = screenWidth * 0.045;
+    // final double fontSize = screenWidth * 0.045;
     const String registrationUrl = 'https://ncp-ar.rschooltoday.com/oar';
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
@@ -146,7 +146,7 @@ class AthleticsPage extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 24.0),
             padding: const EdgeInsets.all(20),
             decoration: ShapeDecoration(
-              color: Colors.white.withOpacity(0.9),                shape: SmoothRectangleBorder(
+              color: Colors.white.withValues(alpha: 0.9),                shape: SmoothRectangleBorder(
                   borderRadius: SmoothBorderRadius(
                     cornerRadius: DesignConstants.get32Radius(context),
                     cornerSmoothing: 1.0,
@@ -154,7 +154,7 @@ class AthleticsPage extends StatelessWidget {
                 ),
               shadows: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 60,
                   offset: const Offset(0, 10),
                   spreadRadius: 0,
@@ -232,7 +232,7 @@ class AthleticsPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -301,7 +301,7 @@ class AthleticsPage extends StatelessWidget {
 
   Widget _buildSectionHeader(BuildContext context, String title, VoidCallback onViewAll) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double fontSize = screenWidth * 0.045;
+    // final double fontSize = screenWidth * 0.045;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
       child: Row(
@@ -341,7 +341,7 @@ class _NewsCard extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isNarrowScreen = screenWidth < 360; // Check for S9 and similar devices
     final double cardRadius = DesignConstants.get32Radius(context);
-    final double fontSizeTitle = isNarrowScreen ? screenWidth * 0.042 : screenWidth * 0.045;
+    // final double fontSizeTitle = isNarrowScreen ? screenWidth * 0.042 : screenWidth * 0.045;
     final double fontSizeSubtitle = isNarrowScreen ? screenWidth * 0.032 : screenWidth * 0.035;
     final double cardPadding = isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04;
     
@@ -440,7 +440,7 @@ class _SportButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double fontSize = screenWidth * 0.045;
+    // final double fontSize = screenWidth * 0.045;
     final double borderRadius = DesignConstants.get24Radius(context);
     final double verticalPadding = screenWidth * 0.04;
     return GestureDetector(

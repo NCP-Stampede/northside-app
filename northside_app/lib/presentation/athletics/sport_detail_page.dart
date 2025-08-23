@@ -6,7 +6,7 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/sport_data.dart';
 import '../../models/athletics_schedule.dart';
-import '../../models/athlete.dart';
+// import '../../models/athlete.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart' as AC;
 import '../../core/design_constants.dart';
@@ -57,19 +57,19 @@ class _SportDetailPageState extends State<SportDetailPage> {
   bool _isLoadingRoster = false;
 
   // Helper function to format level names for display
-  String _formatLevelName(String level) {
-    switch (level.toLowerCase()) {
-      case 'varsity':
-        return 'Varsity';
-      case 'jv':
-      case 'junior varsity':
-        return 'JV';
-      case 'freshman':
-        return 'Freshman';
-      default:
-        return level;
-    }
-  }
+  // String _formatLevelName(String level) {
+  //   switch (level.toLowerCase()) {
+  //     case 'varsity':
+  //       return 'Varsity';
+  //     case 'jv':
+  //     case 'junior varsity':
+  //       return 'JV';
+  //     case 'freshman':
+  //       return 'Freshman';
+  //     default:
+  //       return level;
+  //   }
+  // }
 
   @override
   void initState() {

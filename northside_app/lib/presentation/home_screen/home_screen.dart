@@ -88,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
               height: screenHeight * 0.08,
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.85),
+                color: Colors.white.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(screenWidth * 0.13),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text('Home', style: GoogleFonts.inter(fontSize: fontSize, fontWeight: FontWeight.w900, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
           CircleAvatar(
             radius: screenWidth * 0.06,
-            backgroundColor: const Color(0xFF1E1E1E).withOpacity(0.9),
+            backgroundColor: const Color(0xFF1E1E1E).withValues(alpha: 0.9),
             child: Icon(Icons.person_outline, color: Colors.white, size: screenWidth * 0.07),
           ),
         ],
@@ -260,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: screenWidth * 0.02,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+              color: _currentPageIndex == index ? const Color(0xFF333333) : Colors.grey.withValues(alpha: 0.4),
             ),
           );
         }),
@@ -286,7 +286,7 @@ class _QuickActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -313,7 +313,7 @@ class _EventCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(cardRadius),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -339,7 +339,7 @@ class _EventCard extends StatelessWidget {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Colors.black.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.only(topLeft: Radius.circular(cardRadius), topRight: Radius.circular(cardRadius)),
                   ),
                 ),

@@ -176,7 +176,7 @@ class _WebViewSheetState extends State<WebViewSheet>
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.blue,
                               elevation: 2,
-                              shadowColor: Colors.black.withOpacity(0.1),
+                              shadowColor: Colors.black.withValues(alpha: 0.1),
                             ),
                           ),
                         ],

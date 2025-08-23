@@ -41,14 +41,14 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                 colors: [
                   Colors.transparent,
                   Colors.transparent,
-                  Color(0xFFF2F2F7).withOpacity(0.03),
-                  Color(0xFFF2F2F7).withOpacity(0.07),
-                  Color(0xFFF2F2F7).withOpacity(0.15),
-                  Color(0xFFF2F2F7).withOpacity(0.25),
-                  Color(0xFFF2F2F7).withOpacity(0.4),
-                  Color(0xFFF2F2F7).withOpacity(0.6),
-                  Color(0xFFF2F2F7).withOpacity(0.8),
-                  Color(0xFFF2F2F7).withOpacity(0.95),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.03),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.07),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.15),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.25),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.4),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.6),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.8),
+                  Color(0xFFF2F2F7).withValues(alpha: 0.95),
                   Color(0xFFF2F2F7),
                 ],
                 stops: [0.0, 0.12, 0.18, 0.25, 0.32, 0.38, 0.42, 0.45, 0.47, 0.49, 0.5],
@@ -115,7 +115,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                 margin: const EdgeInsets.symmetric(horizontal: 24.0),
                 padding: const EdgeInsets.all(20),
                 decoration: ShapeDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   shape: SmoothRectangleBorder(
                     borderRadius: SmoothBorderRadius(
                       cornerRadius: 32,
@@ -124,7 +124,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                   ),
                   shadows: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1), // Reduced from 0.25 to 0.1 for subtlety
+                      color: Colors.black.withValues(alpha: 0.1), // Reduced from 0.25 to 0.1 for subtlety
                       blurRadius: 60,
                       offset: const Offset(0, 10),
                       spreadRadius: 0, // Reduced from 2 to 0 for cleaner shadow
@@ -337,7 +337,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             height: 8.0,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: currentIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+              color: currentIndex == index ? const Color(0xFF333333) : Colors.grey.withValues(alpha: 0.4),
             ),
           );
         }),

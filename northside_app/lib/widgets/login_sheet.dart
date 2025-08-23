@@ -129,7 +129,7 @@ class _LoginSheetState extends State<LoginSheet> {
                           ),
                         ),
                         elevation: 5,
-                        shadowColor: Colors.blue.withOpacity(0.4),
+                        shadowColor: Colors.blue.withValues(alpha: 0.4),
                       ),
                       onPressed: _handleLogin,
                       child: const Text('Log In', style: TextStyle(fontSize: 18, color: Colors.white)),

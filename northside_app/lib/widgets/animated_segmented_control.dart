@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
+// import 'package:flutter/cupertino.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import '../core/design_constants.dart';
 import '../core/utils/app_colors.dart';
@@ -119,7 +119,7 @@ class _AnimatedSegmentedControlState extends State<AnimatedSegmentedControl>
                               ),
                               shadows: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),

@@ -501,7 +501,7 @@ class _BulletinEventCard extends StatelessWidget {
                 cornerSmoothing: 1.0,
               ),
             ),
-            shadows: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 60, offset: const Offset(0, 10), spreadRadius: 0)],
+            shadows: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 60, offset: const Offset(0, 10), spreadRadius: 0)],
           ),
           child: ClipSmoothRect(
             radius: SmoothBorderRadius(
@@ -601,7 +601,7 @@ class _PinnedPostCard extends StatelessWidget {
               cornerSmoothing: 1.0,
             ),
           ),
-          shadows: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 60, offset: const Offset(0, 10), spreadRadius: 0)],
+          shadows: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 60, offset: const Offset(0, 10), spreadRadius: 0)],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

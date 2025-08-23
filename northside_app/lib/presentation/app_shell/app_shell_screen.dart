@@ -74,7 +74,7 @@ class AppShellScreen extends GetView<AppShellController> {
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 20,
               spreadRadius: -2,
             ),
@@ -85,7 +85,7 @@ class AppShellScreen extends GetView<AppShellController> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
             child: Container(
-              color: const Color(0xFFF9F9F9).withOpacity(0.85),
+              color: const Color(0xFFF9F9F9).withValues(alpha: 0.85),
               padding: EdgeInsets.symmetric(horizontal: innerPaddingHorizontal, vertical: innerPaddingVertical),
               child: Center(
                 child: NavigationBar(
@@ -131,21 +131,21 @@ class AppShellScreen extends GetView<AppShellController> {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, IconData selectedIcon, IconData unselectedIcon, double iconSize) {
-    final isSelected = controller.navBarIndex.value == index;
+  // Widget _buildNavItem(BuildContext context, int index, IconData selectedIcon, IconData unselectedIcon, double iconSize) {
+  //   final isSelected = controller.navBarIndex.value == index;
     
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => controller.changePage(index),
-        behavior: HitTestBehavior.opaque,
-        child: Center(
-          child: Icon(
-            isSelected ? selectedIcon : unselectedIcon,
-            color: isSelected ? Colors.white : Colors.black87,
-            size: iconSize,
-          ),
-        ),
-      ),
-    );
-  }
+  //   return Expanded(
+  //     child: GestureDetector(
+  //       onTap: () => controller.changePage(index),
+  //       behavior: HitTestBehavior.opaque,
+  //       child: Center(
+  //         child: Icon(
+  //           isSelected ? selectedIcon : unselectedIcon,
+  //           color: isSelected ? Colors.white : Colors.black87,
+  //           size: iconSize,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }
