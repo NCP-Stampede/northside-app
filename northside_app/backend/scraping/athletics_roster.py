@@ -103,9 +103,42 @@ def update_athletics_roster():
     else:
         Athlete.drop_collection()
         for athlete_data in roster:
-            athlete = Athlete(**athlete_data)
+            exists = Athlete.objects(
+                name=athlete_data['name'],
+                number=athlete_data['number'],
+                sport=athlete_data['sport'].upper(),
+                season=athlete_data['season'],
+                level=athlete_data['level'],
+                gender=athlete_data['gender'],
+                grade=athlete_data['grade'],
+                position=athlete_data['position']
+            ).first()
+            if exists:
+                continue
+            athlete = Athlete(
+                name=athlete_data['name'],
+                number=athlete_data['number'],
+                sport=athlete_data['sport'].upper(),
+                season=athlete_data['season'],
+                level=athlete_data['level'],
+                gender=athlete_data['gender'],
+                grade=athlete_data['grade'],
+                position=athlete_data['position']
+            )
             athlete.save()
         for index, row in track_and_field_df.iterrows():
+            exists = Athlete.objects(
+                name=row['name'],
+                number=row['number'],
+                sport=row['sport'],
+                season=row['season'],
+                level=row['level'],
+                gender=row['gender'],
+                grade=row['grade'],
+                position=row['position']
+            ).first()
+            if exists:
+                continue
             athlete = Athlete(
                 name=row['name'],
                 number=row['number'],
@@ -120,4 +153,4 @@ def update_athletics_roster():
 
         print(f"Added {len(roster)+len(track_and_field_df['name'])} athletes.")
 
-# update_athletics_roster()
+update_athletics_roster()

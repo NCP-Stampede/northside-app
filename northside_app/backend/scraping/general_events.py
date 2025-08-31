@@ -64,4 +64,4 @@ def update_general_events():
             event.save()
         print(f"General schedule updated: {len(schedule)} events processed")
 
-# update_general_events()
+update_general_events()

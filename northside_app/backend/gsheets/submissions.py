@@ -91,4 +91,4 @@ def update_submissions():
     print(f"Submissions processed: {added_events} new events added, {existing_events} events already existed")
     print(f"Submissions processed: {added_announcements} new announcements added, {existing_announcements} announcements already existed")
 
-# update_submissions()
+update_submissions()

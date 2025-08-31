@@ -85,38 +85,38 @@ def update_athletics_schedule():
     repeated_dates = soup.find_all('h3', class_='uppercase')
     exact_dates = [h3 for h3 in repeated_dates if h3.get('class') == ['uppercase']]
     dates = [h3.get_text(strip=True) for h3 in exact_dates]
-    # print(f"Found {len(dates)} dates")
+    print(f"Found {len(dates)} dates")
 
     times = soup.select('p.text-base.font-bold[data-testid*="time"]')
     times = [p.get_text(strip=True) for p in times]
-    # print(f"Found {len(times)} times")
+    print(f"Found {len(times)} times")
 
     sports = soup.select("p.text-base.font-bold[data-testid*='activity-name']")
     sports = [p.get_text(strip=True) for p in sports]
-    # print(f"Found {len(sports)} sports")
+    print(f"Found {len(sports)} sports")
 
     locations = soup.select("p.text-sm.font-medium[data-testid*='venue']")
     locations = [p.get_text(strip=True) for p in locations]
-    # print(f"Found {len(locations)} locations")
+    print(f"Found {len(locations)} locations")
 
     levels = soup.select("div.text-sm.font-medium.text-core-contrast.text-opacity-80.xl\\:text-base[data-testid*='gender-level']")
-    levels = [p.get_text(strip=True).split()[1].lower() for p in levels]
-    # print(f"Found {len(teams)} teams")
+    levels = [p.get_text(strip=True).split()[1].lower() if len(p.get_text(strip=True).split()) > 1 else p.get_text(strip=True).split()[0].lower() for p in levels]
+    print(f"Found {len(levels)} teams")
 
     genders = soup.select("div.text-sm.font-medium.text-core-contrast.text-opacity-80.xl\\:text-base[data-testid*='gender-level']")
     genders = [p.get_text(strip=True).split()[0].lower() for p in genders] 
 
     opponents = soup.select('h2.mb-1.font-heading.text-xl')
     opponents = [h2.get_text(strip=True).replace("vs ", "").replace("at ", "") for h2 in opponents]
-    # print(f"Found {len(opponents)} opponents")
+    print(f"Found {len(opponents)} opponents")
 
-    home = soup.select("div.inline-flex.items-center.gap-1")
-    home = [div.get_text(strip=True) for div in home]
-    home = [item.lower() == "home" for item in home]
-    # print(f"Found {len(home)} home/away indicators")
+    homes = soup.select("div.inline-flex.items-center.gap-2.last\\:mr-0")
+    homes = [div.get_text(strip=True) for div in homes]
+    homes = [item.lower() == "home" for item in homes]
+    print(f"Found {len(homes)} home/away indicators")
     
     length = len(dates)
-    # print(f"Processing {length} events")
+    print(f"Processing {length} events")
     added_count = 0
 
     track_and_field_df = update_track_and_field_schedule()
@@ -137,7 +137,7 @@ def update_athletics_schedule():
             level=levels[i],
             opponent=opponents[i],
             location=locations[i],
-            home=home[i]
+            home=homes[i]
         )
         event.save()
         added_count += 1
@@ -160,4 +160,4 @@ def update_athletics_schedule():
     print(f"Athletics schedule updated: {added_count} new events added (including track and field)")
     # print(schedule)
 
-# update_athletics_schedule()
+update_athletics_schedule()
