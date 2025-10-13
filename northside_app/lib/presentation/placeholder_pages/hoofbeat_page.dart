@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/design_constants.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 
 class HoofBeatPage extends StatefulWidget {
   const HoofBeatPage({super.key});
@@ -77,6 +78,7 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      HapticFeedbackHelper.buttonPress();
                       Navigator.of(context).pop(); // Close dialog
                       Get.back(); // Pop HoofBeat page, triggers left-to-right animation
                     },

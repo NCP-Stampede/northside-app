@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart';
 import '../../core/design_constants.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 import '../../models/sport_data.dart';
 import '../../widgets/animated_segmented_control.dart';
 import 'sport_detail_page.dart';
@@ -37,8 +38,8 @@ class _AllSportsPageState extends State<AllSportsPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.primaryBlue, size: screenWidth * 0.06),
-          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+          onPressed: () { HapticFeedbackHelper.buttonPress(); Get.back(); },
         ),
         title: Text(
           'All Sports',
@@ -171,6 +172,8 @@ class _SportCard extends StatelessWidget {
     final double verticalPadding = screenWidth * 0.04;
     
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: verticalPadding),

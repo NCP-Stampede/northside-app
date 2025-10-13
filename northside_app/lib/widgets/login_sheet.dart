@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/design_constants.dart';
+import '../core/utils/haptic_feedback_helper.dart';
 import '../core/utils/logger.dart';
 
 class LoginSheet extends StatefulWidget {
@@ -131,7 +132,7 @@ class _LoginSheetState extends State<LoginSheet> {
                         elevation: 5,
                         shadowColor: Colors.blue.withOpacity(0.4),
                       ),
-                      onPressed: _handleLogin,
+                      onPressed: () { HapticFeedbackHelper.buttonPress(); _handleLogin(); },
                       child: const Text('Log In', style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
                   ],

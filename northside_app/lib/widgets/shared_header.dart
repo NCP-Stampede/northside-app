@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../presentation/app_shell/app_shell_controller.dart';
+import '../core/utils/haptic_feedback_helper.dart';
 
 class SharedHeader extends StatelessWidget {
-  const SharedHeader({super.key, required this.title});
+  const SharedHeader({super.key, required this.title, this.showProfileIcon = true});
 
   final String title;
+  final bool showProfileIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class SharedHeader extends StatelessWidget {
         top: MediaQuery.of(context).padding.top + 4, // Only a small extra gap after status bar
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: showProfileIcon ? MainAxisAlignment.spaceBetween : MainAxisAlignment.start,
         children: [
           Text(
             title,
@@ -35,16 +37,19 @@ class SharedHeader extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          GestureDetector(
-            onTap: () {
-              appShellController.changePage(4);
-            },
-            child: CircleAvatar(
-              radius: 22,
-              backgroundColor: Colors.grey.shade300,
-              child: const Icon(Icons.person, color: Colors.black, size: 28),
+          if (showProfileIcon)
+            GestureDetector(
+              onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
+              onTap: () {
+                appShellController.changePage(4);
+              },
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: Colors.grey.shade300,
+                child: const Icon(Icons.person, color: Colors.black, size: 28),
+              ),
             ),
-          ),
         ],
       ),
     );

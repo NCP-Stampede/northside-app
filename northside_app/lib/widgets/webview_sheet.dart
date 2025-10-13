@@ -5,6 +5,7 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/design_constants.dart';
+import '../core/utils/haptic_feedback_helper.dart';
 import '../core/utils/logger.dart';
 
 class WebViewSheet extends StatefulWidget {
@@ -169,7 +170,7 @@ class _WebViewSheetState extends State<WebViewSheet>
                             ),
                           ),
                           IconButton(
-                            onPressed: _launchInExternalBrowser,
+                            onPressed: () { HapticFeedbackHelper.buttonPress(); _launchInExternalBrowser(); },
                             icon: const Icon(Icons.open_in_new),
                             tooltip: 'Open in external browser',
                             style: IconButton.styleFrom(

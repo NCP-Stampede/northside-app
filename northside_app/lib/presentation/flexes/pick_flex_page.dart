@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'flexes_controller.dart';
 import '../../models/flex_choice.dart';
-import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
+import '../../core/utils/app_colors.dart';
+import '../../core/utils/haptic_feedback_helper.dart'; // FIX: Corrected import path
 
 class PickFlexPage extends StatefulWidget {
   const PickFlexPage({super.key, required this.flexPeriod});
@@ -34,8 +35,8 @@ class _PickFlexPageState extends State<PickFlexPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.primaryBlue),
-          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+          onPressed: () { HapticFeedbackHelper.buttonPress(); Get.back(); },
         ),
         title: Text(
           'Pick ${widget.flexPeriod}',
@@ -67,6 +68,8 @@ class _PickFlexPageState extends State<PickFlexPage> {
                   final choice = _availableChoices[index];
                   final isSelected = _selectedChoice == choice;
                   return GestureDetector(
+                    onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+                    onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
                     onTap: () => setState(() => _selectedChoice = choice),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -104,6 +107,7 @@ class _PickFlexPageState extends State<PickFlexPage> {
                   onPressed: _selectedChoice == null
                       ? null
                       : () {
+                          HapticFeedbackHelper.buttonPress();
                           flexesController.selectFlex(widget.flexPeriod, _selectedChoice!);
                           Get.back();
                         },

@@ -11,10 +11,13 @@ import '../../widgets/article_detail_draggable_sheet.dart';
 import '../athletics/all_sports_page.dart';
 import '../athletics/sport_detail_page.dart';
 import '../../widgets/shared_header.dart';
+import '../../widgets/loading_indicator.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart';
 import '../../core/utils/logger.dart';
 import '../../core/design_constants.dart';
+import '../../controllers/settings_controller.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
@@ -45,13 +48,16 @@ class AthleticsPage extends StatelessWidget {
           ),
           Obx(() {
             if (athleticsController.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const LoadingIndicator(
+                message: 'Loading athletics data...',
+                showBackground: false,
+              );
             }
             
             return ListView(
               padding: EdgeInsets.only(bottom: screenHeight * 0.12),
               children: [
-                const SharedHeader(title: 'Athletics'),
+                const SharedHeader(title: 'Athletics', showProfileIcon: false),
                 SizedBox(height: screenHeight * 0.02),
                 _buildNewsCarousel(context, athleticsController),
                 SizedBox(height: screenHeight * 0.04),
@@ -75,6 +81,8 @@ class AthleticsPage extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
       child: GestureDetector(
+        onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+        onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
         onTap: () async {
           try {
             final uri = Uri.parse(registrationUrl);
@@ -193,6 +201,8 @@ class AthleticsPage extends StatelessWidget {
         itemBuilder: (context, index) {
           final article = athleticsNews[index];
           return GestureDetector(
+            onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+            onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
             onTap: () {
               Get.bottomSheet(
                 ArticleDetailDraggableSheet(article: article),
@@ -216,8 +226,15 @@ class AthleticsPage extends StatelessWidget {
     final double mainAxisSpacing = screenWidth * 0.04;
     final double childAspectRatio = 2.5;
     
-    // Get top 4 sports for current season (2 girls, 2 boys)
-    final topSports = SportsData.getTopSportsForCurrentSeason();
+    // Get user's favorite sports or fallback to default
+    List<SportEntry> topSports;
+    try {
+      final settingsController = Get.find<SettingsController>();
+      topSports = SportsData.getFavoriteSports(settingsController.getFavoriteSports());
+    } catch (e) {
+      // Fallback to default sports
+      topSports = SportsData.getTopSportsForCurrentSeason();
+    }
     
     print('=== DEBUG: Current season: ${SportsData.getCurrentSeason()}');
     print('=== DEBUG: Top sports for current season: ${topSports.map((s) => '${s.sport} (${s.gender})').toList()}');
@@ -314,6 +331,8 @@ class AthleticsPage extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           GestureDetector(
+            onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+            onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
             onTap: onViewAll,
             child: Row(
               children: [
@@ -376,27 +395,29 @@ class _NewsCard extends StatelessWidget {
                   ),
                   child: Container(
                     padding: EdgeInsets.only(top: cardHeight * 0.06, bottom: 0.0), // Same ratio as home carousel
-                    child: article.imagePath != null 
-                      ? Image.asset(
-                          article.imagePath!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'assets/images/flexes_icon.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
-                              },
-                            );
-                          },
-                        )
-                      : Image.asset(
-                          'assets/images/flexes_icon.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
-                          },
-                        ),
+                    child: Center(
+                      child: article.imagePath != null 
+                        ? Image.asset(
+                            article.imagePath!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/images/flexes_icon.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
+                                },
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            'assets/images/flexes_icon.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
+                            },
+                          ),
+                    ),
                   ),
                 ),
               ),
@@ -414,11 +435,42 @@ class _NewsCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: screenWidth * 0.01),
-                      Text(
-                        article.subtitle,
-                        style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.black),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              article.subtitle,
+                              style: GoogleFonts.inter(fontSize: fontSizeSubtitle, color: Colors.black),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          // Sports badge in bottom-right of description
+                          if (_extractSportFromTitle(article.title) != null)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFF007AFF),
+                                shape: SmoothRectangleBorder(
+                                  borderRadius: SmoothBorderRadius(
+                                    cornerRadius: 12,
+                                    cornerSmoothing: 1.0,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                _extractSportFromTitle(article.title)!,
+                                style: GoogleFonts.inter(
+                                  fontSize: screenWidth * 0.03,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
@@ -429,6 +481,29 @@ class _NewsCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Helper method to extract sport name from article title
+  String? _extractSportFromTitle(String title) {
+    final sports = [
+      'Basketball', 'Soccer', 'Football', 'Baseball', 'Tennis', 'Golf',
+      'Swimming', 'Track', 'Wrestling', 'Volleyball', 'Cross Country',
+      'Water Polo', 'Bowling'
+    ];
+    
+    final lowerTitle = title.toLowerCase();
+    for (final sport in sports) {
+      if (lowerTitle.contains(sport.toLowerCase())) {
+        return sport;
+      }
+    }
+    
+    // Check for variations
+    if (lowerTitle.contains('track and field') || lowerTitle.contains('track & field')) {
+      return 'Track & Field';
+    }
+    
+    return null;
   }
 }
 
@@ -444,6 +519,8 @@ class _SportButton extends StatelessWidget {
     final double borderRadius = DesignConstants.get24Radius(context);
     final double verticalPadding = screenWidth * 0.04;
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: verticalPadding),

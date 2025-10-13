@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'dart:ui'; // Needed for BackdropFilter
 
 import 'app_shell_controller.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 import '../home_screen_content/home_screen_content.dart';
 import '../placeholder_pages/athletics_page.dart';
 import '../placeholder_pages/profile_page.dart';
@@ -93,7 +94,10 @@ class AppShellScreen extends GetView<AppShellController> {
                   elevation: 0,
                   indicatorColor: Theme.of(context).colorScheme.primary,
                   selectedIndex: controller.navBarIndex.value,
-                  onDestinationSelected: controller.changePage,
+                  onDestinationSelected: (index) {
+                    HapticFeedbackHelper.buttonPress();
+                    controller.changePage(index);
+                  },
                   labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
                   destinations: <Widget>[
                     NavigationDestination(
@@ -117,9 +121,9 @@ class AppShellScreen extends GetView<AppShellController> {
                       label: 'Bulletin',
                     ),
                     NavigationDestination(
-                      selectedIcon: Icon(Icons.person, color: Colors.white, size: iconSize),
-                      icon: Icon(Icons.person_outline, color: Colors.black87, size: iconSize),
-                      label: 'Profile',
+                      selectedIcon: Icon(Icons.settings, color: Colors.white, size: iconSize),
+                      icon: Icon(Icons.settings_outlined, color: Colors.black87, size: iconSize),
+                      label: 'Settings',
                     ),
                   ],
                 ),

@@ -6,6 +6,8 @@ import '../models/athletics_schedule.dart';
 import '../models/article.dart';
 import '../api.dart';
 import '../core/utils/logger.dart';
+import 'settings_controller.dart';
+import 'settings_controller.dart';
 
 class AthleticsController extends GetxController {
   // Observable lists for real data
@@ -463,6 +465,8 @@ class AthleticsController extends GetxController {
     sports.sort();
     return sports;
   }
+
+
 
   // Get unique sports from both athletes and schedule data
   List<String> getAllAvailableSports() {

@@ -49,4 +49,44 @@ class DesignConstants {
   
   // Bulletin-specific shadow (lighter for date headers)
   static List<BoxShadow> get bulletinShadow => lightShadow;
+
+  /// Get color for sport badges
+  static Color getSportColor(String sport) {
+    final normalizedSport = sport.toLowerCase().trim();
+    
+    switch (normalizedSport) {
+      case 'football':
+        return const Color(0xFF8B4513); // Brown
+      case 'basketball':
+        return const Color(0xFFFF8C00); // Dark Orange
+      case 'soccer':
+      case 'football (soccer)':
+        return const Color(0xFF228B22); // Forest Green
+      case 'baseball':
+        return const Color(0xFF4169E1); // Royal Blue
+      case 'softball':
+        return const Color(0xFFDC143C); // Crimson
+      case 'volleyball':
+        return const Color(0xFF9370DB); // Medium Purple
+      case 'tennis':
+        return const Color(0xFF32CD32); // Lime Green
+      case 'track and field':
+      case 'track':
+        return const Color(0xFFFF6347); // Tomato
+      case 'cross country':
+        return const Color(0xFF20B2AA); // Light Sea Green
+      case 'swimming':
+        return const Color(0xFF1E90FF); // Dodger Blue
+      case 'wrestling':
+        return const Color(0xFF800080); // Purple
+      case 'golf':
+        return const Color(0xFF9ACD32); // Yellow Green
+      case 'lacrosse':
+        return const Color(0xFFB8860B); // Dark Golden Rod
+      case 'hockey':
+        return const Color(0xFF2F4F4F); // Dark Slate Gray
+      default:
+        return const Color(0xFF6B7280); // Gray for unrecognized sports
+    }
+  }
 }

@@ -155,6 +155,29 @@ class SportsData {
     return topSports;
   }
 
+  // Get user's favorite sports for Athletics page display
+  static List<SportEntry> getFavoriteSports(List<String> favoriteSportNames) {
+    final allSports = _hardcodedSports.map((sport) => SportEntry.fromMap(sport)).toList();
+    final List<SportEntry> favoriteSports = [];
+    
+    for (final favoriteName in favoriteSportNames) {
+      // Find the sport entry that matches the favorite name
+      final matchingSports = allSports.where((sport) {
+        final displayName = getDisplaySportName(sport.sport);
+        return displayName.toLowerCase() == favoriteName.toLowerCase();
+      }).toList();
+      
+      if (matchingSports.isNotEmpty) {
+        // Prefer current season, but include any available version
+        final currentSeason = getCurrentSeason();
+        final currentSeasonSport = matchingSports.where((s) => s.season == currentSeason).firstOrNull;
+        favoriteSports.add(currentSeasonSport ?? matchingSports.first);
+      }
+    }
+    
+    return favoriteSports;
+  }
+
   // Format sport name for display (capitalize and replace hyphens)
   static String _formatSportName(String sport) {
     // Special cases for proper formatting

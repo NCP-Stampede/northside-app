@@ -10,8 +10,10 @@ import '../../models/athlete.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/athletics_controller.dart' as AC;
 import '../../core/design_constants.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 import '../../core/utils/logger.dart';
 import '../../widgets/animated_segmented_control.dart';
+import '../../widgets/loading_indicator.dart';
 import '../../api.dart';
 
 class GameSchedule {
@@ -265,8 +267,8 @@ class _SportDetailPageState extends State<SportDetailPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.primaryBlue, size: screenWidth * 0.06),
-          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+          onPressed: () { HapticFeedbackHelper.buttonPress(); Get.back(); },
         ),
         title: Text(
           widget.sportName,
@@ -279,7 +281,10 @@ class _SportDetailPageState extends State<SportDetailPage> {
       ),
       body: Obx(() {
         if (athleticsController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingIndicator(
+            message: 'Loading sport details...',
+            showBackground: false,
+          );
         }
         
         if (athleticsController.error.value.isNotEmpty) {
@@ -290,7 +295,7 @@ class _SportDetailPageState extends State<SportDetailPage> {
                 Text('Error: ${athleticsController.error.value}'),
                 SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => athleticsController.refreshData(),
+                  onPressed: () { HapticFeedbackHelper.buttonPress(); athleticsController.refreshData(); },
                   child: const Text('Retry'),
                 ),
               ],
@@ -418,8 +423,9 @@ class _SportDetailPageState extends State<SportDetailPage> {
     if (_isLoadingRoster) {
       return Container(
         padding: EdgeInsets.all(screenWidth * 0.1),
-        child: const Center(
-          child: CircularProgressIndicator(),
+        child: const LoadingIndicator(
+          message: 'Loading roster...',
+          showBackground: false,
         ),
       );
     }

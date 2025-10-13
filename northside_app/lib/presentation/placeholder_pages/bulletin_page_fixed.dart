@@ -208,7 +208,7 @@ class _BulletinPageState extends State<BulletinPage> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SharedHeader(title: 'Bulletin'),
+              SharedHeader(title: 'Bulletin', showProfileIcon: false),
               const Expanded(
                 child: Center(
                   child: CircularProgressIndicator(),
@@ -226,7 +226,7 @@ class _BulletinPageState extends State<BulletinPage> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SharedHeader(title: 'Bulletin'),
+              SharedHeader(title: 'Bulletin', showProfileIcon: false),
               Expanded(
                 child: Center(
                   child: Column(
@@ -299,7 +299,7 @@ class _BulletinPageState extends State<BulletinPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SharedHeader(key: _headerKey, title: 'Bulletin'),
+                SharedHeader(key: _headerKey, title: 'Bulletin', showProfileIcon: false),
                 SizedBox(height: topSpacer),
                 if (pinnedPosts.isNotEmpty) ...[
                   _buildSectionHeader("Pinned", key: _sectionHeaderKey),

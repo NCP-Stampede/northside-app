@@ -11,6 +11,7 @@ import 'package:sticky_headers/sticky_headers.dart';
 
 import '../../controllers/bulletin_controller.dart';
 import '../../core/design_constants.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 import '../../models/article.dart';
 import '../../models/bulletin_post.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
@@ -518,7 +519,7 @@ class _BulletinPageState extends State<BulletinPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SharedHeader(title: 'Bulletin'),
+              const SharedHeader(title: 'Bulletin', showProfileIcon: false),
               SizedBox(height: topSpacer),
               _buildSectionHeader("Pinned", key: _sectionHeaderKey),
               if (pinnedPosts.isNotEmpty) 
@@ -758,6 +759,8 @@ class _BulletinEventCard extends StatelessWidget {
     final bool isNarrowScreen = screenWidth < 360;
     
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: () => _showArticleSheet(post),
       child: Container(
         width: double.infinity,
@@ -839,6 +842,8 @@ class _PinnedPostCard extends StatelessWidget {
     final double fontSizeTitle = screenWidth * 0.045;
     final double fontSizeSubtitle = screenWidth * 0.035;
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: () => _showArticleSheet(post),
       child: Container(
         width: cardWidth,

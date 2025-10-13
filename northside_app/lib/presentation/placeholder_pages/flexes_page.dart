@@ -8,6 +8,7 @@ import '../flexes/flexes_controller.dart';
 import '../flexes/pick_flex_page.dart';
 import '../../models/flex_choice.dart';
 import '../../core/utils/app_colors.dart'; // FIX: Corrected import path
+import '../../core/utils/haptic_feedback_helper.dart';
 
 class FlexesPage extends StatelessWidget {
   const FlexesPage({super.key});
@@ -37,6 +38,8 @@ class FlexesPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: 24.0),
             child: GestureDetector(
+              onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
               onTap: () {
                 final AppShellController appShellController = Get.find();
                 appShellController.changePage(4);
@@ -148,6 +151,8 @@ class _RegisterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),

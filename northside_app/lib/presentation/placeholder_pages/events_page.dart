@@ -10,12 +10,15 @@ import 'package:stampede/models/article.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../controllers/events_controller.dart';
+import '../../widgets/loading_indicator.dart';
+import '../../widgets/sport_badge.dart';
 import '../../core/utils/logger.dart';
 import '../../core/utils/app_colors.dart';
 import '../../core/utils/text_helper.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/shared_header.dart';
 import '../../core/design_constants.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -40,15 +43,10 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   void _loadEventsData() {
-    // Listen to events controller changes
-    ever(eventsController.generalEvents, (_) {
-      AppLogger.debug('General events updated: ${eventsController.generalEvents.length}');
-      _updateEventsMap();
-    });
-    ever(eventsController.athleticsEvents, (_) {
-      AppLogger.debug('Athletics events updated: ${eventsController.athleticsEvents.length}');
-      _updateEventsMap();
-    });
+        // Listen for events data changes
+    ever(eventsController.generalEvents, (_) => _updateEventsMap());
+    ever(eventsController.athleticsEvents, (_) => _updateEventsMap());
+    ever(eventsController.selectedFilter, (_) => _updateEventsMap());
     
     // Initial load
     _updateEventsMap();
@@ -60,10 +58,22 @@ class _EventsPageState extends State<EventsPage> {
       hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year,
     );
 
-    final eventsMap = eventsController.getAllEventsMap();
-    _kEvents.addAll(eventsMap);
+    // Use filtered events instead of all events
+    final filteredEvents = eventsController.getFilteredEvents();
     
-    AppLogger.debug('Events map updated with ${_kEvents.length} days containing events');
+    // Group filtered events by date
+    for (final event in filteredEvents) {
+      final eventDate = _parseEventDate(event);
+      if (eventDate != null) {
+        final dateKey = DateTime(eventDate.year, eventDate.month, eventDate.day);
+        if (_kEvents[dateKey] == null) {
+          _kEvents[dateKey] = [];
+        }
+        _kEvents[dateKey]!.add(event);
+      }
+    }
+    
+    AppLogger.debug('Events map updated with ${_kEvents.length} days containing events (filter: ${eventsController.selectedFilter.value})');
     AppLogger.debug('Total events across all days: ${_kEvents.values.fold(0, (sum, events) => sum + events.length)}');
 
     // Update selected events for current day
@@ -71,6 +81,18 @@ class _EventsPageState extends State<EventsPage> {
     
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  DateTime? _parseEventDate(Article event) {
+    try {
+      // Try to parse date from subtitle (format: "January 1, 2024")
+      final subtitle = event.subtitle;
+      // This is a simple implementation - you might need more robust date parsing
+      // based on your actual date formats
+      return DateTime.now().add(Duration(days: 1)); // Placeholder - replace with actual parsing
+    } catch (e) {
+      return null;
     }
   }
 
@@ -120,13 +142,16 @@ class _EventsPageState extends State<EventsPage> {
           ),
           Obx(() {
             if (eventsController.isLoading.value) {
-              return const Center(child: CircularProgressIndicator());
+              return const LoadingIndicator(
+                message: 'Loading events data...',
+                showBackground: false,
+              );
             }
             
           return ListView(
           padding: EdgeInsets.only(bottom: screenHeight * 0.12),
           children: [
-            const SharedHeader(title: 'Events'),
+            const SharedHeader(title: 'Events', showProfileIcon: false),
             SizedBox(height: screenHeight * 0.02),
             _buildFilterButton(context),
             SizedBox(height: screenHeight * 0.02),
@@ -143,25 +168,49 @@ class _EventsPageState extends State<EventsPage> {
 
   Widget _buildFilterButton(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double fontSize = screenWidth * 0.045;
+    final double fontSize = screenWidth * 0.038;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: screenWidth * 0.02),
-          decoration: ShapeDecoration(
-            color: Colors.grey.shade200,
-            shape: SmoothRectangleBorder(
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: 10,
-                cornerSmoothing: 1.0,
-              ),
+      child: Obx(() => Row(
+        children: [
+          _buildFilterChip(context, 'All', eventsController.selectedFilter.value == 'All'),
+          SizedBox(width: screenWidth * 0.02),
+          _buildFilterChip(context, 'Sports', eventsController.selectedFilter.value == 'Sports'),
+          SizedBox(width: screenWidth * 0.02),
+          _buildFilterChip(context, 'Events', eventsController.selectedFilter.value == 'Events'),
+          SizedBox(width: screenWidth * 0.02),
+          _buildFilterChip(context, 'Announcements', eventsController.selectedFilter.value == 'Announcements'),
+        ],
+      )),
+    );
+  }
+
+  Widget _buildFilterChip(BuildContext context, String label, bool isSelected) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double fontSize = screenWidth * 0.035;
+    
+    return GestureDetector(
+      onTap: () {
+        HapticFeedbackHelper.buttonPress();
+        eventsController.setFilter(label);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03, vertical: screenWidth * 0.015),
+        decoration: ShapeDecoration(
+          color: isSelected ? AppColors.primaryBlue : Colors.grey.shade200,
+          shape: SmoothRectangleBorder(
+            borderRadius: SmoothBorderRadius(
+              cornerRadius: 10,
+              cornerSmoothing: 1.0,
             ),
           ),
-          child: Text(
-            'For Current Year',
-            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryBlue, fontSize: fontSize),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+            fontSize: fontSize,
           ),
         ),
       ),
@@ -315,6 +364,8 @@ class _EventsPageState extends State<EventsPage> {
           }
           return Column(
             children: value.map((article) => GestureDetector(
+              onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
               onTap: () {
                 Get.bottomSheet(
                   ArticleDetailDraggableSheet(article: article),
@@ -392,15 +443,23 @@ class _EventDetailCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            article.title,
-            style: GoogleFonts.inter(
-              fontSize: MediaQuery.of(context).size.width * 0.045,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  article.title,
+                  style: GoogleFonts.inter(
+                    fontSize: MediaQuery.of(context).size.width * 0.045,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(width: screenWidth * 0.02),
+              SportBadge(sport: _extractSportFromArticle(article)),
+            ],
           ),
           SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
           Row(
@@ -421,5 +480,41 @@ class _EventDetailCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String? _extractSportFromArticle(Article article) {
+    // Try to extract sport from title or subtitle
+    final text = '${article.title} ${article.subtitle}'.toLowerCase();
+    
+    // Common sports keywords
+    final sportsMap = {
+      'football': 'Football',
+      'basketball': 'Basketball',
+      'soccer': 'Soccer',
+      'baseball': 'Baseball',
+      'softball': 'Softball',
+      'volleyball': 'Volleyball',
+      'tennis': 'Tennis',
+      'track': 'Track and Field',
+      'cross country': 'Cross Country',
+      'swimming': 'Swimming',
+      'wrestling': 'Wrestling',
+      'golf': 'Golf',
+      'lacrosse': 'Lacrosse',
+      'hockey': 'Hockey',
+    };
+    
+    for (final entry in sportsMap.entries) {
+      if (text.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+    
+    // If no sport is identified and it's not a general event, return null
+    if (text.contains('vs') || text.contains('game') || text.contains('match')) {
+      return 'Sports'; // Generic sports badge
+    }
+    
+    return null; // No sport badge for general events
   }
 }

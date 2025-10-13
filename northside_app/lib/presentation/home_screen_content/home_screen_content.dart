@@ -9,9 +9,11 @@ import '../app_shell/app_shell_controller.dart';
 import '../placeholder_pages/hoofbeat_page.dart';
 import '../../models/article.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
+import '../../widgets/loading_indicator.dart';
 import '../../core/design_constants.dart';
 import '../../widgets/shared_header.dart';
 import '../../controllers/home_carousel_controller.dart';
+import '../../core/utils/haptic_feedback_helper.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
@@ -60,7 +62,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           ListView(
             padding: EdgeInsets.only(bottom: 120),
             children: [
-              const SharedHeader(title: 'Home'),
+              const SharedHeader(title: 'Home', showProfileIcon: false),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height for consistent spacing
               _buildQuickActions(),
               SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 4% of screen height
@@ -90,11 +92,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Color(0xFFFF6B35), size: 26), label: 'Athletics', onTap: () => appShellController.changePage(1)),
-          _QuickActionButton(iconWidget: const Icon(Icons.calendar_today, color: Color(0xFF4285F4), size: 26), label: 'Events', onTap: () => appShellController.changePage(2)),
-          _QuickActionButton(iconWidget: const Icon(Icons.article, color: Color(0xFF34A853), size: 26), label: 'HoofBeat', onTap: () => Get.to(() => const HoofBeatPage())),
+          _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Color(0xFFFF6B35), size: 26), label: 'Athletics', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(1); }),
+          _QuickActionButton(iconWidget: const Icon(Icons.calendar_today, color: Color(0xFF4285F4), size: 26), label: 'Events', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(2); }),
+          _QuickActionButton(iconWidget: const Icon(Icons.article, color: Color(0xFF34A853), size: 26), label: 'HoofBeat', onTap: () { HapticFeedbackHelper.buttonPress(); Get.to(() => const HoofBeatPage()); }),
           // FIX: The label is now "Bulletin", the icon is updated, and it correctly navigates to index 3.
-          _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Color(0xFFEA4335), size: 26), label: 'Bulletin', onTap: () => appShellController.changePage(3)),
+          _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Color(0xFFEA4335), size: 26), label: 'Bulletin', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(3); }),
         ],
       ),
     );
@@ -110,7 +112,10 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         height: carouselHeight,
         child: Center(
           child: carouselController.isLoading 
-            ? const CircularProgressIndicator()
+            ? const LoadingIndicator(
+                message: 'Loading events...',
+                showBackground: false,
+              )
             : Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24.0),
                 padding: const EdgeInsets.all(20),
@@ -173,6 +178,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               content: post.content,
             );
             return GestureDetector(
+              onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
               onTap: () {
                 Get.bottomSheet(
                   ArticleDetailDraggableSheet(article: article),
@@ -215,6 +222,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             content: post.content,
           );
           return GestureDetector(
+            onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+            onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
             onTap: () {
               Get.bottomSheet(
                 ArticleDetailDraggableSheet(article: article),
@@ -355,6 +364,8 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
+      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),

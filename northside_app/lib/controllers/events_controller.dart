@@ -7,6 +7,7 @@ import '../models/article.dart';
 import '../models/bulletin_post.dart';
 import '../api.dart';
 import '../core/utils/logger.dart';
+import 'settings_controller.dart';
 
 class EventsController extends GetxController {
   // Observable lists for real data
@@ -14,6 +15,7 @@ class EventsController extends GetxController {
   final RxList<AthleticsSchedule> athleticsEvents = <AthleticsSchedule>[].obs;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
+  final RxString selectedFilter = 'All'.obs;
 
   @override
   void onInit() {
@@ -493,5 +495,68 @@ class EventsController extends GetxController {
     });
 
     return bulletinPosts;
+  }
+
+  // Filter methods
+  void setFilter(String filter) {
+    selectedFilter.value = filter;
+  }
+
+  List<Article> getFilteredEvents() {
+    final allEvents = getAllEvents();
+    
+    switch (selectedFilter.value) {
+      case 'Sports':
+        return allEvents.where((event) => _isAthleticsEvent(event)).toList();
+      case 'Events':
+        return allEvents.where((event) => _isGeneralEvent(event) && !_isAnnouncement(event)).toList();
+      case 'Announcements':
+        return allEvents.where((event) => _isAnnouncement(event)).toList();
+      case 'All':
+      default:
+        return allEvents;
+    }
+  }
+
+  bool _isAthleticsEvent(Article event) {
+    final text = '${event.title} ${event.subtitle}'.toLowerCase();
+    return text.contains('vs') || 
+           text.contains('game') || 
+           text.contains('match') ||
+           text.contains('football') ||
+           text.contains('basketball') ||
+           text.contains('soccer') ||
+           text.contains('baseball') ||
+           text.contains('softball') ||
+           text.contains('volleyball') ||
+           text.contains('tennis') ||
+           text.contains('track') ||
+           text.contains('swimming') ||
+           text.contains('wrestling') ||
+           text.contains('golf') ||
+           text.contains('lacrosse') ||
+           text.contains('hockey');
+  }
+
+  bool _isGeneralEvent(Article event) {
+    final text = '${event.title} ${event.subtitle}'.toLowerCase();
+    return text.contains('event') ||
+           text.contains('meeting') ||
+           text.contains('assembly') ||
+           text.contains('dance') ||
+           text.contains('theater') ||
+           text.contains('concert') ||
+           text.contains('fundraiser') ||
+           text.contains('club');
+  }
+
+  bool _isAnnouncement(Article event) {
+    final text = '${event.title} ${event.subtitle}'.toLowerCase();
+    return text.contains('announcement') ||
+           text.contains('reminder') ||
+           text.contains('notice') ||
+           text.contains('important') ||
+           text.contains('deadline') ||
+           text.contains('registration');
   }
 }
