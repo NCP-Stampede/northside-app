@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 import '../../models/sport_data.dart';
 import '../../models/athletics_schedule.dart';
 import '../../models/athlete.dart';
@@ -262,24 +263,27 @@ class _SportDetailPageState extends State<SportDetailPage> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-          onPressed: () { HapticFeedbackHelper.buttonPress(); Get.back(); },
-        ),
-        title: Text(
-          widget.sportName,
-          style: GoogleFonts.inter(
-            color: Colors.black, 
-            fontWeight: FontWeight.w900, 
-            fontSize: screenWidth * 0.07,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFF2F2F7),
+                  Color(0xFFFFFFFF),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
           ),
-        ),
-      ),
-      body: Obx(() {
+          Column(
+            children: [
+              _buildHeaderWithBlur(context, widget.sportName),
+              Expanded(
+                child: Stack(
+                  children: [
+                    Obx(() {
         if (athleticsController.isLoading.value) {
           return const LoadingIndicator(
             message: 'Loading sport details...',
@@ -304,10 +308,10 @@ class _SportDetailPageState extends State<SportDetailPage> {
         }
 
         return ListView(
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06)
+              .copyWith(top: screenWidth * 0.057),
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-              child: AnimatedSegmentedControl(
+            AnimatedSegmentedControl(
                 segments: _levels,
                 selectedSegment: _selectedLevel,
                 onSelectionChanged: (level) {
@@ -318,7 +322,6 @@ class _SportDetailPageState extends State<SportDetailPage> {
                   });
                 },
               ),
-            ),
             SizedBox(height: screenHeight * 0.03),
             AnimatedContentSwitcher(
               switchKey: _selectedLevel,
@@ -333,14 +336,94 @@ class _SportDetailPageState extends State<SportDetailPage> {
             ),
           ],
         );
-      }),
+                    }),
+                    // Fade-out gradient overlay
+                    Positioned(
+                      top: -2,
+                      left: 0,
+                      right: 0,
+                      height: screenWidth * 0.11,
+                      child: IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFFF2F2F7),
+                                const Color(0xFFF2F2F7),
+                                const Color(0xFFF2F2F7).withOpacity(0.9),
+                                const Color(0xFFF2F2F7).withOpacity(0.75),
+                                const Color(0xFFF2F2F7).withOpacity(0.55),
+                                const Color(0xFFF2F2F7).withOpacity(0.35),
+                                const Color(0xFFF2F2F7).withOpacity(0.18),
+                                const Color(0xFFF2F2F7).withOpacity(0.06),
+                                Colors.transparent,
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.28, 0.38, 0.46, 0.54, 0.62, 0.68, 0.74, 0.8, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderWithBlur(BuildContext context, String title) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double headerHeight = screenWidth * 0.12;
+    
+    return SizedBox(
+      height: headerHeight,
+      child: Stack(
+        children: [
+          // Header content with back button
+          Padding(
+            padding: EdgeInsets.only(
+              left: 24.0,
+              right: 24.0,
+              top: MediaQuery.of(context).padding.top + 4,
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
+                  onPressed: () { 
+                    HapticFeedbackHelper.buttonPress(); 
+                    Get.back(); 
+                  },
+                ),
+                SizedBox(width: screenWidth * 0.02),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildTableContainer(BuildContext context, String title, Widget table) {
     final double screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: ShapeDecoration(
         color: Colors.white,

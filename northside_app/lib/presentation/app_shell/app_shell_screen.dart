@@ -48,15 +48,80 @@ class AppShellScreen extends GetView<AppShellController> {
               ),
             ),
 
-            // The floating navigation bar at the bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _buildFloatingM3NavBar(context),
+            // The floating navigation bar at the bottom with extended blur area
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildFloatingM3NavBarWithBlur(context),
             ),
           ],
         ),
       );
     });
+  }
+
+  // --- EXTENDED BLUR AREA FOR NAVIGATION BAR ---
+  Widget _buildFloatingM3NavBarWithBlur(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    final double blurHeight = screenSize.height * 0.25; // Extend blur area upward
+    
+    return SizedBox(
+      height: blurHeight,
+      child: Stack(
+        children: [
+          // Extended blur area with gradient fade effect
+          Positioned.fill(
+            child: ClipRect(
+              child: ShaderMask(
+                shaderCallback: (Rect bounds) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,     // No blur at top
+                      Colors.transparent,     // Keep transparent longer
+                      Colors.black,          // Gradual fade in
+                      Colors.black,          // Full blur at bottom
+                    ],
+                    stops: [0.0, 0.5, 0.8, 1.0],
+                  ).createShader(bounds);
+                },
+                blendMode: BlendMode.dstIn,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFFF9F9F9).withOpacity(0.3),
+                          const Color(0xFFFFFFFF).withOpacity(0.8),
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Actual navigation bar positioned at bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              minimum: EdgeInsets.only(bottom: screenSize.height * 0.015),
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: AppTheme.horizontalPadding),
+                child: _buildFloatingM3NavBar(context),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // --- DEFINITIVELY PROPORTIONAL FLOATING NAVIGATION BAR ---
@@ -66,30 +131,46 @@ class AppShellScreen extends GetView<AppShellController> {
     final double iconSize = navBarHeight * 0.44; // Slightly larger for better balance
     final double innerPaddingHorizontal = navBarHeight * 0.32;
     final double innerPaddingVertical = navBarHeight * 0.18;
-    return SafeArea(
-      minimum: EdgeInsets.only(bottom: screenSize.height * 0.015),
-      child: Container(
-        margin: EdgeInsets.fromLTRB(AppTheme.horizontalPadding, 0, AppTheme.horizontalPadding, 0),
-        height: navBarHeight,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 20,
-              spreadRadius: -2,
+    return Container(
+      height: navBarHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 32,
+            spreadRadius: -4,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 16,
+            spreadRadius: -2,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xFFF9F9F9).withOpacity(0.95),
+                const Color(0xFFFFFFFF).withOpacity(0.9),
+              ],
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-            child: Container(
-              color: const Color(0xFFF9F9F9).withOpacity(0.85),
-              padding: EdgeInsets.symmetric(horizontal: innerPaddingHorizontal, vertical: innerPaddingVertical),
-              child: Center(
-                child: NavigationBar(
+            border: Border.all(
+              color: Colors.white.withOpacity(0.4),
+              width: 0.5,
+            ),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: innerPaddingHorizontal, vertical: innerPaddingVertical),
+          child: Center(
+            child: NavigationBar(
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   indicatorColor: Theme.of(context).colorScheme.primary,
@@ -130,9 +211,7 @@ class AppShellScreen extends GetView<AppShellController> {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildNavItem(BuildContext context, int index, IconData selectedIcon, IconData unselectedIcon, double iconSize) {

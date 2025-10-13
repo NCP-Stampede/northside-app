@@ -17,6 +17,7 @@ import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/login_sheet.dart';
 import '../../widgets/shared_header.dart';
 import '../../core/utils/logger.dart';
+import 'dart:ui';
 import '../../core/utils/haptic_feedback_helper.dart';
 import '../../core/utils/calendar_service.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
@@ -98,22 +99,31 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Background color matching bulletin page
           Container(
-            color: const Color(0xFFF2F2F7),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFF2F2F7),
+                  Color(0xFFFFFFFF),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
           ),
-          // Main content with exact same structure as bulletin page
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SharedHeader(title: 'Settings', showProfileIcon: false),
-              SizedBox(height: screenWidth * 0.057), // Match bulletin page topSpacer
-              // Settings content in scrollable area
+              _buildHeaderWithBlur(context, 'Settings'),
               Expanded(
-                child: Obx(() {
-                  return ListView(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06).copyWith(bottom: screenHeight * 0.12),
-                    children: [
+                child: Stack(
+                  children: [
+                    ListView(
+                      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057)
+                          .copyWith(
+                            top: screenWidth * 0.057, // Add top spacing back
+                            bottom: screenHeight * 0.15, // Add substantial bottom padding
+                          ),
+                      children: [
               
               // App Settings Section
               _buildSectionHeader(context, 'App Settings'),
@@ -212,9 +222,40 @@ class ProfilePage extends StatelessWidget {
                 isDestructive: true,
               ),
                     ],
-                  );
-                }),
+                  ),
+                  // Smooth fade overlay using direct opacity mask
+                  Positioned(
+                    top: -2, // Start slightly above to eliminate gap
+                    left: 0,
+                    right: 0,
+                    height: screenWidth * 0.11, // Even smaller fade area
+                    child: IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              const Color(0xFFF2F2F7), // Solid match to header background
+                              const Color(0xFFF2F2F7), // Stay solid longer to avoid cutoff
+                              const Color(0xFFF2F2F7).withOpacity(0.9),
+                              const Color(0xFFF2F2F7).withOpacity(0.75),
+                              const Color(0xFFF2F2F7).withOpacity(0.55),
+                              const Color(0xFFF2F2F7).withOpacity(0.35),
+                              const Color(0xFFF2F2F7).withOpacity(0.18),
+                              const Color(0xFFF2F2F7).withOpacity(0.06),
+                              Colors.transparent,
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.28, 0.38, 0.46, 0.54, 0.62, 0.68, 0.74, 0.8, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ),
             ],
           ),
         ],
@@ -223,6 +264,44 @@ class ProfilePage extends StatelessWidget {
   }
 
 
+
+  Widget _buildHeaderWithBlur(BuildContext context, String title) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double headerHeight = screenWidth * 0.12; // Reduced by 40%
+    
+    return SizedBox(
+      height: headerHeight,
+      child: Stack(
+        children: [
+          // Header content
+          Padding(
+            padding: EdgeInsets.only(
+              left: 24.0,
+              right: 24.0,
+              top: MediaQuery.of(context).padding.top + 4,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+
+        ],
+      ),
+    );
+  }
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -386,6 +465,7 @@ class ProfilePage extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.bold,
                   fontSize: screenWidth * 0.05,
+                  decoration: TextDecoration.none,
                 ),
               ),
               SizedBox(height: screenWidth * 0.04),
@@ -395,6 +475,7 @@ class ProfilePage extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: screenWidth * 0.04,
                   color: Colors.grey.shade600,
+                  decoration: TextDecoration.none,
                 ),
               ),
               SizedBox(height: screenWidth * 0.06),
@@ -407,7 +488,15 @@ class ProfilePage extends StatelessWidget {
                         HapticFeedbackHelper.buttonPress(); 
                         Get.back(); 
                       },
-                      child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.primaryBlue)),
+                      child: Text(
+                        'Cancel', 
+                        style: GoogleFonts.inter(
+                          color: AppColors.primaryBlue,
+                          decoration: TextDecoration.none,
+                          decorationStyle: TextDecorationStyle.solid,
+                          decorationColor: Colors.transparent,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(width: screenWidth * 0.02),
@@ -424,7 +513,15 @@ class ProfilePage extends StatelessWidget {
                           duration: Duration(seconds: 2),
                         );
                       },
-                      child: Text('Reset', style: GoogleFonts.inter(color: CupertinoColors.white)),
+                      child: Text(
+                        'Reset', 
+                        style: GoogleFonts.inter(
+                          color: CupertinoColors.white,
+                          decoration: TextDecoration.none,
+                          decorationStyle: TextDecorationStyle.solid,
+                          decorationColor: Colors.transparent,
+                        ),
+                      ),
                     ),
                   ),
                 ],

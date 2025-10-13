@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events Page Inverted Blur Preview</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .background-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .inverted-blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.1);
+            /* Inverted gradient: solid blur at top, fading to transparent */
+            -webkit-mask: linear-gradient(to bottom, 
+                rgba(0, 0, 0, 1.0) 0%,
+                rgba(0, 0, 0, 0.95) 28%,
+                rgba(0, 0, 0, 0.87) 38%,
+                rgba(0, 0, 0, 0.75) 46%,
+                rgba(0, 0, 0, 0.6) 54%,
+                rgba(0, 0, 0, 0.43) 62%,
+                rgba(0, 0, 0, 0.28) 68%,
+                rgba(0, 0, 0, 0.15) 74%,
+                rgba(0, 0, 0, 0.05) 80%,
+                rgba(0, 0, 0, 0.0) 100%
+            );
+            mask: linear-gradient(to bottom, 
+                rgba(0, 0, 0, 1.0) 0%,
+                rgba(0, 0, 0, 0.95) 28%,
+                rgba(0, 0, 0, 0.87) 38%,
+                rgba(0, 0, 0, 0.75) 46%,
+                rgba(0, 0, 0, 0.6) 54%,
+                rgba(0, 0, 0, 0.43) 62%,
+                rgba(0, 0, 0, 0.28) 68%,
+                rgba(0, 0, 0, 0.15) 74%,
+                rgba(0, 0, 0, 0.05) 80%,
+                rgba(0, 0, 0, 0.0) 100%
+            );
+        }
+
+        .header {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            right: 24px;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: black;
+            margin: 0;
+        }
+
+        .content {
+            position: absolute;
+            top: 140px;
+            left: 24px;
+            right: 24px;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: scroll;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-note {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Background gradient -->
+        <div class="background-gradient"></div>
+        
+        <!-- Inverted blur overlay (top-to-bottom fade) -->
+        <div class="inverted-blur-overlay"></div>
+        
+        <!-- Transparent header -->
+        <div class="header">
+            <h1>Events</h1>
+        </div>
+        
+        <!-- Main content -->
+        <div class="content">
+            <div class="event-card">
+                <h3>Homecoming Game</h3>
+                <p>Join us for an exciting football game!</p>
+            </div>
+            <div class="event-card">
+                <h3>Spirit Week</h3>
+                <p>Show your school spirit all week long.</p>
+            </div>
+            <div class="event-card">
+                <h3>Basketball Tryouts</h3>
+                <p>Open tryouts for the varsity team.</p>
+            </div>
+            <div class="event-card">
+                <h3>Science Fair</h3>
+                <p>Present your science projects and compete for prizes.</p>
+            </div>
+            <div class="event-card">
+                <h3>Drama Club Performance</h3>
+                <p>Watch our talented students perform Shakespeare.</p>
+            </div>
+        </div>
+        
+        <div class="demo-note">
+            <strong>✨ Events Page Inverted Blur Effect</strong><br>
+            This preview shows the inverted blur effect - the blur is strongest at the top and fades downward, opposite to the bottom navigation bar blur. This creates a top-down fade effect perfect for headers.
+        </div>
+    </div>
+</body>
+</html>
