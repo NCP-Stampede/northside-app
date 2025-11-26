@@ -1,5 +1,6 @@
 // lib/presentation/placeholder_pages/athletics_page.dart
 
+import 'dart:ui'; // Needed for BackdropFilter
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -54,22 +55,99 @@ class AthleticsPage extends StatelessWidget {
               );
             }
             
-            return ListView(
-              padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+            return Stack(
               children: [
-                const SharedHeader(title: 'Athletics', showProfileIcon: false),
-                SizedBox(height: screenHeight * 0.02),
-                _buildNewsCarousel(context, athleticsController),
-                SizedBox(height: screenHeight * 0.04),
-                _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
-                SizedBox(height: screenHeight * 0.025), // ADDED: This adds the necessary spacing.
-                _buildSportsGrid(context, athleticsController),
-                SizedBox(height: screenHeight * 0.015),
-                _buildRegisterButton(context),
+                ListView(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + (screenWidth * 0.12) + (screenHeight * 0.05),
+                    bottom: screenHeight * 0.12
+                  ),
+                  children: [
+                    _buildNewsCarousel(context, athleticsController),
+                    SizedBox(height: screenHeight * 0.04),
+                    _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
+                    SizedBox(height: screenHeight * 0.025),
+                    _buildSportsGrid(context, athleticsController),
+                    SizedBox(height: screenHeight * 0.015),
+                    _buildRegisterButton(context),
+                  ],
+                ),
+                _buildHeader(context),
               ],
             );
           }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double headerHeight = screenWidth * 0.4 + topPadding;
+    
+    return ClipRect(
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+              Colors.transparent,
+            ],
+            stops: [0.0, 0.4, 0.8, 1.0],
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFC7C7CC).withOpacity(0.85),
+                  const Color(0xFFF9F9F9).withOpacity(0.2),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: topPadding + 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Athletics',
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -154,34 +232,28 @@ class AthleticsPage extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 24.0),
             padding: const EdgeInsets.all(20),
             decoration: ShapeDecoration(
-              color: Colors.white.withOpacity(0.9),                shape: SmoothRectangleBorder(
-                  borderRadius: SmoothBorderRadius(
-                    cornerRadius: DesignConstants.get32Radius(context),
-                    cornerSmoothing: 1.0,
-                  ),
+              color: Colors.white.withOpacity(0.9),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: DesignConstants.get32Radius(context),
+                  cornerSmoothing: 1.0,
                 ),
-              shadows: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 60,
-                  offset: const Offset(0, 10),
-                  spreadRadius: 0,
-                ),
-              ],
+              ),
+              shadows: DesignConstants.standardShadow,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.sports_outlined, size: 48, color: Colors.grey),
+                Icon(Icons.sports_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
                 SizedBox(height: 16),
                 Text(
                   'No Recent Athletics News',
-                  style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Check back later for updates!',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.black.withOpacity(0.6)),
                 ),
               ],
             ),
@@ -244,28 +316,27 @@ class AthleticsPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
         child: Container(
           padding: EdgeInsets.all(screenWidth * 0.06),
-          decoration: BoxDecoration(
+          decoration: ShapeDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: 16,
+                cornerSmoothing: 1.0,
               ),
-            ],
+            ),
+            shadows: DesignConstants.standardShadow,
           ),
           child: Center(
             child: Column(
               children: [
-                Icon(Icons.sports_outlined, size: 48, color: Colors.grey),
+                Icon(Icons.sports_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
                 SizedBox(height: screenWidth * 0.04),
                 Text(
                   'No Sports This Season',
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.black.withOpacity(0.7),
                   ),
                 ),
                 SizedBox(height: screenWidth * 0.02),
@@ -273,7 +344,7 @@ class AthleticsPage extends StatelessWidget {
                   'Check back later for updates!',
                   style: TextStyle(
                     fontSize: screenWidth * 0.035,
-                    color: Colors.grey.shade500,
+                    color: Colors.black.withOpacity(0.6),
                   ),
                   textAlign: TextAlign.center,
                 ),

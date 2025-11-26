@@ -111,7 +111,7 @@ class AthleticsSchedule {
     
     // Use event name for title if available, otherwise format based on home/away
     String articleTitle;
-    if (name?.isNotEmpty == true) {
+    if (name != null && name!.isNotEmpty) {
       articleTitle = name!;
     } else {
       // For away games, show "[SPORT] at [location]", for home games show "[SPORT] vs [opponent]"

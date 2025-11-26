@@ -39,7 +39,6 @@ class FlexesPage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 24.0),
             child: GestureDetector(
               onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
               onTap: () {
                 final AppShellController appShellController = Get.find();
                 appShellController.changePage(4);
@@ -152,7 +151,6 @@ class _RegisterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),

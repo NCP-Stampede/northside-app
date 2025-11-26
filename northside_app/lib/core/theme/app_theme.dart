@@ -39,38 +39,41 @@ class AppTheme {
           displayLarge: TextStyle(
             // Original size was 28.sp
             fontSize: 26.sp, // Slightly smaller default to help on S9
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w900, // Bold
             color: Colors.black,
           ),
           // For section headers (e.g., "Pinned")
           headlineMedium: TextStyle(
             fontSize: 15.sp, // Reduced from 16.sp
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w900, // Bold
             color: Colors.black,
           ),
           // For card titles (e.g., "Homecoming 2024")
           titleLarge: TextStyle(
             fontSize: 15.sp, // Reduced from 16.sp
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w900, // Bold
+            color: Colors.black,
           ),
           // For subtitles and body text
           bodyMedium: TextStyle(
             fontSize: 11.sp, // Reduced from 12.sp
-            color: Colors.black,
+            fontWeight: FontWeight.w500, // No super thin text
+            color: Colors.black, // No grey text
           ),
           // For button text
           labelLarge: TextStyle(
             fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w900, // Bold
+            color: Colors.black,
           ),
         ),
       ),
 
       // --- OTHER WIDGET THEMES ---
       cardTheme: CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.sp),
+        elevation: 0, // We will use custom shadows
+        shape: ContinuousRectangleBorder(
+          borderRadius: BorderRadius.circular(40), // Squiggle shape
         ),
         color: Colors.white,
       ),
@@ -79,6 +82,21 @@ class AppTheme {
 
   static double get horizontalPadding => 6.w; // Responsive horizontal padding
   static double get cardRadius => 4.w; // Responsive card radius
+
+  // Custom Shadow
+  static const List<BoxShadow> standardShadow = [
+    BoxShadow(
+      offset: Offset(0, 10),
+      blurRadius: 60,
+      spreadRadius: 0,
+      color: Color(0x1A000000), // 10% opacity black
+    ),
+  ];
+
+  // Squiggle Border Radius for ShapeDecoration
+  static ContinuousRectangleBorder get squiggleShape => ContinuousRectangleBorder(
+    borderRadius: BorderRadius.circular(40),
+  );
 
   // Add helper methods for responsive spacing
   static double responsivePadding(BuildContext context, double defaultPadding) {

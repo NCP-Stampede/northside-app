@@ -67,9 +67,15 @@ class _LoginSheetState extends State<LoginSheet> {
         maxChildSize: maxChildSize,
         builder: (_, controller) {
           return Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFF2F2F7),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            decoration: ShapeDecoration(
+              color: const Color(0xFFF2F2F7),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius.only(
+                  topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                  topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                ),
+              ),
+              shadows: DesignConstants.standardShadow,
             ),
             child: SafeArea(
               top: true,
@@ -84,7 +90,7 @@ class _LoginSheetState extends State<LoginSheet> {
                 width: 40,
                 height: 5,
                 decoration: ShapeDecoration(
-                  color: Colors.grey.shade300,
+                  color: Colors.black.withOpacity(0.2),
                   shape: SmoothRectangleBorder(
                     borderRadius: SmoothBorderRadius(
                       cornerRadius: DesignConstants.get10Radius(context),
@@ -119,21 +125,32 @@ class _LoginSheetState extends State<LoginSheet> {
                     ),
                     const SizedBox(height: 32),
                     // Log In Button
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: SmoothRectangleBorder(
-                          borderRadius: SmoothBorderRadius(
-                            cornerRadius: DesignConstants.get16Radius(context),
-                            cornerSmoothing: 1.0,
+                    GestureDetector(
+                      onTap: () { HapticFeedbackHelper.buttonPress(); _handleLogin(); },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFF007AFF),
+                          shape: SmoothRectangleBorder(
+                            borderRadius: SmoothBorderRadius(
+                              cornerRadius: DesignConstants.get16Radius(context),
+                              cornerSmoothing: 1.0,
+                            ),
+                          ),
+                          shadows: DesignConstants.standardShadow,
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Log In',
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        elevation: 5,
-                        shadowColor: Colors.blue.withOpacity(0.4),
                       ),
-                      onPressed: () { HapticFeedbackHelper.buttonPress(); _handleLogin(); },
-                      child: const Text('Log In', style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
                   ],
                 ),
@@ -154,7 +171,7 @@ class _LoginSheetState extends State<LoginSheet> {
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

@@ -69,7 +69,6 @@ class _PickFlexPageState extends State<PickFlexPage> {
                   final isSelected = _selectedChoice == choice;
                   return GestureDetector(
                     onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-                    onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
                     onTap: () => setState(() => _selectedChoice = choice),
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 12),

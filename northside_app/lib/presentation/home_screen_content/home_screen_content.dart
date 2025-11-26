@@ -1,5 +1,6 @@
 // lib/presentation/home_screen_content/home_screen_content.dart
 
+import 'dart:ui'; // Needed for BackdropFilter
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -60,10 +61,11 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             ),
           ),
           ListView(
-            padding: EdgeInsets.only(bottom: 120),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + (MediaQuery.of(context).size.width * 0.12) + (MediaQuery.of(context).size.height * 0.05),
+              bottom: 120
+            ),
             children: [
-              const SharedHeader(title: 'Home', showProfileIcon: false),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height for consistent spacing
               _buildQuickActions(),
               SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 4% of screen height
               // Carousel moved to overlay, leaving space for it
@@ -72,7 +74,79 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
               Obx(() => _buildPageIndicator(homeCarouselController)),
             ],
           ),
+          _buildHeader(context),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double headerHeight = screenWidth * 0.4 + topPadding;
+    
+    return ClipRect(
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+              Colors.transparent,
+            ],
+            stops: [0.0, 0.4, 0.8, 1.0],
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFC7C7CC).withOpacity(0.85),
+                  const Color(0xFFF9F9F9).withOpacity(0.2),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: topPadding + 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Home',
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -127,19 +201,12 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                       cornerSmoothing: 1.0,
                     ),
                   ),
-                  shadows: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1), // Reduced from 0.25 to 0.1 for subtlety
-                      blurRadius: 60,
-                      offset: const Offset(0, 10),
-                      spreadRadius: 0, // Reduced from 2 to 0 for cleaner shadow
-                    ),
-                  ],
+                  shadows: DesignConstants.standardShadow,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.announcement_outlined, size: 48, color: Colors.grey),
+                    Icon(Icons.announcement_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
                     SizedBox(height: 16),
                     Text(
                       'No Recent Announcements',
@@ -148,7 +215,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                     SizedBox(height: 8),
                     Text(
                       'Check back later for updates!',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ],
                 ),
@@ -276,12 +343,12 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.grey.shade200,
-                        child: const Center(
+                        color: Colors.black.withOpacity(0.05),
+                        child: Center(
                           child: Icon(
                             Icons.event,
                             size: 48,
-                            color: Colors.grey,
+                            color: Colors.black.withOpacity(0.3),
                           ),
                         ),
                       );
@@ -302,17 +369,17 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                           const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                            Icon(Icons.calendar_today, size: 16, color: Colors.black.withOpacity(0.5)),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 article.subtitle,
-                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
+                            Icon(Icons.more_horiz, size: 20, color: Colors.black.withOpacity(0.5)),
                           ],
                         ),
                         ],
@@ -346,7 +413,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             height: 8.0,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: currentIndex == index ? const Color(0xFF333333) : Colors.grey.withOpacity(0.4),
+              color: currentIndex == index ? const Color(0xFF333333) : Colors.black.withOpacity(0.2),
             ),
           );
         }),

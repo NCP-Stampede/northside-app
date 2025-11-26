@@ -40,7 +40,6 @@ class SharedHeader extends StatelessWidget {
           if (showProfileIcon)
             GestureDetector(
               onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-              onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
               onTap: () {
                 appShellController.changePage(4);
               },

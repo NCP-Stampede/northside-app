@@ -1,6 +1,7 @@
 // lib/presentation/placeholder_pages/bulletin_page.dart
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -519,7 +520,10 @@ class _BulletinPageState extends State<BulletinPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SharedHeader(title: 'Bulletin', showProfileIcon: false),
+              SizedBox(
+                key: _headerKey,
+                height: MediaQuery.of(context).padding.top + (screenWidth * 0.07) + 20,
+              ),
               SizedBox(height: topSpacer),
               _buildSectionHeader("Pinned", key: _sectionHeaderKey),
               if (pinnedPosts.isNotEmpty) 
@@ -642,6 +646,7 @@ class _BulletinPageState extends State<BulletinPage> {
               },
             ),
           ),
+          _buildHeader(context),
         ],
       ),
     );
@@ -726,6 +731,77 @@ class _BulletinPageState extends State<BulletinPage> {
               fontSize: screenWidth * 0.04,
               color: Colors.grey.shade600,
               fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double headerHeight = screenWidth * 0.4 + topPadding;
+    
+    return ClipRect(
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,
+              Colors.black,
+              Colors.transparent,
+              Colors.transparent,
+            ],
+            stops: [0.0, 0.4, 0.8, 1.0],
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFC7C7CC).withOpacity(0.85),
+                  const Color(0xFFF9F9F9).withOpacity(0.2),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: topPadding + 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bulletin',
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),

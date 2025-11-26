@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 import 'package:stampede/models/article.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -140,6 +141,30 @@ class _EventsPageState extends State<EventsPage> {
               ),
             ),
           ),
+          Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    ListView(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + (screenWidth * 0.12) + (screenHeight * 0.05),
+                        bottom: screenHeight * 0.12
+                      ),
+                      children: [
+                        _buildFilterButton(context),
+                        SizedBox(height: screenHeight * 0.02),
+                        _buildCalendar(context),
+                        SizedBox(height: screenHeight * 0.03),
+                        _buildEventList(context),
+                      ],
+                    ),
+                    _buildHeader(context),
+                  ],
+                ),
+              ),
+            ],
+          ),
           Obx(() {
             if (eventsController.isLoading.value) {
               return const LoadingIndicator(
@@ -147,21 +172,80 @@ class _EventsPageState extends State<EventsPage> {
                 showBackground: false,
               );
             }
-            
-          return ListView(
-          padding: EdgeInsets.only(bottom: screenHeight * 0.12),
-          children: [
-            const SharedHeader(title: 'Events', showProfileIcon: false),
-            SizedBox(height: screenHeight * 0.02),
-            _buildFilterButton(context),
-            SizedBox(height: screenHeight * 0.02),
-            _buildCalendar(context),
-            SizedBox(height: screenHeight * 0.03),
-            _buildEventList(context),
-          ],
-        );
-        }),
+            return const SizedBox.shrink();
+          }),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double titleFontSize = screenWidth * 0.07;
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double headerHeight = screenWidth * 0.4 + topPadding; // Significantly increased height
+    
+    return ClipRect(
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,          // Full blur at top
+              Colors.black,          // Keep blur longer
+              Colors.transparent,    // Fade out
+              Colors.transparent,    // No blur at bottom
+            ],
+            stops: [0.0, 0.4, 0.8, 1.0], // Extended stops for longer blur
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFC7C7CC).withOpacity(0.85), // More opaque
+                  const Color(0xFFF9F9F9).withOpacity(0.2),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.5, 1.0], // Extended gradient stops
+              ),
+            ),
+            child: Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: topPadding + 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Events',
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -209,7 +293,7 @@ class _EventsPageState extends State<EventsPage> {
           label,
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : Colors.grey.shade700,
+            color: isSelected ? Colors.white : Colors.black.withOpacity(0.7),
             fontSize: fontSize,
           ),
         ),

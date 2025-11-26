@@ -8,14 +8,15 @@ class SportBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (sport == null || sport == 'General') {
+    final sportName = sport;
+    if (sportName == null || sportName == 'General') {
       return const SizedBox.shrink();
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: DesignConstants.getSportColor(sport!),
+        color: DesignConstants.getSportColor(sportName),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

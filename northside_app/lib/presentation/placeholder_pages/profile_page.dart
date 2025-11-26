@@ -8,6 +8,8 @@ import 'package:figma_squircle/figma_squircle.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui'; // Needed for BackdropFilter
+
 import '../../core/design_constants.dart';
 import '../../core/utils/app_colors.dart';
 import '../../controllers/settings_controller.dart';
@@ -17,7 +19,6 @@ import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/login_sheet.dart';
 import '../../widgets/shared_header.dart';
 import '../../core/utils/logger.dart';
-import 'dart:ui';
 import '../../core/utils/haptic_feedback_helper.dart';
 import '../../core/utils/calendar_service.dart';
 import 'package:add_2_calendar/add_2_calendar.dart';
@@ -111,22 +112,17 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-          Column(
+          Stack(
             children: [
-              _buildHeaderWithBlur(context, 'Settings'),
-              Expanded(
-                child: Stack(
-                  children: [
-                    ListView(
-                      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057)
-                          .copyWith(
-                            top: screenWidth * 0.057, // Add top spacing back
-                            bottom: screenHeight * 0.15, // Add substantial bottom padding
-                          ),
-                      children: [
-              
-              // App Settings Section
-              _buildSectionHeader(context, 'App Settings'),
+              ListView(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057)
+                    .copyWith(
+                      top: MediaQuery.of(context).padding.top + (screenWidth * 0.12) + (screenHeight * 0.05), // Adjusted padding
+                      bottom: screenHeight * 0.15,
+                    ),
+                children: [
+                  // App Settings Section
+                  _buildSectionHeader(context, 'App Settings'),
               _buildToggleCard(
                 context: context,
                 title: 'Haptic Feedback',
@@ -221,41 +217,14 @@ class ProfilePage extends StatelessWidget {
                 onTap: () => _showResetDialog(context, settingsController),
                 isDestructive: true,
               ),
-                    ],
-                  ),
-                  // Smooth fade overlay using direct opacity mask
-                  Positioned(
-                    top: -2, // Start slightly above to eliminate gap
-                    left: 0,
-                    right: 0,
-                    height: screenWidth * 0.11, // Even smaller fade area
-                    child: IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              const Color(0xFFF2F2F7), // Solid match to header background
-                              const Color(0xFFF2F2F7), // Stay solid longer to avoid cutoff
-                              const Color(0xFFF2F2F7).withOpacity(0.9),
-                              const Color(0xFFF2F2F7).withOpacity(0.75),
-                              const Color(0xFFF2F2F7).withOpacity(0.55),
-                              const Color(0xFFF2F2F7).withOpacity(0.35),
-                              const Color(0xFFF2F2F7).withOpacity(0.18),
-                              const Color(0xFFF2F2F7).withOpacity(0.06),
-                              Colors.transparent,
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.28, 0.38, 0.46, 0.54, 0.62, 0.68, 0.74, 0.8, 1.0],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
-            ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _buildHeaderWithBlur(context, 'Settings'),
+              ),
             ],
           ),
         ],
@@ -268,37 +237,70 @@ class ProfilePage extends StatelessWidget {
   Widget _buildHeaderWithBlur(BuildContext context, String title) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double titleFontSize = screenWidth * 0.07;
-    final double headerHeight = screenWidth * 0.12; // Reduced by 40%
+    final double topPadding = MediaQuery.of(context).padding.top;
+    final double headerHeight = screenWidth * 0.4 + topPadding; // Significantly increased height
     
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        children: [
-          // Header content
-          Padding(
-            padding: EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: MediaQuery.of(context).padding.top + 4,
+    return ClipRect(
+      child: ShaderMask(
+        shaderCallback: (rect) {
+          return const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,          // Full blur at top
+              Colors.black,          // Keep blur longer
+              Colors.transparent,    // Fade out
+              Colors.transparent,    // No blur at bottom
+            ],
+            stops: [0.0, 0.4, 0.8, 1.0], // Extended stops for longer blur
+          ).createShader(rect);
+        },
+        blendMode: BlendMode.dstIn,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
+          child: Container(
+            height: headerHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFFC7C7CC).withOpacity(0.85), // More opaque
+                  const Color(0xFFF9F9F9).withOpacity(0.2),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.5, 1.0], // Extended gradient stops
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+            child: Stack(
               children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: titleFontSize,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: topPadding + 4,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: titleFontSize,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-
-        ],
+        ),
       ),
     );
   }
@@ -351,7 +353,7 @@ class ProfilePage extends StatelessWidget {
               children: [
                 Text(title, style: GoogleFonts.inter(fontSize: titleFontSize, fontWeight: FontWeight.bold)),
                 SizedBox(height: screenWidth * 0.01),
-                Text(subtitle, style: GoogleFonts.inter(fontSize: subtitleFontSize, color: Colors.grey.shade600)),
+                Text(subtitle, style: GoogleFonts.inter(fontSize: subtitleFontSize, color: Colors.black.withOpacity(0.6))),
               ],
             ),
           ),
@@ -408,13 +410,13 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: screenWidth * 0.015),
-                  Text(subtitle, style: GoogleFonts.inter(fontSize: subtitleFontSize, color: Colors.grey.shade600)),
+                  Text(subtitle, style: GoogleFonts.inter(fontSize: subtitleFontSize, color: Colors.black.withOpacity(0.6))),
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.grey.shade400,
+              color: Colors.black.withOpacity(0.3),
               size: screenWidth * 0.06,
             ),
           ],
@@ -474,7 +476,7 @@ class ProfilePage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: screenWidth * 0.04,
-                  color: Colors.grey.shade600,
+                  color: Colors.black.withOpacity(0.6),
                   decoration: TextDecoration.none,
                 ),
               ),
@@ -736,7 +738,7 @@ class _SportsCustomizationSheetState extends State<_SportsCustomizationSheet>
                         width: 40,
                         height: 5,
                         decoration: ShapeDecoration(
-                          color: Colors.grey.shade300,
+                          color: Colors.black.withOpacity(0.2),
                           shape: SmoothRectangleBorder(
                             borderRadius: SmoothBorderRadius(
                               cornerRadius: DesignConstants.get10Radius(context),
@@ -763,39 +765,128 @@ class _SportsCustomizationSheetState extends State<_SportsCustomizationSheet>
                                 'Select exactly 4 sports to display on the Athletics page',
                                 style: GoogleFonts.inter(
                                   fontSize: screenWidth * 0.04,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.black.withOpacity(0.6),
                                 ),
                               ),
                               SizedBox(height: screenWidth * 0.06),
                               Expanded(
-                                child: ListView.builder(
-                                  controller: scrollController,
-                                  itemCount: availableSports.length,
-                                  itemBuilder: (context, index) {
-                                    final sport = availableSports[index];
-                                    final isSelected = tempFavorites.contains(sport);
-                                    final canSelect = tempFavorites.length < 4 || isSelected;
-                                    
-                                    return CupertinoListTile(
-                                      title: Text(sport, style: GoogleFonts.inter()),
-                                      trailing: Transform.scale(
-                                        scale: 1.2,
-                                        child: CupertinoCheckbox(
-                                          value: isSelected,
-                                          onChanged: canSelect ? (bool? value) {
-                                            setState(() {
-                                              if (value == true && tempFavorites.length < 4) {
-                                                tempFavorites.add(sport);
-                                              } else if (value == false) {
-                                                tempFavorites.remove(sport);
-                                              }
-                                            });
-                                          } : null,
-                                          activeColor: AppColors.primaryBlue,
+                                child: Stack(
+                                  children: [
+                                    ListView.builder(
+                                      controller: scrollController,
+                                      itemCount: availableSports.length,
+                                      padding: EdgeInsets.only(top: 20, bottom: 20),
+                                      itemBuilder: (context, index) {
+                                        final sport = availableSports[index];
+                                        final isSelected = tempFavorites.contains(sport);
+                                        final canSelect = tempFavorites.length < 4 || isSelected;
+                                        
+                                        return CupertinoListTile(
+                                          title: Text(sport, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                                          trailing: Transform.scale(
+                                            scale: 1.2,
+                                            child: CupertinoCheckbox(
+                                              value: isSelected,
+                                              onChanged: canSelect ? (bool? value) {
+                                                setState(() {
+                                                  if (value == true && tempFavorites.length < 4) {
+                                                    tempFavorites.add(sport);
+                                                  } else if (value == false) {
+                                                    tempFavorites.remove(sport);
+                                                  }
+                                                });
+                                              } : null,
+                                              activeColor: AppColors.primaryBlue,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    // Top Blur
+                                    Positioned(
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 40,
+                                      child: IgnorePointer(
+                                        child: ClipRect(
+                                          child: ShaderMask(
+                                            shaderCallback: (rect) {
+                                              return LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.black,
+                                                  Colors.black,
+                                                  Colors.black.withOpacity(0.5),
+                                                  Colors.transparent,
+                                                ],
+                                                stops: const [0.0, 0.4, 0.75, 1.0],
+                                              ).createShader(rect);
+                                            },
+                                            blendMode: BlendMode.dstIn,
+                                            child: BackdropFilter(
+                                              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      const Color(0xFFF2F2F7),
+                                                      const Color(0xFFF2F2F7).withOpacity(0.0),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    );
-                                  },
+                                    ),
+                                    // Bottom Blur
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      height: 40,
+                                      child: IgnorePointer(
+                                        child: ClipRect(
+                                          child: ShaderMask(
+                                            shaderCallback: (rect) {
+                                              return LinearGradient(
+                                                begin: Alignment.bottomCenter,
+                                                end: Alignment.topCenter,
+                                                colors: [
+                                                  Colors.black,
+                                                  Colors.black,
+                                                  Colors.black.withOpacity(0.5),
+                                                  Colors.transparent,
+                                                ],
+                                                stops: const [0.0, 0.4, 0.75, 1.0],
+                                              ).createShader(rect);
+                                            },
+                                            blendMode: BlendMode.dstIn,
+                                            child: BackdropFilter(
+                                              filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.bottomCenter,
+                                                    end: Alignment.topCenter,
+                                                    colors: [
+                                                      const Color(0xFFF2F2F7),
+                                                      const Color(0xFFF2F2F7).withOpacity(0.0),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               SizedBox(height: screenWidth * 0.04),
@@ -803,15 +894,13 @@ class _SportsCustomizationSheetState extends State<_SportsCustomizationSheet>
                                 '${tempFavorites.length}/4 sports selected',
                                 style: GoogleFonts.inter(
                                   fontSize: screenWidth * 0.04,
-                                  color: tempFavorites.length == 4 ? Colors.green : Colors.grey.shade600,
+                                  color: tempFavorites.length == 4 ? Colors.green : Colors.black.withOpacity(0.6),
                                   fontWeight: tempFavorites.length == 4 ? FontWeight.bold : FontWeight.normal,
                                 ),
                               ),
                               SizedBox(height: screenWidth * 0.04),
-                              SizedBox(
-                                width: double.infinity,
-                                child: CupertinoButton.filled(
-                                  onPressed: tempFavorites.length == 4 ? () {
+                              GestureDetector(
+                                onTap: tempFavorites.length == 4 ? () {
                                     HapticFeedbackHelper.buttonPress();
                                     widget.controller.updateFavoriteSports(tempFavorites);
                                     Get.back();
@@ -821,8 +910,33 @@ class _SportsCustomizationSheetState extends State<_SportsCustomizationSheet>
                                       snackPosition: SnackPosition.BOTTOM,
                                       duration: Duration(seconds: 2),
                                     );
-                                  } : null,
-                                  child: Text('Save Selection', style: GoogleFonts.inter(color: CupertinoColors.white)),
+                                } : null,
+                                child: Opacity(
+                                  opacity: tempFavorites.length == 4 ? 1.0 : 0.5,
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    decoration: ShapeDecoration(
+                                      color: AppColors.primaryBlue,
+                                      shape: SmoothRectangleBorder(
+                                        borderRadius: SmoothBorderRadius(
+                                          cornerRadius: DesignConstants.get16Radius(context),
+                                          cornerSmoothing: 1.0,
+                                        ),
+                                      ),
+                                      shadows: DesignConstants.standardShadow,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Save Selection',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: screenWidth * 0.045,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -935,7 +1049,7 @@ class _EventFiltersSheetState extends State<_EventFiltersSheet>
                         width: 40,
                         height: 5,
                         decoration: ShapeDecoration(
-                          color: Colors.grey.shade300,
+                          color: Colors.black.withOpacity(0.2),
                           shape: SmoothRectangleBorder(
                             borderRadius: SmoothBorderRadius(
                               cornerRadius: DesignConstants.get10Radius(context),
@@ -962,46 +1076,155 @@ class _EventFiltersSheetState extends State<_EventFiltersSheet>
                                 'Toggle event categories to show or hide them in the Events page. This helps you customize which types of events appear in your feed.',
                                 style: GoogleFonts.inter(
                                   fontSize: screenWidth * 0.04,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.black.withOpacity(0.6),
                                 ),
                               ),
                               SizedBox(height: screenWidth * 0.06),
                               Expanded(
                                 child: GetBuilder<SettingsController>(
-                                  builder: (controller) => ListView.builder(
-                                    controller: scrollController,
-                                    itemCount: eventTypes.length,
-                                    itemBuilder: (context, index) {
-                                      final eventType = eventTypes[index];
-                                      final isVisible = controller.isEventTypeVisible(eventType);
-                                      
-                                      return CupertinoListTile(
-                                        title: Text(eventType, style: GoogleFonts.inter()),
-                                        trailing: Transform.scale(
-                                          scale: 0.8,
-                                          child: CupertinoSwitch(
-                                            value: isVisible,
-                                            onChanged: (_) {
-                                              HapticFeedbackHelper.selectionClick();
-                                              controller.toggleEventTypeVisibility(eventType);
-                                            },
-                                            activeColor: AppColors.primaryBlue,
+                                  builder: (controller) => Stack(
+                                    children: [
+                                      ListView.builder(
+                                        controller: scrollController,
+                                        itemCount: eventTypes.length,
+                                        padding: EdgeInsets.only(top: 20, bottom: 20),
+                                        itemBuilder: (context, index) {
+                                          final eventType = eventTypes[index];
+                                          final isVisible = controller.isEventTypeVisible(eventType);
+                                          
+                                          return CupertinoListTile(
+                                            title: Text(eventType, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                                            trailing: Transform.scale(
+                                              scale: 0.8,
+                                              child: CupertinoSwitch(
+                                                value: isVisible,
+                                                onChanged: (_) {
+                                                  HapticFeedbackHelper.selectionClick();
+                                                  controller.toggleEventTypeVisibility(eventType);
+                                                },
+                                                activeColor: AppColors.primaryBlue,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      // Top Blur
+                                      Positioned(
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: 40,
+                                        child: IgnorePointer(
+                                          child: ClipRect(
+                                            child: ShaderMask(
+                                              shaderCallback: (rect) {
+                                                return LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    Colors.black,
+                                                    Colors.black,
+                                                    Colors.black.withOpacity(0.5),
+                                                    Colors.transparent,
+                                                  ],
+                                                  stops: const [0.0, 0.4, 0.75, 1.0],
+                                                ).createShader(rect);
+                                              },
+                                              blendMode: BlendMode.dstIn,
+                                              child: BackdropFilter(
+                                                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      begin: Alignment.topCenter,
+                                                      end: Alignment.bottomCenter,
+                                                      colors: [
+                                                        const Color(0xFFF2F2F7),
+                                                        const Color(0xFFF2F2F7).withOpacity(0.0),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      );
-                                    },
+                                      ),
+                                      // Bottom Blur
+                                      Positioned(
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: 40,
+                                        child: IgnorePointer(
+                                          child: ClipRect(
+                                            child: ShaderMask(
+                                              shaderCallback: (rect) {
+                                                return LinearGradient(
+                                                  begin: Alignment.bottomCenter,
+                                                  end: Alignment.topCenter,
+                                                  colors: [
+                                                    Colors.black,
+                                                    Colors.black,
+                                                    Colors.black.withOpacity(0.5),
+                                                    Colors.transparent,
+                                                  ],
+                                                  stops: const [0.0, 0.4, 0.75, 1.0],
+                                                ).createShader(rect);
+                                              },
+                                              blendMode: BlendMode.dstIn,
+                                              child: BackdropFilter(
+                                                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      begin: Alignment.bottomCenter,
+                                                      end: Alignment.topCenter,
+                                                      colors: [
+                                                        const Color(0xFFF2F2F7),
+                                                        const Color(0xFFF2F2F7).withOpacity(0.0),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                               SizedBox(height: screenWidth * 0.04),
-                              SizedBox(
-                                width: double.infinity,
-                                child: CupertinoButton.filled(
-                                  onPressed: () { 
+                              GestureDetector(
+                                onTap: () { 
                                     HapticFeedbackHelper.buttonPress(); 
                                     Get.back(); 
-                                  },
-                                  child: Text('Done', style: GoogleFonts.inter(color: CupertinoColors.white)),
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  decoration: ShapeDecoration(
+                                    color: AppColors.primaryBlue,
+                                    shape: SmoothRectangleBorder(
+                                      borderRadius: SmoothBorderRadius(
+                                        cornerRadius: DesignConstants.get16Radius(context),
+                                        cornerSmoothing: 1.0,
+                                      ),
+                                    ),
+                                    shadows: DesignConstants.standardShadow,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Done',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: screenWidth * 0.045,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

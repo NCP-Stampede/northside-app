@@ -259,7 +259,6 @@ class _SportCard extends StatelessWidget {
     
     return GestureDetector(
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: verticalPadding),
