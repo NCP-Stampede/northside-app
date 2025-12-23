@@ -72,6 +72,8 @@ class DesignConstants {
         return const Color(0xFF32CD32); // Lime Green
       case 'track and field':
       case 'track':
+      case 'outdoor track':
+      case 'indoor track':
         return const Color(0xFFFF6347); // Tomato
       case 'cross country':
         return const Color(0xFF20B2AA); // Light Sea Green

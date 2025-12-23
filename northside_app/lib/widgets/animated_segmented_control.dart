@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:figma_squircle/figma_squircle.dart';
+import 'dart:ui';
 import '../core/design_constants.dart';
 import '../core/utils/app_colors.dart';
 
@@ -77,96 +78,114 @@ class _AnimatedSegmentedControlState extends State<AnimatedSegmentedControl>
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.01),
-      decoration: ShapeDecoration(
-        color: Colors.grey.shade200,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get32Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius(
+        cornerRadius: DesignConstants.get32Radius(context),
+        cornerSmoothing: 1.0,
       ),
-      child: Stack(
-        children: [
-          // Animated sliding background
-          AnimatedBuilder(
-            animation: _slideAnimation,
-            builder: (context, child) {
-              return Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final containerPadding = screenWidth * 0.01;
-                    final availableWidth = constraints.maxWidth - (containerPadding * 2);
-                    final segmentWidth = availableWidth / widget.segments.length;
-                    
-                    return Stack(
-                      children: [
-                        Positioned(
-                          left: containerPadding + (_slideAnimation.value * segmentWidth) + (containerPadding * 0.2) + (_slideAnimation.value * containerPadding * 0.3),
-                          top: containerPadding,
-                          bottom: containerPadding,
-                          width: segmentWidth - (containerPadding * 1.6), // More reduction to center better
-                          child: Container(
-                            decoration: ShapeDecoration(
-                              color: Colors.white,
-                              shape: SmoothRectangleBorder(
-                                borderRadius: SmoothBorderRadius(
-                                  cornerRadius: DesignConstants.get28Radius(context),
-                                  cornerSmoothing: 1.0,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          padding: EdgeInsets.all(screenWidth * 0.01),
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get32Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Animated sliding background
+              AnimatedBuilder(
+                animation: _slideAnimation,
+                builder: (context, child) {
+                  return Positioned.fill(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final containerPadding = screenWidth * 0.01;
+                        final availableWidth = constraints.maxWidth - (containerPadding * 2);
+                        final segmentWidth = availableWidth / widget.segments.length;
+                        
+                        return Stack(
+                          children: [
+                            Positioned(
+                              left: containerPadding + (_slideAnimation.value * segmentWidth) + (containerPadding * 0.2) + (_slideAnimation.value * containerPadding * 0.3),
+                              top: containerPadding,
+                              bottom: containerPadding,
+                              width: segmentWidth - (containerPadding * 1.6),
+                              child: Container(
+                                decoration: ShapeDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.white.withOpacity(0.4),
+                                      Colors.white.withOpacity(0.25),
+                                    ],
+                                  ),
+                                  shape: SmoothRectangleBorder(
+                                    borderRadius: SmoothBorderRadius(
+                                      cornerRadius: DesignConstants.get28Radius(context),
+                                      cornerSmoothing: 1.0,
+                                    ),
+                                    side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                                  ),
                                 ),
                               ),
-                              shadows: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
+                          ],
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              // Segment buttons
+              Row(
+                children: widget.segments.map((segment) {
+                  final index = widget.segments.indexOf(segment);
+                  final isSelected = index == _selectedIndex;
+                  
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (index != _selectedIndex) {
+                          widget.onSelectionChanged(segment);
+                        }
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: screenWidth * 0.035),
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                          ),
+                          child: Text(
+                            segment,
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ],
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-          // Segment buttons
-          Row(
-            children: widget.segments.map((segment) {
-              final index = widget.segments.indexOf(segment);
-              final isSelected = index == _selectedIndex;
-              
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (index != _selectedIndex) {
-                      widget.onSelectionChanged(segment);
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: screenWidth * 0.035),
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? AppColors.primaryBlue : Colors.grey.shade600,
-                      ),
-                      child: Text(
-                        segment,
-                        textAlign: TextAlign.center,
                       ),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

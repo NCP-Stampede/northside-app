@@ -603,6 +603,8 @@ class AthleticsController extends GetxController {
         // DON'T convert backend format - keep it as is since our hardcoded data now matches
         .replaceAll('track and field', 'track') // Standardize track display (now just "track")
         .replaceAll('track & field', 'track') // Standardize track display (now just "track")
+        .replaceAll('indoor track', 'track-and-field-indoor')
+        .replaceAll('outdoor track', 'track-and-field-outdoor')
         .replaceAll('cheer leading', 'cheerleading') // Standardize cheerleading
         .trim();
   }

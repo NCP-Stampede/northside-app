@@ -27,7 +27,7 @@ class ArticleDetailSheet extends StatelessWidget {
       // No links found, return plain text
       return Text(
         content,
-        style: const TextStyle(fontSize: 16, height: 1.5),
+        style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white),
       );
     }
     
@@ -39,7 +39,7 @@ class ArticleDetailSheet extends StatelessWidget {
       if (match.start > lastEnd) {
         spans.add(TextSpan(
           text: content.substring(lastEnd, match.start),
-          style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black),
+          style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white),
         ));
       }
       
@@ -87,7 +87,7 @@ class ArticleDetailSheet extends StatelessWidget {
     if (lastEnd < content.length) {
       spans.add(TextSpan(
         text: content.substring(lastEnd),
-        style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black),
+        style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white),
       ));
     }
     
@@ -98,324 +98,294 @@ class ArticleDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // This container gives the sheet its shape and background color.
-    return Container(
-      decoration: ShapeDecoration(
-        color: const Color(0xFFF2F2F7),
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius.only(
-            topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-            topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+    final double screenWidth = MediaQuery.of(context).size.width;
+    
+    // Glass effect container with melting header over image
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius.only(
+        topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+        topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40), // Higher frost
+        child: Container(
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.35), // Higher opacity
+                Colors.white.withOpacity(0.18),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius.only(
+                topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+              ),
+              side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 5,
+                decoration: ShapeDecoration(
+                  color: Colors.white.withOpacity(0.4),
+                  shape: SmoothRectangleBorder(
+                    borderRadius: SmoothBorderRadius(
+                      cornerRadius: DesignConstants.get10Radius(context),
+                      cornerSmoothing: 1.0,
+                    ),
+                  ),
+                ),
+              ),
+              // Scrollable content area
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image with melting header overlay
+                      Stack(
+                        children: [
+                          // The image
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: ClipSmoothRect(
+                              radius: SmoothBorderRadius(
+                                cornerRadius: DesignConstants.get24Radius(context),
+                                cornerSmoothing: 1.0,
+                              ),
+                              child: AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: Container(
+                                  width: double.infinity,
+                                  child: Image.asset(
+                                    article.imagePath ?? 'assets/images/flexes_icon.png', 
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        'assets/images/flexes_icon.png',
+                                        fit: BoxFit.contain,
+                                        alignment: Alignment.center,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Melting glass header overlay
+                          Positioned(
+                            left: 24,
+                            right: 24,
+                            bottom: 0,
+                            child: ClipSmoothRect(
+                              radius: SmoothBorderRadius.only(
+                                bottomLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                                bottomRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                              ),
+                              child: ShaderMask(
+                                shaderCallback: (rect) {
+                                  return const LinearGradient(
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                    colors: [
+                                      Colors.black,
+                                      Colors.black,
+                                      Colors.transparent,
+                                    ],
+                                    stops: [0.0, 0.5, 1.0],
+                                  ).createShader(rect);
+                                },
+                                blendMode: BlendMode.dstIn,
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: [
+                                          const Color(0xFF030308).withOpacity(0.9),
+                                          const Color(0xFF030308).withOpacity(0.5),
+                                          Colors.transparent,
+                                        ],
+                                        stops: const [0.0, 0.6, 1.0],
+                                      ),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            article.title,
+                                            style: GoogleFonts.inter(
+                                              fontSize: screenWidth * 0.045,
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: -0.5,
+                                              color: Colors.white,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (_extractSportFromTitle(article.title) != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(left: 8),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: ShapeDecoration(
+                                              color: const Color(0xFF007AFF),
+                                              shape: SmoothRectangleBorder(
+                                                borderRadius: SmoothBorderRadius(
+                                                  cornerRadius: 12,
+                                                  cornerSmoothing: 1.0,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _extractSportFromTitle(article.title)!,
+                                              style: GoogleFonts.inter(
+                                                fontSize: screenWidth * 0.028,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Main content with link support
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: _buildContentWithLinks(article.content),
+                      ),
+                      const SizedBox(height: 24),
+                      // Add to Calendar button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Builder(
+                          builder: (context) {
+                            try {
+                              if (Get.isRegistered<SettingsController>()) {
+                                final settingsController = Get.find<SettingsController>();
+                                if (!settingsController.calendarSync.value && _isEventArticle(article)) {
+                                  return _buildCalendarButton(context);
+                                }
+                              } else {
+                                if (_isEventArticle(article)) {
+                                  return _buildCalendarButton(context);
+                                }
+                              }
+                              return const SizedBox.shrink();
+                            } catch (e) {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
-      child: Column(
-        children: [
-          // Drag handle
-          Container(
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            width: 40,
-            height: 5,
+    );
+  }
+
+  Widget _buildCalendarButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final eventInfo = _parseEventInfo(article);
+        if (eventInfo != null) {
+          try {
+            await CalendarService.requestPermissions();
+            await CalendarService.addEventToCalendar(
+              title: eventInfo['title'],
+              description: eventInfo['description'],
+              start: eventInfo['start'],
+              end: eventInfo['end'],
+              location: eventInfo['location'],
+            );
+            Get.snackbar(
+              'Success', 
+              'Event added to calendar', 
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+          } catch (e) {
+            Get.snackbar(
+              'Error', 
+              'Failed to add event to calendar', 
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          }
+        } else {
+          Get.snackbar(
+            'Error', 
+            'Event information not available', 
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+          );
+        }
+      },
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: DesignConstants.get16Radius(context),
+          cornerSmoothing: 1.0,
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: ShapeDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: const Color(0xFF007AFF),
               shape: SmoothRectangleBorder(
                 borderRadius: SmoothBorderRadius(
-                  cornerRadius: DesignConstants.get10Radius(context),
+                  cornerRadius: DesignConstants.get16Radius(context),
                   cornerSmoothing: 1.0,
                 ),
               ),
             ),
-          ),
-          // Scrollable content area
-          Expanded(
-            child: Stack(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0).copyWith(top: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                    // Display article image with fallback
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0),
-                      child: ClipSmoothRect(
-                        radius: SmoothBorderRadius(
-                          cornerRadius: DesignConstants.get24Radius(context),
-                          cornerSmoothing: 1.0,
-                        ),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9, // Standard aspect ratio for consistency
-                          child: Container(
-                            width: double.infinity,
-                            child: Image.asset(
-                              article.imagePath ?? 'assets/images/flexes_icon.png', 
-                              fit: BoxFit.contain, // Maintain aspect ratio, fit within bounds
-                              alignment: Alignment.center,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Fallback to flexes_icon.png if image fails to load
-                                return Image.asset(
-                                  'assets/images/flexes_icon.png',
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Title with optional sports badge
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            article.title,
-                            style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        if (_extractSportFromTitle(article.title) != null)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: ShapeDecoration(
-                              color: const Color(0xFF007AFF),
-                              shape: SmoothRectangleBorder(
-                                borderRadius: SmoothBorderRadius(
-                                  cornerRadius: 16,
-                                  cornerSmoothing: 1.0,
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              _extractSportFromTitle(article.title)!,
-                              style: GoogleFonts.inter(
-                                fontSize: MediaQuery.of(context).size.width * 0.032,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Main content with link support
-                    Container(
-                      width: double.infinity,
-                      child: _buildContentWithLinks(article.content),
-                    ),
-                    const SizedBox(height: 24),
-                                      // Add to Calendar button (only show if Calendar Sync is disabled and article is an event)
-                      Builder(
-                        builder: (context) {
-                          try {
-                            // Try to find the controller, but don't crash if it's not available
-                            if (Get.isRegistered<SettingsController>()) {
-                              final settingsController = Get.find<SettingsController>();
-                              // Only show individual calendar button if sync is disabled and this is an event
-                              if (!settingsController.calendarSync.value && _isEventArticle(article)) {
-                          return GestureDetector(
-                            onTap: () async {
-                                final eventInfo = _parseEventInfo(article);
-                                if (eventInfo != null) {
-                                  try {
-                                    await CalendarService.requestPermissions();
-                                    await CalendarService.addEventToCalendar(
-                                      title: eventInfo['title'],
-                                      description: eventInfo['description'],
-                                      start: eventInfo['start'],
-                                      end: eventInfo['end'],
-                                      location: eventInfo['location'],
-                                    );
-                                    Get.snackbar(
-                                      'Success', 
-                                      'Event added to calendar', 
-                                      snackPosition: SnackPosition.BOTTOM,
-                                      backgroundColor: Colors.green,
-                                      colorText: Colors.white,
-                                    );
-                                  } catch (e) {
-                                    Get.snackbar(
-                                      'Error', 
-                                      'Failed to add event to calendar', 
-                                      snackPosition: SnackPosition.BOTTOM,
-                                      backgroundColor: Colors.red,
-                                      colorText: Colors.white,
-                                    );
-                                  }
-                                } else {
-                                  Get.snackbar(
-                                    'Error', 
-                                    'Event information not available', 
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    backgroundColor: Colors.orange,
-                                    colorText: Colors.white,
-                                  );
-                                }
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 16),
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: ShapeDecoration(
-                                color: const Color(0xFF007AFF),
-                                shape: SmoothRectangleBorder(
-                                  borderRadius: SmoothBorderRadius(
-                                    cornerRadius: DesignConstants.get16Radius(context),
-                                    cornerSmoothing: 1.0,
-                                  ),
-                                ),
-                                shadows: DesignConstants.standardShadow,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.calendar_today, color: Colors.white),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Add to Calendar',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                              }
-                            } else {
-                              // If settings controller not available, show the button by default for events
-                              if (_isEventArticle(article)) {
-                                return GestureDetector(
-                                  onTap: () async {
-                                      final eventInfo = _parseEventInfo(article);
-                                      if (eventInfo != null) {
-                                        try {
-                                          await CalendarService.requestPermissions();
-                                          await CalendarService.addEventToCalendar(
-                                            title: eventInfo['title'],
-                                            description: eventInfo['description'],
-                                            start: eventInfo['start'],
-                                            end: eventInfo['end'],
-                                            location: eventInfo['location'],
-                                          );
-                                          Get.snackbar(
-                                            'Success', 
-                                            'Event added to calendar', 
-                                            snackPosition: SnackPosition.BOTTOM,
-                                            backgroundColor: Colors.green,
-                                            colorText: Colors.white,
-                                          );
-                                        } catch (e) {
-                                          Get.snackbar(
-                                            'Error', 
-                                            'Failed to add event to calendar', 
-                                            snackPosition: SnackPosition.BOTTOM,
-                                            backgroundColor: Colors.red,
-                                            colorText: Colors.white,
-                                          );
-                                        }
-                                      } else {
-                                        Get.snackbar(
-                                          'Error', 
-                                          'Event information not available', 
-                                          snackPosition: SnackPosition.BOTTOM,
-                                          backgroundColor: Colors.orange,
-                                          colorText: Colors.white,
-                                        );
-                                      }
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(top: 16),
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    decoration: ShapeDecoration(
-                                      color: const Color(0xFF007AFF),
-                                      shape: SmoothRectangleBorder(
-                                        borderRadius: SmoothBorderRadius(
-                                          cornerRadius: DesignConstants.get16Radius(context),
-                                          cornerSmoothing: 1.0,
-                                        ),
-                                      ),
-                                      shadows: DesignConstants.standardShadow,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.calendar_today, color: Colors.white),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Add to Calendar',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                            return const SizedBox.shrink();
-                          } catch (e) {
-                            return const SizedBox.shrink();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                // Top Blur
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: IgnorePointer(
-                    child: ClipRect(
-                      child: ShaderMask(
-                        shaderCallback: (rect) {
-                          return LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black,
-                              Colors.black,
-                              Colors.black.withOpacity(0.5),
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.4, 0.75, 1.0],
-                          ).createShader(rect);
-                        },
-                        blendMode: BlendMode.dstIn,
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  const Color(0xFFF2F2F7),
-                                  const Color(0xFFF2F2F7).withOpacity(0.0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                const Icon(Icons.calendar_today, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Add to Calendar',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

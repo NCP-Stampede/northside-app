@@ -1,5 +1,6 @@
 // lib/widgets/shared_header.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,7 +33,7 @@ class SharedHeader extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: titleFontSize,
               fontWeight: FontWeight.w900,
-              color: Colors.black,
+              color: Colors.white,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -45,8 +46,8 @@ class SharedHeader extends StatelessWidget {
               },
               child: CircleAvatar(
                 radius: 22,
-                backgroundColor: Colors.grey.shade300,
-                child: const Icon(Icons.person, color: Colors.black, size: 28),
+                backgroundColor: Colors.white.withOpacity(0.2),
+                child: const Icon(CupertinoIcons.person, color: Colors.white, size: 28),
               ),
             ),
         ],

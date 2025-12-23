@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -17,6 +18,8 @@ import '../../models/article.dart';
 import '../../models/bulletin_post.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/shared_header.dart';
+import '../../widgets/liquid_mesh_background.dart';
+import '../../widgets/liquid_melting_header.dart';
 
 class BulletinPage extends StatefulWidget {
   const BulletinPage({super.key});
@@ -499,23 +502,7 @@ class _BulletinPageState extends State<BulletinPage> {
       body: Stack(
         children: [
           // Gradient background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFF1565C0), // Deep blue
-                  Color(0xFF1976D2), // Blue
-                  Color(0xFF42A5F5), // Light blue
-                  Color(0xFF90CAF9), // Very light blue
-                  Color(0xFFF2F2F7), // Transition to background
-                  Color(0xFFF2F2F7), // Background
-                ],
-                stops: [0.0, 0.10, 0.22, 0.32, 0.45, 1.0],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
+          const LiquidMeshBackground(),
           // Main header and pinned carousel always visible
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -556,31 +543,57 @@ class _BulletinPageState extends State<BulletinPage> {
                 scrollController.removeListener(_onScroll);
                 scrollController.addListener(_onScroll);
                 if (dateKeys.isEmpty) {
-                  return Container(
-                    // Remove the top margin to close the gap
-                    decoration: BoxDecoration(
-                      color: Color(0xFFF2F2F7),
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)), // ~24px at 420px width
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, spreadRadius: -5)],
-                    ),
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(screenWidth * 0.076), // ~32px at 420px width
-                        child: Text(
-                          'No bulletin posts available.',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          textAlign: TextAlign.center,
+                  return ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.35),
+                              Colors.white.withOpacity(0.18),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
+                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                        ),
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(screenWidth * 0.076),
+                            child: Text(
+                              'No bulletin posts available.',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   );
                 }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xFFF2F2F7),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)), // ~24px at 420px width
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20, spreadRadius: -5)],
-                  ),
+                return ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.35),
+                            Colors.white.withOpacity(0.18),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
+                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+                      ),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     children: [
@@ -613,7 +626,7 @@ class _BulletinPageState extends State<BulletinPage> {
                               width: screenWidth * 0.086, // ~36px at 420px width
                               height: screenWidth * 0.012, // ~5px at 420px width
                               decoration: BoxDecoration(
-                                color: Colors.grey[400],
+                                color: Colors.white.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(2.5),
                               ),
                             ),
@@ -642,11 +655,67 @@ class _BulletinPageState extends State<BulletinPage> {
                       ),
                     ],
                   ),
+                    ),
+                  ),
                 );
               },
             ),
           ),
-          _buildHeader(context),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 100,
+              child: ClipRRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: ShaderMask(
+                    shaderCallback: (rect) {
+                      return const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black,
+                          Colors.black,
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.6, 1.0],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFF030308).withOpacity(0.95),
+                            const Color(0xFF030308).withOpacity(0.6),
+                            Colors.transparent,
+                          ],
+                          stops: const [0.0, 0.7, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 4,
+            left: 24,
+            child: Text(
+              'Bulletin',
+              style: GoogleFonts.inter(
+                fontSize: 36,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.0,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -659,7 +728,7 @@ class _BulletinPageState extends State<BulletinPage> {
       padding: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, screenWidth * 0.06, screenWidth * 0.04),
       child: Text(
         title,
-        style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
+        style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
@@ -673,25 +742,37 @@ class _BulletinPageState extends State<BulletinPage> {
     final double verticalPadding = screenWidth * 0.03;
     final double horizontalPadding = screenWidth * 0.06;
     
-    return Container(
-      key: key, // Use the provided GlobalKey
-      width: double.infinity,
-      height: headerHeight,
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-        vertical: verticalPadding,
-      ),
-      decoration: BoxDecoration(
-        color: Color(0xFFF2F2F7),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          date,
-          style: GoogleFonts.inter(
-            fontSize: MediaQuery.of(context).size.width * 0.045, 
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          key: key, // Use the provided GlobalKey
+          width: double.infinity,
+          height: headerHeight,
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              date,
+              style: GoogleFonts.inter(
+                fontSize: MediaQuery.of(context).size.width * 0.045, 
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
@@ -738,76 +819,6 @@ class _BulletinPageState extends State<BulletinPage> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double topPadding = MediaQuery.of(context).padding.top;
-    final double headerHeight = screenWidth * 0.4 + topPadding;
-    
-    return ClipRect(
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-              Colors.transparent,
-            ],
-            stops: [0.0, 0.4, 0.8, 1.0],
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
-          child: Container(
-            height: headerHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFC7C7CC).withOpacity(0.85),
-                  const Color(0xFFF9F9F9).withOpacity(0.2),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: topPadding + 4,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bulletin',
-                        style: GoogleFonts.inter(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _BulletinEventCard extends StatelessWidget {
@@ -838,54 +849,74 @@ class _BulletinEventCard extends StatelessWidget {
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
       onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: () => _showArticleSheet(post),
-      child: Container(
-        width: double.infinity,
-        margin: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, screenWidth * 0.06, isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04),
-        padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04),
-        decoration: ShapeDecoration(
-          color: Colors.white,            shape: SmoothRectangleBorder(
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: DesignConstants.get24Radius(context),
-                cornerSmoothing: 1.0,
-              ),
-            ),
-          shadows: DesignConstants.bulletinShadow,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              post.title,
-              style: GoogleFonts.inter(
-                fontSize: MediaQuery.of(context).size.width * 0.045, 
-                fontWeight: FontWeight.bold
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined, 
-                  size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045, 
-                  color: Colors.black
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, screenWidth * 0.06, isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04),
+        child: ClipSmoothRect(
+          radius: SmoothBorderRadius(
+            cornerRadius: DesignConstants.get24Radius(context),
+            cornerSmoothing: 1.0,
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04),
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.12),
+                  ],
                 ),
-                SizedBox(width: screenWidth * 0.02),
-                Flexible(
-                  child: Text(
-                    post.subtitle,
-                    style: TextStyle(
-                      fontSize: isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04,
-                      color: Colors.black,
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                    cornerRadius: DesignConstants.get24Radius(context),
+                    cornerSmoothing: 1.0,
+                  ),
+                  side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: GoogleFonts.inter(
+                      fontSize: MediaQuery.of(context).size.width * 0.045, 
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
+                  Row(
+                    children: [
+                      Icon(
+                        CupertinoIcons.calendar, 
+                        size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045, 
+                        color: Colors.white.withOpacity(0.7)
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Flexible(
+                        child: Text(
+                          post.subtitle,
+                          style: TextStyle(
+                            fontSize: isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -924,55 +955,77 @@ class _PinnedPostCard extends StatelessWidget {
       child: Container(
         width: cardWidth,
         margin: EdgeInsets.only(right: screenWidth * 0.04, bottom: screenWidth * 0.01),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: cardRadius,
-              cornerSmoothing: 1.0,
-            ),
+        child: ClipSmoothRect(
+          radius: SmoothBorderRadius(
+            cornerRadius: cardRadius,
+            cornerSmoothing: 1.0,
           ),
-          shadows: DesignConstants.bulletinShadow,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipSmoothRect(
-              radius: SmoothBorderRadius.only(
-                topLeft: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
-                topRight: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.12),
+                  ],
+                ),
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                    cornerRadius: cardRadius,
+                    cornerSmoothing: 1.0,
+                  ),
+                  side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+                ),
               ),
-              child: Image.asset(
-                post.imagePath!,
-                height: imageHeight,
-                width: double.infinity,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(screenWidth * 0.03),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    post.title,
-                    style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  ClipSmoothRect(
+                    radius: SmoothBorderRadius.only(
+                      topLeft: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
+                      topRight: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
+                    ),
+                    child: Image.asset(
+                      post.imagePath!,
+                      height: imageHeight,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.white.withOpacity(0.1)),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(screenWidth * 0.03),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.title,
+                          style: GoogleFonts.inter(
+                            fontSize: MediaQuery.of(context).size.width * 0.045, 
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: screenWidth * 0.01),
+                        Text(
+                          post.subtitle,
+                          style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.white.withOpacity(0.7)),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: screenWidth * 0.01),
-                  Text(
-                    post.subtitle,
-                    style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.black),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ),
             ),
-            SizedBox(height: screenWidth * 0.01),
-          ],
+          ),
         ),
       ),
     );

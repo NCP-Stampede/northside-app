@@ -2,6 +2,7 @@
 
 import 'dart:ui'; // Needed for BackdropFilter
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,6 +20,8 @@ import '../../core/utils/logger.dart';
 import '../../core/design_constants.dart';
 import '../../controllers/settings_controller.dart';
 import '../../core/utils/haptic_feedback_helper.dart';
+import '../../widgets/liquid_mesh_background.dart';
+import '../../widgets/liquid_melting_header.dart';
 
 class AthleticsPage extends StatelessWidget {
   const AthleticsPage({super.key});
@@ -26,27 +29,11 @@ class AthleticsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AthleticsController athleticsController = Get.put(AthleticsController());
-    final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFB22222), // Dark maroon
-                  Color(0xFFB22222), // Light maroon
-                  Color(0xFFD4A5A5), // Very light maroon transition
-                  Color(0xFFE8D0D0), // Even lighter maroon
-                  Color(0xFFF2F2F7)  // Same as events page background
-                ],
-                stops: [0.0, 0.15, 0.3, 0.4, 0.5],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
+          const LiquidMeshBackground(),
           Obx(() {
             if (athleticsController.isLoading.value) {
               return const LoadingIndicator(
@@ -55,99 +42,30 @@ class AthleticsPage extends StatelessWidget {
               );
             }
             
-            return Stack(
-              children: [
-                ListView(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + (screenWidth * 0.12) + (screenHeight * 0.05),
-                    bottom: screenHeight * 0.12
-                  ),
-                  children: [
-                    _buildNewsCarousel(context, athleticsController),
-                    SizedBox(height: screenHeight * 0.04),
-                    _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
-                    SizedBox(height: screenHeight * 0.025),
-                    _buildSportsGrid(context, athleticsController),
-                    SizedBox(height: screenHeight * 0.015),
-                    _buildRegisterButton(context),
-                  ],
+            return CustomScrollView(
+              slivers: [
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: LiquidMeltingHeader(title: 'Athletics'),
                 ),
-                _buildHeader(context),
+                SliverPadding(
+                  padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildNewsCarousel(context, athleticsController),
+                      SizedBox(height: screenHeight * 0.04),
+                      _buildSectionHeader(context, 'Sports', () => Get.to(() => const AllSportsPage())),
+                      SizedBox(height: screenHeight * 0.025),
+                      _buildSportsGrid(context, athleticsController),
+                      SizedBox(height: screenHeight * 0.015),
+                      _buildRegisterButton(context),
+                    ]),
+                  ),
+                ),
               ],
             );
           }),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double topPadding = MediaQuery.of(context).padding.top;
-    final double headerHeight = screenWidth * 0.4 + topPadding;
-    
-    return ClipRect(
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-              Colors.transparent,
-            ],
-            stops: [0.0, 0.4, 0.8, 1.0],
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
-          child: Container(
-            height: headerHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFC7C7CC).withOpacity(0.85),
-                  const Color(0xFFF9F9F9).withOpacity(0.2),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: topPadding + 4,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Athletics',
-                        style: GoogleFonts.inter(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -185,29 +103,49 @@ class AthleticsPage extends StatelessWidget {
             );
           }
         },
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: screenWidth * 0.045),
-          decoration: ShapeDecoration(
-            color: Colors.white,              shape: SmoothRectangleBorder(
-                borderRadius: SmoothBorderRadius(
-                  cornerRadius: DesignConstants.get24Radius(context),
-                  cornerSmoothing: 1.0,
+        child: ClipSmoothRect(
+          radius: SmoothBorderRadius(
+            cornerRadius: DesignConstants.get24Radius(context),
+            cornerSmoothing: 1.0,
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: screenWidth * 0.045),
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.12),
+                  ],
+                ),
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                    cornerRadius: DesignConstants.get24Radius(context),
+                    cornerSmoothing: 1.0,
+                  ),
+                  side: BorderSide(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
+                  ),
                 ),
               ),
-              shadows: DesignConstants.standardShadow,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_circle_outline, color: AppColors.primaryBlue, size: screenWidth * 0.06),
-              SizedBox(width: screenWidth * 0.02),
-              Text(
-                'Register for a sport',
-                style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: AppColors.primaryBlue),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.add_circled, color: AppColors.primaryBlue, size: screenWidth * 0.06),
+                  SizedBox(width: screenWidth * 0.02),
+                  Text(
+                    'Register for a sport',
+                    style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -228,34 +166,55 @@ class AthleticsPage extends StatelessWidget {
       return SizedBox(
         height: cardHeight,
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24.0),
-            padding: const EdgeInsets.all(20),
-            decoration: ShapeDecoration(
-              color: Colors.white.withOpacity(0.9),
-              shape: SmoothRectangleBorder(
-                borderRadius: SmoothBorderRadius(
-                  cornerRadius: DesignConstants.get32Radius(context),
-                  cornerSmoothing: 1.0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: ClipSmoothRect(
+              radius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get32Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: ShapeDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withOpacity(0.25),
+                        Colors.white.withOpacity(0.12),
+                      ],
+                    ),
+                    shape: SmoothRectangleBorder(
+                      borderRadius: SmoothBorderRadius(
+                        cornerRadius: DesignConstants.get32Radius(context),
+                        cornerSmoothing: 1.0,
+                      ),
+                      side: BorderSide(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(CupertinoIcons.sportscourt, size: 48, color: Colors.white.withOpacity(0.7)),
+                      SizedBox(height: 16),
+                      Text(
+                        'No Recent Athletics News',
+                        style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Check back later for updates!',
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              shadows: DesignConstants.standardShadow,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.sports_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
-                SizedBox(height: 16),
-                Text(
-                  'No Recent Athletics News',
-                  style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Check back later for updates!',
-                  style: TextStyle(color: Colors.black.withOpacity(0.6)),
-                ),
-              ],
             ),
           ),
         ),
@@ -314,41 +273,60 @@ class AthleticsPage extends StatelessWidget {
     if (topSports.isEmpty) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-        child: Container(
-          padding: EdgeInsets.all(screenWidth * 0.06),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: SmoothRectangleBorder(
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: 16,
-                cornerSmoothing: 1.0,
-              ),
-            ),
-            shadows: DesignConstants.standardShadow,
+        child: ClipSmoothRect(
+          radius: SmoothBorderRadius(
+            cornerRadius: 16,
+            cornerSmoothing: 1.0,
           ),
-          child: Center(
-            child: Column(
-              children: [
-                Icon(Icons.sports_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
-                SizedBox(height: screenWidth * 0.04),
-                Text(
-                  'No Sports This Season',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.045,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black.withOpacity(0.7),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              padding: EdgeInsets.all(screenWidth * 0.06),
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.12),
+                  ],
+                ),
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                    cornerRadius: 16,
+                    cornerSmoothing: 1.0,
+                  ),
+                  side: BorderSide(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-                SizedBox(height: screenWidth * 0.02),
-                Text(
-                  'Check back later for updates!',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    color: Colors.black.withOpacity(0.6),
-                  ),
-                  textAlign: TextAlign.center,
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(CupertinoIcons.sportscourt, size: 48, color: Colors.white.withOpacity(0.7)),
+                    SizedBox(height: screenWidth * 0.04),
+                    Text(
+                      'No Sports This Season',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: screenWidth * 0.02),
+                    Text(
+                      'Check back later for updates!',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.035,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -397,7 +375,7 @@ class AthleticsPage extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
+            style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -412,7 +390,7 @@ class AthleticsPage extends StatelessWidget {
                   style: TextStyle(fontSize: screenWidth * 0.04, color: AppColors.primaryBlue, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(width: screenWidth * 0.01),
-                Icon(Icons.arrow_forward_ios, size: screenWidth * 0.03, color: AppColors.primaryBlue),
+                Icon(CupertinoIcons.chevron_right, size: screenWidth * 0.04, color: AppColors.primaryBlue),
               ],
             ),
           ),
@@ -441,82 +419,99 @@ class _NewsCard extends StatelessWidget {
         // More text space for narrow screens
         final double imageHeight = isNarrowScreen ? cardHeight * 0.55 : cardHeight * 0.58;
         
-        return Container(
-          margin: EdgeInsets.only(right: screenWidth * 0.04),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: SmoothRectangleBorder(
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: cardRadius,
-                cornerSmoothing: 1.0,
-              ),
-            ),
-            shadows: DesignConstants.standardShadow,
+        return ClipSmoothRect(
+          radius: SmoothBorderRadius(
+            cornerRadius: cardRadius,
+            cornerSmoothing: 1.0,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: imageHeight,
-                width: double.infinity,
-                child: ClipSmoothRect(
-                  radius: SmoothBorderRadius.only(
-                    topLeft: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
-                    topRight: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              margin: EdgeInsets.only(right: screenWidth * 0.04),
+              decoration: ShapeDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.25),
+                    Colors.white.withOpacity(0.12),
+                  ],
+                ),
+                shape: SmoothRectangleBorder(
+                  borderRadius: SmoothBorderRadius(
+                    cornerRadius: cardRadius,
+                    cornerSmoothing: 1.0,
                   ),
-                  child: Container(
-                    padding: EdgeInsets.only(top: cardHeight * 0.06, bottom: 0.0), // Same ratio as home carousel
-                    child: Center(
-                      child: article.imagePath != null 
-                        ? Image.asset(
-                            article.imagePath!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/images/flexes_icon.png',
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
-                                },
-                              );
-                            },
-                          )
-                        : Image.asset(
-                            'assets/images/flexes_icon.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.sports_basketball, size: 48, color: Colors.grey);
-                            },
-                          ),
-                    ),
+                  side: BorderSide(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(cardPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        article.title,
-                        style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-                        maxLines: isNarrowScreen ? 1 : 2,
-                        overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: imageHeight,
+                    width: double.infinity,
+                    child: ClipSmoothRect(
+                      radius: SmoothBorderRadius.only(
+                        topLeft: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
+                        topRight: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
                       ),
-                      SizedBox(height: screenWidth * 0.01),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      child: Container(
+                        padding: EdgeInsets.only(top: cardHeight * 0.06, bottom: 0.0),
+                        child: Center(
+                          child: article.imagePath != null 
+                            ? Image.asset(
+                                article.imagePath!,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    'assets/images/flexes_icon.png',
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(CupertinoIcons.sportscourt, size: 48, color: Colors.white70);
+                                    },
+                                  );
+                                },
+                              )
+                            : Image.asset(
+                                'assets/images/flexes_icon.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(CupertinoIcons.sportscourt, size: 48, color: Colors.white70);
+                                },
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(cardPadding),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Expanded(
-                            child: Text(
-                              article.subtitle,
-                              style: GoogleFonts.inter(fontSize: fontSizeSubtitle, color: Colors.black),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          Text(
+                            article.title,
+                            style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+                            maxLines: isNarrowScreen ? 1 : 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: screenWidth * 0.01),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  article.subtitle,
+                                  style: GoogleFonts.inter(fontSize: fontSizeSubtitle, color: Colors.white.withOpacity(0.7)),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                           ),
                           // Sports badge in bottom-right of description
                           if (_extractSportFromTitle(article.title) != null)
@@ -549,7 +544,9 @@ class _NewsCard extends StatelessWidget {
               ),
             ],
           ),
-        );
+        ),
+      ),
+    );
       },
     );
   }
@@ -593,24 +590,43 @@ class _SportButton extends StatelessWidget {
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
       onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: verticalPadding),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: borderRadius,
-              cornerSmoothing: 1.0,
-            ),
-          ),
-          shadows: DesignConstants.standardShadow,
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: borderRadius,
+          cornerSmoothing: 1.0,
         ),
-        child: Center(
-          child: Text(
-            name,
-            style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: verticalPadding),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.12),
+                ],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: borderRadius,
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                name,
+                style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ),
       ),

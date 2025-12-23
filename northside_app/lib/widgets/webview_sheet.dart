@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:ui';
 import '../core/design_constants.dart';
 import '../core/utils/haptic_feedback_helper.dart';
 import '../core/utils/logger.dart';
@@ -125,18 +126,32 @@ class _WebViewSheetState extends State<WebViewSheet>
               minChildSize: minChildSize,
               maxChildSize: maxChildSize,
               builder: (_, controller) {
-                return Container(
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFF2F2F7),
-                    shape: SmoothRectangleBorder(
-                      borderRadius: SmoothBorderRadius.only(
-                        topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                        topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                      ),
-                    ),
-                    shadows: DesignConstants.standardShadow,
+                return ClipSmoothRect(
+                  radius: SmoothBorderRadius.only(
+                    topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                    topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
                   ),
-                  child: Column(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                    child: Container(
+                      decoration: ShapeDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.35),
+                            Colors.white.withOpacity(0.18),
+                          ],
+                        ),
+                        shape: SmoothRectangleBorder(
+                          borderRadius: SmoothBorderRadius.only(
+                            topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                            topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                          ),
+                          side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+                        ),
+                      ),
+                      child: Column(
                   children: [
                     // Drag handle
                     Container(
@@ -144,7 +159,7 @@ class _WebViewSheetState extends State<WebViewSheet>
                       width: 40,
                       height: 5,
                       decoration: ShapeDecoration(
-                        color: Colors.grey.shade300,
+                        color: Colors.white.withOpacity(0.4),
                         shape: SmoothRectangleBorder(
                           borderRadius: SmoothBorderRadius(
                             cornerRadius: DesignConstants.get10Radius(context),
@@ -165,7 +180,7 @@ class _WebViewSheetState extends State<WebViewSheet>
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -174,10 +189,8 @@ class _WebViewSheetState extends State<WebViewSheet>
                             icon: const Icon(Icons.open_in_new),
                             tooltip: 'Open in external browser',
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.blue,
-                              elevation: 2,
-                              shadowColor: Colors.black.withOpacity(0.1),
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                              foregroundColor: const Color(0xFF007AFF),
                             ),
                           ),
                         ],
@@ -185,16 +198,24 @@ class _WebViewSheetState extends State<WebViewSheet>
                     ),
                     // Use a Stack to show a loading indicator over the WebView
                     Expanded(
-                      child: Stack(
-                        children: [
-                          WebViewWidget(controller: _controller),
-                          // This loading indicator will show on mobile but not in the web preview
-                          if (_isLoading)
-                            const Center(child: CircularProgressIndicator()),
-                        ],
+                      child: ClipSmoothRect(
+                        radius: SmoothBorderRadius.only(
+                          bottomLeft: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
+                          bottomRight: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
+                        ),
+                        child: Stack(
+                          children: [
+                            WebViewWidget(controller: _controller),
+                            // This loading indicator will show on mobile but not in the web preview
+                            if (_isLoading)
+                              const Center(child: CircularProgressIndicator()),
+                          ],
+                        ),
                       ),
                     ),
                   ],
+                  ),
+                    ),
                   ),
                 );
               },

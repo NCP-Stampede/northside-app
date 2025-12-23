@@ -1,5 +1,6 @@
 // lib/presentation/athletics/sport_detail_page.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -15,7 +16,9 @@ import '../../core/utils/haptic_feedback_helper.dart';
 import '../../core/utils/logger.dart';
 import '../../widgets/animated_segmented_control.dart';
 import '../../widgets/loading_indicator.dart';
+import '../../widgets/liquid_melting_header.dart';
 import '../../api.dart';
+import '../../widgets/liquid_mesh_background.dart';
 
 class GameSchedule {
   const GameSchedule({required this.date, required this.time, required this.event, required this.opponent, required this.location, required this.score, required this.result});
@@ -265,157 +268,78 @@ class _SportDetailPageState extends State<SportDetailPage> {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFF2F2F7),
-                  Color(0xFFFFFFFF),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          Column(
-            children: [
-              _buildHeaderWithBlur(context, widget.sportName),
-              Expanded(
-                child: Stack(
+          const LiquidMeshBackground(),
+          Obx(() {
+            if (athleticsController.isLoading.value) {
+              return const LoadingIndicator(
+                message: 'Loading sport details...',
+                showBackground: false,
+              );
+            }
+            
+            if (athleticsController.error.value.isNotEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Obx(() {
-        if (athleticsController.isLoading.value) {
-          return const LoadingIndicator(
-            message: 'Loading sport details...',
-            showBackground: false,
-          );
-        }
-        
-        if (athleticsController.error.value.isNotEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Error: ${athleticsController.error.value}'),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () { HapticFeedbackHelper.buttonPress(); athleticsController.refreshData(); },
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06)
-              .copyWith(top: screenWidth * 0.057),
-          children: [
-            AnimatedSegmentedControl(
-                segments: _levels,
-                selectedSegment: _selectedLevel,
-                onSelectionChanged: (level) {
-                  setState(() {
-                    _selectedLevel = level;
-                    _updateRoster(); // Update roster when level changes
-                    _updateSchedule(); // Update schedule when level changes
-                  });
-                },
-              ),
-            SizedBox(height: screenHeight * 0.03),
-            AnimatedContentSwitcher(
-              switchKey: _selectedLevel,
-              child: Column(
-                children: [
-                  _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
-                  SizedBox(height: screenHeight * 0.03),
-                  _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
-                  SizedBox(height: screenHeight * 0.05),
-                ],
-              ),
-            ),
-          ],
-        );
-                    }),
-                    // Fade-out gradient overlay
-                    Positioned(
-                      top: -2,
-                      left: 0,
-                      right: 0,
-                      height: screenWidth * 0.11,
-                      child: IgnorePointer(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                const Color(0xFFF2F2F7),
-                                const Color(0xFFF2F2F7),
-                                const Color(0xFFF2F2F7).withOpacity(0.9),
-                                const Color(0xFFF2F2F7).withOpacity(0.75),
-                                const Color(0xFFF2F2F7).withOpacity(0.55),
-                                const Color(0xFFF2F2F7).withOpacity(0.35),
-                                const Color(0xFFF2F2F7).withOpacity(0.18),
-                                const Color(0xFFF2F2F7).withOpacity(0.06),
-                                Colors.transparent,
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.28, 0.38, 0.46, 0.54, 0.62, 0.68, 0.74, 0.8, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
+                    Text('Error: ${athleticsController.error.value}'),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () { HapticFeedbackHelper.buttonPress(); athleticsController.refreshData(); },
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+              );
+            }
 
-  Widget _buildHeaderWithBlur(BuildContext context, String title) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double headerHeight = screenWidth * 0.12;
-    
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        children: [
-          // Header content with back button
-          Padding(
-            padding: EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: MediaQuery.of(context).padding.top + 4,
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
-                  onPressed: () { 
-                    HapticFeedbackHelper.buttonPress(); 
-                    Get.back(); 
-                  },
-                ),
-                SizedBox(width: screenWidth * 0.02),
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: titleFontSize,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
+            return CustomScrollView(
+              slivers: [
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: LiquidMeltingHeader(
+                    title: widget.sportName,
+                    showBackButton: true,
+                    onBackPressed: () {
+                      HapticFeedbackHelper.buttonPress();
+                      Get.back();
+                    },
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06)
+                      .copyWith(top: screenWidth * 0.057),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      AnimatedSegmentedControl(
+                        segments: _levels,
+                        selectedSegment: _selectedLevel,
+                        onSelectionChanged: (level) {
+                          setState(() {
+                            _selectedLevel = level;
+                            _updateRoster();
+                            _updateSchedule();
+                          });
+                        },
+                      ),
+                      SizedBox(height: screenHeight * 0.03),
+                      AnimatedContentSwitcher(
+                        switchKey: _selectedLevel,
+                        child: Column(
+                          children: [
+                            _buildTableContainer(context, 'Schedules and Scores', _buildScheduleTable(context)),
+                            SizedBox(height: screenHeight * 0.03),
+                            _buildTableContainer(context, 'Rosters', _buildRosterTable(context)),
+                            SizedBox(height: screenHeight * 0.05),
+                          ],
+                        ),
+                      ),
+                    ]),
+                  ),
                 ),
               ],
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -423,27 +347,44 @@ class _SportDetailPageState extends State<SportDetailPage> {
 
   Widget _buildTableContainer(BuildContext context, String title, Widget table) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    return Container(
-      padding: EdgeInsets.all(screenWidth * 0.04),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get24Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),          shadows: DesignConstants.standardShadow,
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius(
+        cornerRadius: DesignConstants.get24Radius(context),
+        cornerSmoothing: 1.0,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
-          SizedBox(height: screenWidth * 0.02),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: table,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          padding: EdgeInsets.all(screenWidth * 0.04),
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get24Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+            ),
           ),
-        ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.white)),
+              SizedBox(height: screenWidth * 0.02),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: table,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -557,11 +498,11 @@ class _SportDetailPageState extends State<SportDetailPage> {
   }
 
   Text _headerText(String text, double screenWidth) {
-    return Text(text, style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: screenWidth * 0.032));
+    return Text(text, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: screenWidth * 0.032));
   }
 
   Text _dataText(String text, double screenWidth) {
-    return Text(text, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04), overflow: TextOverflow.ellipsis);
+    return Text(text, style: TextStyle(fontWeight: FontWeight.w500, fontSize: screenWidth * 0.04, color: Colors.white.withOpacity(0.9)), overflow: TextOverflow.ellipsis);
   }
 }
 

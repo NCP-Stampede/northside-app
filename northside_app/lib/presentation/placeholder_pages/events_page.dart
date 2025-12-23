@@ -2,6 +2,7 @@
 
 import 'dart:collection';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -20,6 +21,8 @@ import '../../widgets/article_detail_draggable_sheet.dart';
 import '../../widgets/shared_header.dart';
 import '../../core/design_constants.dart';
 import '../../core/utils/haptic_feedback_helper.dart';
+import '../../widgets/liquid_mesh_background.dart';
+import '../../widgets/liquid_melting_header.dart';
 
 class EventsPage extends StatefulWidget {
   const EventsPage({super.key});
@@ -119,48 +122,28 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
         children: [
           // Single gradient container for background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFDC143C), // Darker, more vibrant red (Crimson)
-                  Color(0xFFE74C3C), // Rich red
-                  Color(0xFFFF5733), // Bright red-orange
-                  Color(0xFFF2F2F7), // Transition Color
-                  Color(0xFFF2F2F7), // Final Background Color
-                ],
-                stops: [0.0, 0.15, 0.3, 0.45, 1.0],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          const LiquidMeshBackground(),
+          CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: LiquidMeltingHeader(title: 'Events'),
               ),
-            ),
-          ),
-          Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    ListView(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top + (screenWidth * 0.12) + (screenHeight * 0.05),
-                        bottom: screenHeight * 0.12
-                      ),
-                      children: [
-                        _buildFilterButton(context),
-                        SizedBox(height: screenHeight * 0.02),
-                        _buildCalendar(context),
-                        SizedBox(height: screenHeight * 0.03),
-                        _buildEventList(context),
-                      ],
-                    ),
-                    _buildHeader(context),
-                  ],
+              SliverPadding(
+                padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildFilterButton(context),
+                    SizedBox(height: screenHeight * 0.02),
+                    _buildCalendar(context),
+                    SizedBox(height: screenHeight * 0.03),
+                    _buildEventList(context),
+                  ]),
                 ),
               ),
             ],
@@ -175,77 +158,6 @@ class _EventsPageState extends State<EventsPage> {
             return const SizedBox.shrink();
           }),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double topPadding = MediaQuery.of(context).padding.top;
-    final double headerHeight = screenWidth * 0.4 + topPadding; // Significantly increased height
-    
-    return ClipRect(
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,          // Full blur at top
-              Colors.black,          // Keep blur longer
-              Colors.transparent,    // Fade out
-              Colors.transparent,    // No blur at bottom
-            ],
-            stops: [0.0, 0.4, 0.8, 1.0], // Extended stops for longer blur
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
-          child: Container(
-            height: headerHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFC7C7CC).withOpacity(0.85), // More opaque
-                  const Color(0xFFF9F9F9).withOpacity(0.2),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.5, 1.0], // Extended gradient stops
-              ),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: topPadding + 4,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Events',
-                        style: GoogleFonts.inter(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -278,23 +190,39 @@ class _EventsPageState extends State<EventsPage> {
         HapticFeedbackHelper.buttonPress();
         eventsController.setFilter(label);
       },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03, vertical: screenWidth * 0.015),
-        decoration: ShapeDecoration(
-          color: isSelected ? AppColors.primaryBlue : Colors.grey.shade200,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: 10,
-              cornerSmoothing: 1.0,
-            ),
-          ),
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: 10,
+          cornerSmoothing: 1.0,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : Colors.black.withOpacity(0.7),
-            fontSize: fontSize,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03, vertical: screenWidth * 0.015),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isSelected 
+                  ? [Colors.white.withOpacity(0.45), Colors.white.withOpacity(0.3)]
+                  : [Colors.white.withOpacity(0.25), Colors.white.withOpacity(0.12)],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: 10,
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(color: Colors.white.withOpacity(isSelected ? 0.4 : 0.2), width: 1),
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                fontSize: fontSize,
+              ),
+            ),
           ),
         ),
       ),
@@ -310,19 +238,33 @@ class _EventsPageState extends State<EventsPage> {
     final double iconSize = isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.052;
     final double verticalPadding = isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.055;
     
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: verticalPadding),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get24Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),
-        shadows: DesignConstants.standardShadow,
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius(
+        cornerRadius: DesignConstants.get24Radius(context),
+        cornerSmoothing: 1.0,
       ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: verticalPadding),
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get24Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+            ),
+          ),
       // Wrap in LayoutBuilder to adjust calendar based on available space
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -411,27 +353,29 @@ class _EventsPageState extends State<EventsPage> {
               titleTextStyle: TextStyle(
                 fontSize: headerFontSize,
                 fontWeight: FontWeight.w900,
-                color: Colors.black,
+                color: Colors.white,
               ),
-              leftChevronIcon: Icon(Icons.arrow_back_ios, size: iconSize),
-              rightChevronIcon: Icon(Icons.arrow_forward_ios, size: iconSize),
+              leftChevronIcon: Icon(CupertinoIcons.chevron_left, size: iconSize, color: AppColors.primaryBlue),
+              rightChevronIcon: Icon(CupertinoIcons.chevron_right, size: iconSize, color: AppColors.primaryBlue),
             ),
             daysOfWeekStyle: DaysOfWeekStyle(
-              weekdayStyle: TextStyle(fontSize: dowFontSize, fontWeight: FontWeight.w600, color: Colors.black),
-              weekendStyle: TextStyle(fontSize: dowFontSize, fontWeight: FontWeight.w600, color: Colors.black),
+              weekdayStyle: TextStyle(fontSize: dowFontSize, fontWeight: FontWeight.w600, color: Colors.white),
+              weekendStyle: TextStyle(fontSize: dowFontSize, fontWeight: FontWeight.w600, color: Colors.white),
             ),
             calendarStyle: CalendarStyle(
-              defaultTextStyle: TextStyle(fontSize: dayFontSize, color: Colors.black),
-              weekendTextStyle: TextStyle(fontSize: dayFontSize, color: Colors.black),
-              outsideTextStyle: TextStyle(fontSize: dayFontSize * 0.95, color: Colors.black),
-              todayDecoration: const BoxDecoration(color: AppColors.primaryBlue, shape: BoxShape.circle),
-              selectedDecoration: const BoxDecoration(color: AppColors.primaryBlue, shape: BoxShape.circle),
+              defaultTextStyle: TextStyle(fontSize: dayFontSize, color: Colors.white),
+              weekendTextStyle: TextStyle(fontSize: dayFontSize, color: Colors.white),
+              outsideTextStyle: TextStyle(fontSize: dayFontSize * 0.95, color: Colors.white.withOpacity(0.5)),
+              todayDecoration: BoxDecoration(color: Colors.white.withOpacity(0.3), shape: BoxShape.circle),
+              selectedDecoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
             ),
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
             },
           );
         },
+      ),
+        ),
       ),
     );
   }
@@ -475,25 +419,41 @@ class _NoEventsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isNarrowScreen = screenWidth < 360;
-    return Container(
-      padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.05),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get24Radius(context),
-            cornerSmoothing: 1.0,
-          ),
-        ),
-        shadows: DesignConstants.standardShadow,
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius(
+        cornerRadius: DesignConstants.get24Radius(context),
+        cornerSmoothing: 1.0,
       ),
-      child: Center(
-        child: Text(
-          'No Events Today',
-          style: GoogleFonts.inter(
-            fontSize: MediaQuery.of(context).size.width * 0.045,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.05),
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get24Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              'No Events Today',
+              style: GoogleFonts.inter(
+                fontSize: MediaQuery.of(context).size.width * 0.045,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
@@ -510,58 +470,76 @@ class _EventDetailCard extends StatelessWidget {
     final double screenWidth = MediaQuery.of(context).size.width;
     final bool isNarrowScreen = screenWidth < 360;
     
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.only(bottom: isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04),
-      padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04),
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get24Radius(context),
-            cornerSmoothing: 1.0,
+    return Padding(
+      padding: EdgeInsets.only(bottom: isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04),
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: DesignConstants.get24Radius(context),
+          cornerSmoothing: 1.0,
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.12),
+                ],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: DesignConstants.get24Radius(context),
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        article.title,
+                        style: GoogleFonts.inter(
+                          fontSize: MediaQuery.of(context).size.width * 0.045,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.02),
+                    SportBadge(sport: _extractSportFromArticle(article)),
+                  ],
+                ),
+                SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
+                Row(
+                  children: [
+                    Icon(CupertinoIcons.calendar, 
+                        size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045, 
+                        color: Colors.white.withOpacity(0.7)),
+                    SizedBox(width: screenWidth * 0.02),
+                    Flexible(
+                      child: TextHelper.responsiveText(
+                        article.subtitle,
+                        context: context,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        shadows: DesignConstants.standardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  article.title,
-                  style: GoogleFonts.inter(
-                    fontSize: MediaQuery.of(context).size.width * 0.045,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.02),
-              SportBadge(sport: _extractSportFromArticle(article)),
-            ],
-          ),
-          SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
-          Row(
-            children: [
-              Icon(Icons.calendar_today_outlined, 
-                  size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045, 
-                  color: Colors.black),
-              SizedBox(width: screenWidth * 0.02),
-              Flexible(
-                child: TextHelper.responsiveText(
-                  article.subtitle,
-                  context: context,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

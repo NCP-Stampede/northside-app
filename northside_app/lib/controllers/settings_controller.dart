@@ -15,7 +15,7 @@ class SettingsController extends GetxController {
   final RxList<String> favoriteSports = <String>[
     'Basketball',
     'Soccer', 
-    'Track and Field',
+    'Outdoor Track',
     'Swimming',
   ].obs;
 
@@ -41,7 +41,7 @@ class SettingsController extends GetxController {
       
       // Load favorite sports
       final savedFavorites = prefs.getStringList('favorite_sports') ?? [
-        'Basketball', 'Soccer', 'Track and Field', 'Swimming'
+        'Basketball', 'Soccer', 'Outdoor Track', 'Swimming'
       ];
       if (savedFavorites.length == 4) {
         favoriteSports.assignAll(savedFavorites);
@@ -209,7 +209,7 @@ class SettingsController extends GetxController {
     pushNotifications.value = true;
     darkMode.value = false;
     
-    favoriteSports.assignAll(['Basketball', 'Soccer', 'Track and Field', 'Swimming']);
+    favoriteSports.assignAll(['Basketball', 'Soccer', 'Outdoor Track', 'Swimming']);
     
     hiddenEventTypes.clear();
     favoriteEventTypes.clear();

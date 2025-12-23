@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:ui';
 import '../core/design_constants.dart';
 import '../core/utils/haptic_feedback_helper.dart';
 import '../core/utils/logger.dart';
@@ -49,12 +50,10 @@ class _LoginSheetState extends State<LoginSheet> {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isNarrowScreen = screenWidth < 360; // Check for S9 and similar devices
+    final bool isNarrowScreen = screenWidth < 360;
     
-    // Get safe area padding to respect notch/status bar
     final EdgeInsets padding = MediaQuery.of(context).padding;
     
-    // Adaptive sizing based on screen dimensions
     final double initialChildSize = isNarrowScreen ? 0.85 : 0.9;
     final double minChildSize = isNarrowScreen ? 0.4 : 0.5;
     final double maxChildSize = isNarrowScreen ? 0.85 : 0.9;
@@ -66,97 +65,119 @@ class _LoginSheetState extends State<LoginSheet> {
         minChildSize: minChildSize,
         maxChildSize: maxChildSize,
         builder: (_, controller) {
-          return Container(
-            decoration: ShapeDecoration(
-              color: const Color(0xFFF2F2F7),
-              shape: SmoothRectangleBorder(
-                borderRadius: SmoothBorderRadius.only(
-                  topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                  topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                ),
-              ),
-              shadows: DesignConstants.standardShadow,
+          return ClipSmoothRect(
+            radius: SmoothBorderRadius.only(
+              topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+              topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
             ),
-            child: SafeArea(
-              top: true,
-              left: false,
-              right: false,
-              bottom: false,
-              child: Column(
-                children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 5,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+              child: Container(
                 decoration: ShapeDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.35),
+                      Colors.white.withOpacity(0.18),
+                    ],
+                  ),
                   shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                      cornerRadius: DesignConstants.get10Radius(context),
-                      cornerSmoothing: 1.0,
+                    borderRadius: SmoothBorderRadius.only(
+                      topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
+                      topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
                     ),
+                    side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
                   ),
                 ),
-              ),
-              // Scrollable content area
-              Expanded(
-                child: ListView(
-                  controller: controller,
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  children: [
-                    Text(
-                      'Link Flex Account',
-                      style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 32),
-                    // Email/Username TextField
-                    TextField(
-                      controller: _emailController,
-                      decoration: _inputDecoration('Email or Username'),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 16),
-                    // Password TextField
-                    TextField(
-                      controller: _passwordController,
-                      decoration: _inputDecoration('Password'),
-                      obscureText: true,
-                    ),
-                    const SizedBox(height: 32),
-                    // Log In Button
-                    GestureDetector(
-                      onTap: () { HapticFeedbackHelper.buttonPress(); _handleLogin(); },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                child: SafeArea(
+                  top: true,
+                  left: false,
+                  right: false,
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 12),
+                        width: 40,
+                        height: 5,
                         decoration: ShapeDecoration(
-                          color: const Color(0xFF007AFF),
+                          color: Colors.white.withOpacity(0.4),
                           shape: SmoothRectangleBorder(
                             borderRadius: SmoothBorderRadius(
-                              cornerRadius: DesignConstants.get16Radius(context),
+                              cornerRadius: DesignConstants.get10Radius(context),
                               cornerSmoothing: 1.0,
-                            ),
-                          ),
-                          shadows: DesignConstants.standardShadow,
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Log In',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      // Scrollable content area
+                      Expanded(
+                        child: ListView(
+                          controller: controller,
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          children: [
+                            Text(
+                              'Link Flex Account',
+                              style: GoogleFonts.inter(
+                                fontSize: screenWidth * 0.06,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            // Email/Username TextField
+                            TextField(
+                              controller: _emailController,
+                              decoration: _inputDecoration('Email or Username'),
+                              keyboardType: TextInputType.emailAddress,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 16),
+                            // Password TextField
+                            TextField(
+                              controller: _passwordController,
+                              decoration: _inputDecoration('Password'),
+                              obscureText: true,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 32),
+                            // Log In Button
+                            GestureDetector(
+                              onTap: () { HapticFeedbackHelper.buttonPress(); _handleLogin(); },
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                decoration: ShapeDecoration(
+                                  color: const Color(0xFF007AFF),
+                                  shape: SmoothRectangleBorder(
+                                    borderRadius: SmoothBorderRadius(
+                                      cornerRadius: DesignConstants.get16Radius(context),
+                                      cornerSmoothing: 1.0,
+                                    ),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Log In',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-            ),
             ),
           );
         },
@@ -168,11 +189,20 @@ class _LoginSheetState extends State<LoginSheet> {
   InputDecoration _inputDecoration(String hintText) {
     return InputDecoration(
       hintText: hintText,
+      hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Colors.white.withOpacity(0.1),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.2)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF007AFF)),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
     );

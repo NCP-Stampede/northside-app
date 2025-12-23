@@ -2,6 +2,7 @@
 
 import 'dart:ui'; // Needed for BackdropFilter
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,6 +16,8 @@ import '../../core/design_constants.dart';
 import '../../widgets/shared_header.dart';
 import '../../controllers/home_carousel_controller.dart';
 import '../../core/utils/haptic_feedback_helper.dart';
+import '../../widgets/liquid_mesh_background.dart';
+import '../../widgets/liquid_melting_header.dart';
 
 class HomeScreenContent extends GetView<HomeScreenContentController> {
   const HomeScreenContent({super.key});
@@ -22,131 +25,34 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
   @override
   Widget build(BuildContext context) {
     final HomeCarouselController homeCarouselController = Get.find<HomeCarouselController>();
+    
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFFF6B6B), // Red
-                  Color(0xFF4A90E2), // True blue (less green)
-                ],
-                stops: [0.0, 1.0],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Color(0xFFF2F2F7).withOpacity(0.03),
-                  Color(0xFFF2F2F7).withOpacity(0.07),
-                  Color(0xFFF2F2F7).withOpacity(0.15),
-                  Color(0xFFF2F2F7).withOpacity(0.25),
-                  Color(0xFFF2F2F7).withOpacity(0.4),
-                  Color(0xFFF2F2F7).withOpacity(0.6),
-                  Color(0xFFF2F2F7).withOpacity(0.8),
-                  Color(0xFFF2F2F7).withOpacity(0.95),
-                  Color(0xFFF2F2F7),
-                ],
-                stops: [0.0, 0.12, 0.18, 0.25, 0.32, 0.38, 0.42, 0.45, 0.47, 0.49, 0.5],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          ListView(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + (MediaQuery.of(context).size.width * 0.12) + (MediaQuery.of(context).size.height * 0.05),
-              bottom: 120
-            ),
-            children: [
-              _buildQuickActions(),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.04), // 4% of screen height
-              // Carousel moved to overlay, leaving space for it
-              Obx(() => _buildEventsCarousel(context, homeCarouselController)),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02), // 2% of screen height
-              Obx(() => _buildPageIndicator(homeCarouselController)),
-            ],
-          ),
-          _buildHeader(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double topPadding = MediaQuery.of(context).padding.top;
-    final double headerHeight = screenWidth * 0.4 + topPadding;
-    
-    return ClipRect(
-      child: ShaderMask(
-        shaderCallback: (rect) {
-          return const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-              Colors.transparent,
-            ],
-            stops: [0.0, 0.4, 0.8, 1.0],
-          ).createShader(rect);
-        },
-        blendMode: BlendMode.dstIn,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 28.0, sigmaY: 28.0),
-          child: Container(
-            height: headerHeight,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  const Color(0xFFC7C7CC).withOpacity(0.85),
-                  const Color(0xFFF9F9F9).withOpacity(0.2),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.5, 1.0],
-              ),
-            ),
-            child: Stack(
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: topPadding + 4,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Home',
-                        style: GoogleFonts.inter(
-                          fontSize: titleFontSize,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+          const LiquidMeshBackground(),
+          CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: LiquidMeltingHeader(
+                  title: 'Home',
                 ),
-              ],
-            ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 120),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildQuickActions(),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                    Obx(() => _buildEventsCarousel(context, homeCarouselController)),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                    Obx(() => _buildPageIndicator(homeCarouselController)),
+                  ]),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -166,11 +72,10 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
         mainAxisSpacing: 16,
         childAspectRatio: 2.7,
         children: [
-          _QuickActionButton(iconWidget: const Icon(Icons.sports_basketball, color: Color(0xFFFF6B35), size: 26), label: 'Athletics', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(1); }),
-          _QuickActionButton(iconWidget: const Icon(Icons.calendar_today, color: Color(0xFF4285F4), size: 26), label: 'Events', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(2); }),
-          _QuickActionButton(iconWidget: const Icon(Icons.article, color: Color(0xFF34A853), size: 26), label: 'HoofBeat', onTap: () { HapticFeedbackHelper.buttonPress(); Get.to(() => const HoofBeatPage()); }),
-          // FIX: The label is now "Bulletin", the icon is updated, and it correctly navigates to index 3.
-          _QuickActionButton(iconWidget: const Icon(Icons.campaign, color: Color(0xFFEA4335), size: 26), label: 'Bulletin', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(3); }),
+          _QuickActionButton(iconWidget: const Icon(CupertinoIcons.sportscourt, color: Color(0xFFFF8A65), size: 26), label: 'Athletics', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(1); }),
+          _QuickActionButton(iconWidget: const Icon(CupertinoIcons.calendar, color: Color(0xFFBA68C8), size: 26), label: 'Events', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(2); }),
+          _QuickActionButton(iconWidget: const Icon(CupertinoIcons.doc_text, color: Color(0xFF64B5F6), size: 26), label: 'HoofBeat', onTap: () { HapticFeedbackHelper.buttonPress(); Get.to(() => const HoofBeatPage()); }),
+          _QuickActionButton(iconWidget: const Icon(CupertinoIcons.bell, color: Color(0xFF81C784), size: 26), label: 'Bulletin', onTap: () { HapticFeedbackHelper.buttonPress(); appShellController.changePage(3); }),
         ],
       ),
     );
@@ -190,38 +95,59 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                 message: 'Loading events...',
                 showBackground: false,
               )
-            : Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24.0),
-                padding: const EdgeInsets.all(20),
-                decoration: ShapeDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: SmoothRectangleBorder(
-                    borderRadius: SmoothBorderRadius(
-                      cornerRadius: 32,
-                      cornerSmoothing: 1.0,
-                    ),
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: ClipSmoothRect(
+                  radius: SmoothBorderRadius(
+                    cornerRadius: 32,
+                    cornerSmoothing: 1.0,
                   ),
-                  shadows: DesignConstants.standardShadow,
-                ),
-                child: Column(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: ShapeDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0.25),
+                            Colors.white.withOpacity(0.12),
+                          ],
+                        ),
+                        shape: SmoothRectangleBorder(
+                          borderRadius: SmoothBorderRadius(
+                            cornerRadius: 32,
+                            cornerSmoothing: 1.0,
+                          ),
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.announcement_outlined, size: 48, color: Colors.black.withOpacity(0.5)),
+                    Icon(CupertinoIcons.speaker_2, size: 48, color: Colors.white.withOpacity(0.7)),
                     SizedBox(height: 16),
                     Text(
                       'No Recent Announcements',
-                      style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     SizedBox(height: 8),
                     Text(
                       'Check back later for updates!',
-                      style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                      style: TextStyle(color: Colors.white.withOpacity(0.7)),
                     ),
                   ],
                 ),
               ),
+            ),
+          ),
         ),
-      );
+      ),
+    );
     }
     
     // Set the event count for infinite scroll calculation
@@ -315,21 +241,34 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
     final double carouselHeight = screenHeight * 0.4; // 40% of screen height
     final double imageHeight = carouselHeight * 0.70; // 70% of carousel height for image
     
-    return Container(
-      decoration: ShapeDecoration(
-        color: Colors.white,
-        shape: SmoothRectangleBorder(
-          borderRadius: SmoothBorderRadius(
-            cornerRadius: DesignConstants.get32Radius(context),
-            cornerSmoothing: 1.0,
+    return ClipSmoothRect(
+      radius: SmoothBorderRadius(
+        cornerRadius: DesignConstants.get32Radius(context),
+        cornerSmoothing: 1.0,
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: ShapeDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.25),
+                Colors.white.withOpacity(0.12),
+              ],
+            ),
+            shape: SmoothRectangleBorder(
+              borderRadius: SmoothBorderRadius(
+                cornerRadius: DesignConstants.get32Radius(context),
+                cornerSmoothing: 1.0,
+              ),
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
+              ),
+            ),
           ),
-        ),
-        shadows: DesignConstants.standardShadow,
-      ),                    child: ClipSmoothRect(
-                      radius: SmoothBorderRadius(
-                        cornerRadius: DesignConstants.get32Radius(context),
-                        cornerSmoothing: 1.0,
-                      ),
         child: Stack(
           children: [
             Column(
@@ -343,12 +282,12 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.transparent,
                         child: Center(
                           child: Icon(
-                            Icons.event,
+                            CupertinoIcons.calendar,
                             size: 48,
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.white.withOpacity(0.5),
                           ),
                         ),
                       );
@@ -365,21 +304,21 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 12),
                         Row(
                           children: [
-                            Icon(Icons.calendar_today, size: 16, color: Colors.black.withOpacity(0.5)),
+                            Icon(CupertinoIcons.calendar, size: 16, color: Colors.white.withOpacity(0.7)),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 article.subtitle,
-                                style: TextStyle(fontSize: 14, color: Colors.black.withOpacity(0.6)),
+                                style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Icon(Icons.more_horiz, size: 20, color: Colors.black.withOpacity(0.5)),
+                            Icon(CupertinoIcons.ellipsis, size: 20, color: Colors.white.withOpacity(0.7)),
                           ],
                         ),
                         ],
@@ -392,7 +331,8 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildPageIndicator(HomeCarouselController carouselController) {
@@ -413,7 +353,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
             height: 8.0,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: currentIndex == index ? const Color(0xFF333333) : Colors.black.withOpacity(0.2),
+              color: currentIndex == index ? Colors.white : Colors.white.withOpacity(0.3),
             ),
           );
         }),
@@ -434,31 +374,54 @@ class _QuickActionButton extends StatelessWidget {
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
       onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: DesignConstants.get24Radius(context),
-              cornerSmoothing: 1.0,
-            ),
-          ),
-          shadows: DesignConstants.standardShadow,
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: 28,
+          cornerSmoothing: 1.0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            iconWidget,
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.black),
-                overflow: TextOverflow.ellipsis,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30.0, sigmaY: 30.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.12),
+                ],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: 28,
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.0,
+                ),
               ),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                iconWidget,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: MediaQuery.of(context).size.width * 0.045, 
+                      fontWeight: FontWeight.bold, 
+                      color: Colors.white
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

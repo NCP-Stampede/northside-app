@@ -1,5 +1,6 @@
 // lib/presentation/athletics/all_sports_page.dart
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
@@ -11,7 +12,9 @@ import '../../core/design_constants.dart';
 import '../../core/utils/haptic_feedback_helper.dart';
 import '../../models/sport_data.dart';
 import '../../widgets/animated_segmented_control.dart';
+import '../../widgets/liquid_melting_header.dart';
 import 'sport_detail_page.dart';
+import '../../widgets/liquid_mesh_background.dart';
 
 class AllSportsPage extends StatefulWidget {
   const AllSportsPage({super.key});
@@ -36,115 +39,36 @@ class _AllSportsPageState extends State<AllSportsPage> {
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFF2F2F7),
-                  Color(0xFFFFFFFF),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          const LiquidMeshBackground(),
+          CustomScrollView(
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: LiquidMeltingHeader(
+                  title: 'All Sports',
+                  showBackButton: true,
+                  onBackPressed: () {
+                    HapticFeedbackHelper.buttonPress();
+                    Get.back();
+                  },
+                ),
               ),
-            ),
-          ),
-          Column(
-            children: [
-              _buildHeaderWithBlur(context, 'All Sports'),
-              Expanded(
-                child: Stack(
-                  children: [
-                    ListView(
-                      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06)
-                          .copyWith(top: screenWidth * 0.057),
-                      children: [
-          SizedBox(height: screenHeight * 0.02),
-          _buildSeasonTabs(context),
-          SizedBox(height: screenHeight * 0.03),
-                        AnimatedContentSwitcher(
-                          switchKey: _selectedSeason,
-                          child: _buildSportsColumns(context),
-                        ),
-                      ],
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06)
+                    .copyWith(top: screenWidth * 0.057),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    SizedBox(height: screenHeight * 0.02),
+                    _buildSeasonTabs(context),
+                    SizedBox(height: screenHeight * 0.03),
+                    AnimatedContentSwitcher(
+                      switchKey: _selectedSeason,
+                      child: _buildSportsColumns(context),
                     ),
-                    // Fade-out gradient overlay
-                    Positioned(
-                      top: -2,
-                      left: 0,
-                      right: 0,
-                      height: screenWidth * 0.11,
-                      child: IgnorePointer(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                const Color(0xFFF2F2F7),
-                                const Color(0xFFF2F2F7),
-                                const Color(0xFFF2F2F7).withOpacity(0.9),
-                                const Color(0xFFF2F2F7).withOpacity(0.75),
-                                const Color(0xFFF2F2F7).withOpacity(0.55),
-                                const Color(0xFFF2F2F7).withOpacity(0.35),
-                                const Color(0xFFF2F2F7).withOpacity(0.18),
-                                const Color(0xFFF2F2F7).withOpacity(0.06),
-                                Colors.transparent,
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.28, 0.38, 0.46, 0.54, 0.62, 0.68, 0.74, 0.8, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ]),
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderWithBlur(BuildContext context, String title) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double titleFontSize = screenWidth * 0.07;
-    final double headerHeight = screenWidth * 0.12;
-    
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        children: [
-          // Header content with back button
-          Padding(
-            padding: EdgeInsets.only(
-              left: 24.0,
-              right: 24.0,
-              top: MediaQuery.of(context).padding.top + 4,
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
-                  onPressed: () { 
-                    HapticFeedbackHelper.buttonPress(); 
-                    Get.back(); 
-                  },
-                ),
-                SizedBox(width: screenWidth * 0.02),
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: titleFontSize,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -188,7 +112,7 @@ class _AllSportsPageState extends State<AllSportsPage> {
                     style: GoogleFonts.inter(
                       fontSize: screenWidth * 0.035,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
+                      color: Colors.white.withOpacity(0.7),
                     ),
                   ),
                 ),
@@ -221,7 +145,7 @@ class _AllSportsPageState extends State<AllSportsPage> {
                     style: GoogleFonts.inter(
                       fontSize: screenWidth * 0.035,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
+                      color: Colors.white.withOpacity(0.7),
                     ),
                   ),
                 ),
@@ -260,25 +184,41 @@ class _SportCard extends StatelessWidget {
     return GestureDetector(
       onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: verticalPadding),
-        decoration: ShapeDecoration(
-          color: Colors.white,
-          shape: SmoothRectangleBorder(
-            borderRadius: SmoothBorderRadius(
-              cornerRadius: borderRadius,
-              cornerSmoothing: 1.0,
-            ),
-          ),
-          shadows: DesignConstants.standardShadow,
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: borderRadius,
+          cornerSmoothing: 1.0,
         ),
-        child: Center(
-          child: Text(
-            name,
-            style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: verticalPadding),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.12),
+                ],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: borderRadius,
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                name,
+                style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
         ),
       ),

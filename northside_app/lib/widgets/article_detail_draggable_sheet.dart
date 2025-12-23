@@ -69,21 +69,9 @@ class _ArticleDetailDraggableSheetState extends State<ArticleDetailDraggableShee
               maxChildSize: maxChildSize,
               expand: false,
               builder: (context, scrollController) {
-                return Container(
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFF2F2F7),
-                    shape: SmoothRectangleBorder(
-                      borderRadius: SmoothBorderRadius.only(
-                        topLeft: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                        topRight: SmoothRadius(cornerRadius: DesignConstants.get24Radius(context), cornerSmoothing: 1.0),
-                      ),
-                    ),
-                    shadows: DesignConstants.standardShadow,
-                  ),
-                  child: ArticleDetailSheet(
-                    article: widget.article,
-                    scrollController: scrollController,
-                  ),
+                return ArticleDetailSheet(
+                  article: widget.article,
+                  scrollController: scrollController,
                 );
               },
             ),
