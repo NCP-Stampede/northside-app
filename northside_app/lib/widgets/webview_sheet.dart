@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import '../core/design_constants.dart';
 import '../core/utils/haptic_feedback_helper.dart';
@@ -151,70 +152,143 @@ class _WebViewSheetState extends State<WebViewSheet>
                           side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
                         ),
                       ),
-                      child: Column(
-                  children: [
-                    // Drag handle
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 12),
-                      width: 40,
-                      height: 5,
-                      decoration: ShapeDecoration(
-                        color: Colors.white.withOpacity(0.4),
-                        shape: SmoothRectangleBorder(
-                          borderRadius: SmoothBorderRadius(
-                            cornerRadius: DesignConstants.get10Radius(context),
-                            cornerSmoothing: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Header with external browser button
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Stack(
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Web View',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                          // WebView content (positioned below header)
+                          Positioned(
+                            top: screenWidth * 0.26,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: ClipSmoothRect(
+                              radius: SmoothBorderRadius.only(
+                                bottomLeft: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
+                                bottomRight: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
+                              ),
+                              child: Stack(
+                                children: [
+                                  WebViewWidget(controller: _controller),
+                                  if (_isLoading)
+                                    const Center(child: CircularProgressIndicator()),
+                                ],
                               ),
                             ),
                           ),
-                          IconButton(
-                            onPressed: () { HapticFeedbackHelper.buttonPress(); _launchInExternalBrowser(); },
-                            icon: const Icon(Icons.open_in_new),
-                            tooltip: 'Open in external browser',
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              foregroundColor: const Color(0xFF007AFF),
+                          // Melting header overlay
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: ShaderMask(
+                              shaderCallback: (rect) {
+                                return const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.black,
+                                    Colors.black,
+                                    Colors.transparent,
+                                  ],
+                                  stops: [0.0, 0.7, 1.0],
+                                ).createShader(rect);
+                              },
+                              blendMode: BlendMode.dstIn,
+                              child: ClipRRect(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+                                  child: Container(
+                                    height: screenWidth * 0.30,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          const Color(0xFF030308).withOpacity(1.0),
+                                          const Color(0xFF030308).withOpacity(0.85),
+                                          Colors.transparent,
+                                        ],
+                                        stops: const [0.0, 0.6, 1.0],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Header content (on top of blur)
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              padding: EdgeInsets.only(top: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Drag handle
+                                  Center(
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      width: 40,
+                                      height: 5,
+                                      decoration: ShapeDecoration(
+                                        color: Colors.white.withOpacity(0.5),
+                                        shape: SmoothRectangleBorder(
+                                          borderRadius: SmoothBorderRadius(
+                                            cornerRadius: DesignConstants.get10Radius(context),
+                                            cornerSmoothing: 1.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Web View',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: screenWidth * 0.055,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: -0.5,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                'Browse external content',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: screenWidth * 0.035,
+                                                  color: Colors.white.withOpacity(0.7),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () { HapticFeedbackHelper.buttonPress(); _launchInExternalBrowser(); },
+                                          icon: const Icon(Icons.open_in_new),
+                                          tooltip: 'Open in external browser',
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: Colors.white.withOpacity(0.2),
+                                            foregroundColor: const Color(0xFF007AFF),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    // Use a Stack to show a loading indicator over the WebView
-                    Expanded(
-                      child: ClipSmoothRect(
-                        radius: SmoothBorderRadius.only(
-                          bottomLeft: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
-                          bottomRight: SmoothRadius(cornerRadius: 12, cornerSmoothing: 1.0),
-                        ),
-                        child: Stack(
-                          children: [
-                            WebViewWidget(controller: _controller),
-                            // This loading indicator will show on mobile but not in the web preview
-                            if (_isLoading)
-                              const Center(child: CircularProgressIndicator()),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  ),
                     ),
                   ),
                 );

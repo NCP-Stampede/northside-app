@@ -661,37 +661,38 @@ class _BulletinPageState extends State<BulletinPage> {
               },
             ),
           ),
+          // Melting glass header
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: SizedBox(
-              height: 100,
-              child: ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: ShaderMask(
-                    shaderCallback: (rect) {
-                      return const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black,
-                          Colors.black,
-                          Colors.transparent,
-                        ],
-                        stops: [0.0, 0.6, 1.0],
-                      ).createShader(rect);
-                    },
-                    blendMode: BlendMode.dstIn,
+              height: MediaQuery.of(context).padding.top + 60,
+              child: ShaderMask(
+                shaderCallback: (rect) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black, // Fully visible (blurred) at top
+                      Colors.black, // Stay blurred through middle
+                      Colors.transparent, // Fade out at bottom
+                    ],
+                    stops: [0.0, 0.7, 1.0],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.dstIn,
+                child: ClipRRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFF030308).withOpacity(0.95),
-                            const Color(0xFF030308).withOpacity(0.6),
+                            const Color(0xFF030308).withOpacity(1.0),
+                            const Color(0xFF030308).withOpacity(0.85),
                             Colors.transparent,
                           ],
                           stops: const [0.0, 0.7, 1.0],
@@ -703,6 +704,7 @@ class _BulletinPageState extends State<BulletinPage> {
               ),
             ),
           ),
+          // Header title
           Positioned(
             top: MediaQuery.of(context).padding.top + 4,
             left: 24,
