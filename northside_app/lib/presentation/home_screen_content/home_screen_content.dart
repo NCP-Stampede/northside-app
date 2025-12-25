@@ -36,10 +36,14 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                 pinned: true,
                 delegate: LiquidMeltingHeader(
                   title: 'Home',
+                  topPadding: MediaQuery.of(context).padding.top,
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.only(bottom: 120),
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width * 0.04,
+                  bottom: MediaQuery.of(context).size.height * 0.15,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildQuickActions(),
@@ -239,7 +243,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
   Widget _buildEventCard(BuildContext context, Article article) {
     final double screenHeight = MediaQuery.of(Get.context!).size.height;
     final double carouselHeight = screenHeight * 0.4; // 40% of screen height
-    final double imageHeight = carouselHeight * 0.70; // 70% of carousel height for image
+    final double imageHeight = carouselHeight * 0.65; // 65% of carousel height for image
     
     return ClipSmoothRect(
       radius: SmoothBorderRadius(
@@ -299,13 +303,16 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                   child: Container(
                     height: carouselHeight - imageHeight, // Use remaining height
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: MediaQuery.of(context).size.width * 0.04,
+                        vertical: MediaQuery.of(context).size.width * 0.025,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.045, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 12),
+                          Text(article.title, style: GoogleFonts.inter(fontSize: MediaQuery.of(context).size.width * 0.042, fontWeight: FontWeight.bold, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          SizedBox(height: MediaQuery.of(context).size.width * 0.02),
                         Row(
                           children: [
                             Icon(CupertinoIcons.calendar, size: 16, color: Colors.white.withOpacity(0.7)),
@@ -313,7 +320,7 @@ class HomeScreenContent extends GetView<HomeScreenContentController> {
                             Expanded(
                               child: Text(
                                 article.subtitle,
-                                style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.7)),
+                                style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.033, color: Colors.white.withOpacity(0.7)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),

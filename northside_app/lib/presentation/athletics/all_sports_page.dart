@@ -51,6 +51,7 @@ class _AllSportsPageState extends State<AllSportsPage> {
                     HapticFeedbackHelper.buttonPress();
                     Get.back();
                   },
+                  topPadding: MediaQuery.of(context).padding.top,
                 ),
               ),
               SliverPadding(

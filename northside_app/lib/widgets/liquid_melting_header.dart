@@ -9,17 +9,19 @@ class LiquidMeltingHeader extends SliverPersistentHeaderDelegate {
   final String title;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
+  final double topPadding;
 
   LiquidMeltingHeader({
     required this.title,
     this.showBackButton = false,
     this.onBackPressed,
+    this.topPadding = 44.0, // Default safe area, will be overridden with actual MediaQuery value
   });
 
   @override
-  double get minExtent => 90.0; // The height when fully scrolled up
+  double get minExtent => topPadding + 56.0; // Safe area + minimal content height (increased)
   @override
-  double get maxExtent => 100.0; // The height when at the top
+  double get maxExtent => topPadding + 70.0; // Safe area + comfortable content height (increased)
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -39,16 +41,17 @@ class LiquidMeltingHeader extends SliverPersistentHeaderDelegate {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.black, // Fully visible (blurred) at top
-                Colors.black, // Stay blurred through the middle
-                Colors.transparent, // Fade out the blur at the bottom
+                Colors.black, // Stay blurred through most of header
+                Colors.black, // Continue blur
+                Colors.transparent, // Smooth fade out at the bottom
               ],
-              stops: [0.0, 0.6, 1.0],
+              stops: [0.0, 0.5, 0.75, 1.0],
             ).createShader(rect);
           },
           blendMode: BlendMode.dstIn,
           child: ClipRRect(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
               child: Container(
                 decoration: BoxDecoration(
                   // The background color also gradients from semi-opaque to transparent
@@ -56,11 +59,12 @@ class LiquidMeltingHeader extends SliverPersistentHeaderDelegate {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFF030308).withOpacity(0.95), // Much darker at top
-                      const Color(0xFF030308).withOpacity(0.6),
+                      const Color(0xFF030308).withOpacity(1.0), // Full opacity at top
+                      const Color(0xFF030308).withOpacity(0.9),
+                      const Color(0xFF030308).withOpacity(0.5),
                       Colors.transparent, // Completely transparent at bottom
                     ],
-                    stops: const [0.0, 0.7, 1.0],
+                    stops: const [0.0, 0.4, 0.7, 1.0],
                   ),
                 ),
               ),

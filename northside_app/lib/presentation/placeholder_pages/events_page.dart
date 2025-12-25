@@ -123,6 +123,7 @@ class _EventsPageState extends State<EventsPage> {
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Stack(
         children: [
@@ -132,10 +133,16 @@ class _EventsPageState extends State<EventsPage> {
             slivers: [
               SliverPersistentHeader(
                 pinned: true,
-                delegate: LiquidMeltingHeader(title: 'Events'),
+                delegate: LiquidMeltingHeader(
+                  title: 'Events',
+                  topPadding: MediaQuery.of(context).padding.top,
+                ),
               ),
               SliverPadding(
-                padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+                padding: EdgeInsets.only(
+                  top: screenWidth * 0.04,
+                  bottom: screenHeight * 0.15,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildFilterButton(context),

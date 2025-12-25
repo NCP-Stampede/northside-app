@@ -304,6 +304,7 @@ class _SportDetailPageState extends State<SportDetailPage> {
                       HapticFeedbackHelper.buttonPress();
                       Get.back();
                     },
+                    topPadding: MediaQuery.of(context).padding.top,
                   ),
                 ),
                 SliverPadding(

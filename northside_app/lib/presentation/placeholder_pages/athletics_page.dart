@@ -30,6 +30,7 @@ class AthleticsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final AthleticsController athleticsController = Get.put(AthleticsController());
     final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Stack(
         children: [
@@ -46,10 +47,16 @@ class AthleticsPage extends StatelessWidget {
               slivers: [
                 SliverPersistentHeader(
                   pinned: true,
-                  delegate: LiquidMeltingHeader(title: 'Athletics'),
+                  delegate: LiquidMeltingHeader(
+                    title: 'Athletics',
+                    topPadding: MediaQuery.of(context).padding.top,
+                  ),
                 ),
                 SliverPadding(
-                  padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+                  padding: EdgeInsets.only(
+                    top: screenWidth * 0.04,
+                    bottom: screenHeight * 0.15,
+                  ),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildNewsCarousel(context, athleticsController),

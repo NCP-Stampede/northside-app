@@ -1,6 +1,5 @@
 // lib/presentation/placeholder_pages/bulletin_page.dart
 
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -9,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:figma_squircle/figma_squircle.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:sticky_headers/sticky_headers.dart';
 
 import '../../controllers/bulletin_controller.dart';
 import '../../core/design_constants.dart';
@@ -17,9 +15,8 @@ import '../../core/utils/haptic_feedback_helper.dart';
 import '../../models/article.dart';
 import '../../models/bulletin_post.dart';
 import '../../widgets/article_detail_draggable_sheet.dart';
-import '../../widgets/shared_header.dart';
 import '../../widgets/liquid_mesh_background.dart';
-import '../../widgets/liquid_melting_header.dart';
+import '../../widgets/animated_segmented_control.dart';
 
 class BulletinPage extends StatefulWidget {
   const BulletinPage({super.key});
@@ -30,53 +27,16 @@ class BulletinPage extends StatefulWidget {
 
 class _BulletinPageState extends State<BulletinPage> {
   final BulletinController controller = Get.put(BulletinController(), permanent: true);
-
-  Map<String, List<BulletinPost>> _groupedPosts = {};
-  ScrollController? _draggableSheetController;
-  int? _todaySectionIndex;
-  Timer? _inactivityTimer;
-  Timer? _midnightTimer;
-  bool _isAutoScrolling = false;
-  double? _lastSheetExtent;
-  double? _initialSheetExtent;
+  final ScrollController _scrollController = ScrollController();
   
-  // Track section headers with GlobalKeys for precise measurement
-  Map<String, GlobalKey> _sectionKeys = {};
-
-  // Calculate responsive sheet extents based on screen dimensions
-  double get responsiveInitialExtent {
-    if (_initialSheetExtent != null) return _initialSheetExtent!;
-    
-    final context = this.context;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-    
-    // Adjust based on screen aspect ratio and size - balanced to show first card without next date
-    double baseExtent = 0.49; // 49% for most devices (increased from 46%)
-    
-    // For very tall/narrow screens (like iPhone 14 Pro Max), reduce slightly
-    if (screenHeight / screenWidth > 2.2) {
-      baseExtent = 0.45; // Increased from 0.42
-    }
-    // For shorter/wider screens (like iPad landscape), keep at base
-    else if (screenHeight / screenWidth < 1.5) {
-      baseExtent = 0.49; // Increased from 0.46
-    }
-    
-    _initialSheetExtent = baseExtent;
-    _lastSheetExtent = baseExtent;
-    return baseExtent;
-  }
-
-  // For drag handle
-  final DraggableScrollableController _sheetController = DraggableScrollableController();
-  double? dragStartExtent;
-  bool _isDraggingHandle = false;
-
-  final GlobalKey _headerKey = GlobalKey();
-  final GlobalKey _sectionHeaderKey = GlobalKey();
-  final GlobalKey _carouselKey = GlobalKey();
-  double? _calculatedMinExtent;
+  String _selectedTab = 'Pinned';
+  final List<String> _tabs = ['Pinned', 'All'];
+  
+  Map<String, List<BulletinPost>> _groupedPosts = {};
+  Map<String, GlobalKey> _dateKeys = {};
+  String? _todayKey;
+  bool _showScrollToTodayButton = false;
+  bool _hasScrolledInitially = false;
 
   bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -85,636 +45,253 @@ class _BulletinPageState extends State<BulletinPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _buildGroupedList();
-    // Add listener to sheet controller for immediate scroll to Today
-    _sheetController.addListener(_onSheetExtentChanged);
-    _scheduleMidnightUpdate();
-  }
-
-  void _scheduleMidnightUpdate() {
-    _midnightTimer?.cancel();
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    final duration = tomorrow.difference(now);
-    _midnightTimer = Timer(duration, () {
-      _buildGroupedList();
-      setState(() {});
-      _scheduleMidnightUpdate(); // Reschedule for next midnight
-    });
-  }
-
-  void _onSheetExtentChanged() {
-    // If sheet is at the snap-back extent, immediately scroll to Today (no animation)
-    final snapBackExtent = _getSnapBackExtent();
-    if ((_sheetController.size - snapBackExtent).abs() < 0.01) {
-      _scrollToTodaySection(animate: true);
-    }
-  }
-
-  double _getSnapBackExtent() {
-    final initialExtent = responsiveInitialExtent;
-    
-    // Use calculated min extent if available, otherwise use a lower snap-back extent
-    if (_calculatedMinExtent != null) {
-      // Ensure we never cover pinned content by using the max of calculated and initial
-      // But cap it at a reasonable maximum to prevent the sheet from being too high
-      final screenHeight = MediaQuery.of(context).size.height;
-      final screenWidth = MediaQuery.of(context).size.width;
-      
-      // Make max allowed responsive to screen size, match initial extent for consistent snap-back
-      double maxAllowed = initialExtent; // Match initial extent for consistent snap-back
-      if (screenHeight / screenWidth > 2.2) {
-        maxAllowed = initialExtent; // Match initial extent for tall screens
-      } else if (screenHeight / screenWidth < 1.5) {
-        maxAllowed = initialExtent; // Match initial extent for wider screens
-      }
-      
-      final safeExtent = (_calculatedMinExtent! > maxAllowed ? maxAllowed : _calculatedMinExtent!);
-      return safeExtent.clamp(0.1, maxAllowed);
-    }
-    // Return initial extent to match the initial height for consistent snap-back
-    return initialExtent;
-  }
-
-  void _buildGroupedList() {
-    final today = DateTime.now();
-    final nonPinnedPosts = controller.allPosts.where((post) => !post.isPinned).toList();
-    nonPinnedPosts.sort((a, b) => a.date.compareTo(b.date));
-    final Map<String, List<BulletinPost>> grouped = {};
-    for (var post in nonPinnedPosts) {
-      String dateHeader;
-      if (isSameDay(post.date, today)) dateHeader = 'Today';
-      else if (isSameDay(post.date, today.subtract(const Duration(days: 1)))) dateHeader = 'Yesterday';
-      else if (isSameDay(post.date, today.add(const Duration(days: 1)))) dateHeader = 'Tomorrow';
-      else dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
-      if (grouped[dateHeader] == null) grouped[dateHeader] = [];
-      grouped[dateHeader]!.add(post);
-    }
-    setState(() => _groupedPosts = grouped);
-
-    // Generate GlobalKeys for each section header to track their positions
-    _sectionKeys.clear();
-    for (String sectionKey in grouped.keys) {
-      _sectionKeys[sectionKey] = GlobalKey();
-    }
-
-    // Find the most relevant section to show (Today, Tomorrow, Yesterday, closest future, closest past)
-    final keys = grouped.keys.toList();
-    int? targetSectionIndex;
-
-    // First try to find 'Today'
-    targetSectionIndex = keys.indexOf('Today');
-    
-    // If no 'Today', try 'Tomorrow'
-    if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf('Tomorrow');
-    }
-    
-    // If no 'Tomorrow', try 'Yesterday'
-    if (targetSectionIndex == -1) {
-      targetSectionIndex = keys.indexOf('Yesterday');
-    }
-
-    // If none of the above, find the closest future date, or if no future dates, the closest past date
-    if (targetSectionIndex == -1 && keys.isNotEmpty) {
-      int? closestFutureIndex;
-      int? closestPastIndex;
-      Duration? closestFutureDifference;
-      Duration? closestPastDifference;
-      
-      for (int i = 0; i < keys.length; i++) {
-        final sectionPosts = grouped[keys[i]]!;
-        if (sectionPosts.isNotEmpty) {
-          final sectionDate = sectionPosts.first.date;
-          final difference = sectionDate.difference(today);
-          
-          if (difference.inDays > 0) {
-            // Future date
-            if (closestFutureIndex == null || difference < closestFutureDifference!) {
-              closestFutureIndex = i;
-              closestFutureDifference = difference;
-            }
-          } else if (difference.inDays < 0) {
-            // Past date
-            final pastDifference = difference.abs();
-            if (closestPastIndex == null || pastDifference < closestPastDifference!) {
-              closestPastIndex = i;
-              closestPastDifference = pastDifference;
-            }
-          }
-        }
-      }
-      
-      // Prefer future dates over past dates
-      if (closestFutureIndex != null) {
-        targetSectionIndex = closestFutureIndex;
-      } else if (closestPastIndex != null) {
-        targetSectionIndex = closestPastIndex;
-      } else {
-        targetSectionIndex = 0; // Fallback to first section
-      }
-    }
-
-    // If still not found, fallback to first section
-    if (targetSectionIndex < 0) {
-      targetSectionIndex = 0;
-    }
-
-    _todaySectionIndex = targetSectionIndex;
-
-    // Debug: print all section headers and their dates
-    print('=== BULLETIN DEBUG INFO ===');
-    print('Today is: $today');
-    print('Total sections found: ${keys.length}');
-    print('--- All Section Headers ---');
-    for (int i = 0; i < keys.length; i++) {
-      final sectionPosts = grouped[keys[i]]!;
-      if (sectionPosts.isNotEmpty) {
-        final sectionDate = sectionPosts.first.date;
-        final daysDiff = sectionDate.difference(today).inDays;
-        print('Index $i: "${keys[i]}" | Date: $sectionDate | Days from today: $daysDiff');
-      }
-    }
-    print('--- Selection Process ---');
-    print('Looking for "Today": ${keys.contains("Today") ? "FOUND" : "NOT FOUND"}');
-    print('Looking for "Tomorrow": ${keys.contains("Tomorrow") ? "FOUND" : "NOT FOUND"}');
-    print('Looking for "Yesterday": ${keys.contains("Yesterday") ? "FOUND" : "NOT FOUND"}');
-    print('Selected target section index: $targetSectionIndex');
-    if (targetSectionIndex >= 0 && targetSectionIndex < keys.length) {
-      print('Selected section header: "${keys[targetSectionIndex]}"');
-    }
-    print('===========================');
-  }
-
-  void _onScroll() {
-    if (_isAutoScrolling) return;
-    _inactivityTimer?.cancel();
-    
-    // Make inactivity timeout responsive to device type
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    // Longer timeout for tablets/larger screens, shorter for phones
-    Duration timeoutDuration;
-    if (screenWidth > 600 || screenHeight > 900) {
-      timeoutDuration = const Duration(seconds: 45); // Tablets get longer timeout
-    } else {
-      timeoutDuration = const Duration(seconds: 30); // Phones get standard timeout
-    }
-    
-    _inactivityTimer = Timer(timeoutDuration, () {
-      _scrollToTodaySection(animate: true);
-    });
-  }
-
-  void _scrollToTodaySection({bool animate = false}) {
-    print('🎯 _scrollToTodaySection called - animate: $animate');
-    print('   _todaySectionIndex: $_todaySectionIndex');
-    print('   _draggableSheetController: ${_draggableSheetController != null ? 'exists' : 'null'}');
-    
-    if (_todaySectionIndex == null || _todaySectionIndex! < 0) {
-      print('❌ Invalid target section index: $_todaySectionIndex');
-      return;
-    }
-    if (_draggableSheetController == null) {
-      print('❌ Draggable sheet controller is null');
-      return;
-    }
-    
-    final keys = _groupedPosts.keys.toList();
-    if (_todaySectionIndex! >= keys.length) {
-      print('❌ Target index $_todaySectionIndex >= keys length ${keys.length}');
-      return;
-    }
-    
-    final targetSectionKey = keys[_todaySectionIndex!];
-    final targetGlobalKey = _sectionKeys[targetSectionKey];
-    
-    print('   Target section key: "$targetSectionKey"');
-    print('   Target GlobalKey: ${targetGlobalKey != null ? 'exists' : 'null'}');
-    
-    if (targetGlobalKey == null) {
-      print('❌ No GlobalKey found for target section: $targetSectionKey');
-      print('   Available section keys: ${_sectionKeys.keys.toList()}');
-      return;
-    }
-    
-    // Wait for next frame to ensure widgets are rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSectionWithPixelMeasurement(targetGlobalKey, targetSectionKey, animate);
-    });
-  }
-  
-  void _scrollToSectionWithPixelMeasurement(GlobalKey targetKey, String targetSectionKey, bool animate) {
-    final scrollPosition = _draggableSheetController!.position;
-    
-    print('🔍 COLLECTING FRESH POSITION DATA:');
-    print('   Target section: "$targetSectionKey" (index $_todaySectionIndex)');
-    print('   Current scroll position: ${scrollPosition.pixels.toStringAsFixed(1)}px');
-    print('   Max scroll extent: ${scrollPosition.maxScrollExtent.toStringAsFixed(1)}px');
-    
-    // Collect fresh position data from all rendered sections
-    _collectFreshPositionData(targetKey, targetSectionKey, animate);
-  }
-  
-  void _collectFreshPositionData(GlobalKey targetKey, String targetSectionKey, bool animate) {
-    final scrollPosition = _draggableSheetController!.position;
-    final keys = _groupedPosts.keys.toList();
-    final double screenWidth = MediaQuery.of(context).size.width;
-    
-    print('📊 COLLECTING REAL POSITION DATA:');
-    
-    // Get the ListView's RenderBox to establish coordinate system
-    final RenderBox? listViewBox = _draggableSheetController!.position.context.notificationContext?.findRenderObject() as RenderBox?;
-    
-    if (listViewBox == null) {
-      print('❌ Could not find ListView RenderBox, falling back to estimated calculation');
-      _fallbackToEstimatedScroll(targetSectionKey, animate);
-      return;
-    }
-    
-    // Get the target section's RenderBox
-    final RenderBox? targetRenderBox = targetKey.currentContext?.findRenderObject() as RenderBox?;
-    
-    if (targetRenderBox == null) {
-      print('❌ Could not find target RenderBox for: $targetSectionKey');
-      _fallbackToEstimatedScroll(targetSectionKey, animate);
-      return;
-    }
-    
-    try {
-      // Get the target section's position relative to the ListView
-      final Offset targetPosition = targetRenderBox.localToGlobal(Offset.zero);
-      final Offset listViewPosition = listViewBox.localToGlobal(Offset.zero);
-      
-      // Calculate the relative position within the ListView
-      final double targetOffsetInList = targetPosition.dy - listViewPosition.dy;
-      
-      // Account for current scroll position to get the absolute offset
-      final double absoluteTargetOffset = targetOffsetInList + scrollPosition.pixels;
-      
-      // Add visual offset for comfortable positioning
-      final double dragHandleHeight = screenWidth * 0.029 + screenWidth * 0.019 + screenWidth * 0.012;
-      final double topBuffer = screenWidth * 0.02;
-      final double visualOffset = dragHandleHeight + topBuffer + (screenWidth * 0.03); // Slightly more spacing
-      
-      // Calculate final scroll position
-      final double finalOffset = (absoluteTargetOffset - visualOffset).clamp(0.0, scrollPosition.maxScrollExtent);
-      
-      print('📍 FRESH POSITION CALCULATION:');
-      print('   Target global position: ${targetPosition.dy.toStringAsFixed(1)}px');
-      print('   ListView global position: ${listViewPosition.dy.toStringAsFixed(1)}px');
-      print('   Target offset in list: ${targetOffsetInList.toStringAsFixed(1)}px');
-      print('   Absolute target offset: ${absoluteTargetOffset.toStringAsFixed(1)}px');
-      print('   Visual offset: ${visualOffset.toStringAsFixed(1)}px');
-      print('   Final scroll offset: ${finalOffset.toStringAsFixed(1)}px');
-      
-      if (animate) {
-        _isAutoScrolling = true;
-        _draggableSheetController!.animateTo(
-          finalOffset,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        ).then((_) => _isAutoScrolling = false);
-      } else {
-        _draggableSheetController!.jumpTo(finalOffset);
-      }
-      
-    } catch (e) {
-      print('❌ Error calculating fresh positions: $e');
-      print('   Falling back to estimated calculation...');
-      _fallbackToEstimatedScroll(targetSectionKey, animate);
-    }
-  }
-  
-  double _calculateCardHeight(double screenWidth, bool isNarrowScreen) {
-    final double cardPadding = (isNarrowScreen ? screenWidth * 0.035 : screenWidth * 0.04) * 2;
-    final double titleHeight = (isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.055) * 2.2;
-    final double spacingBetween = isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02;
-    final double subtitleHeight = isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.045;
-    return cardPadding + titleHeight + spacingBetween + subtitleHeight;
-  }
-  
-  void _fallbackToEstimatedScroll(String targetSectionKey, bool animate) {
-    print('🔄 Using fallback estimated scroll for: $targetSectionKey');
-    final scrollPosition = _draggableSheetController!.position;
-    final keys = _groupedPosts.keys.toList();
-    final double screenWidth = MediaQuery.of(context).size.width;
-    
-    double targetOffset = 0.0;
-    
-    // Calculate estimated position
-    for (int i = 0; i < _todaySectionIndex!; i++) {
-      targetOffset += screenWidth * 0.13; // Header height
-      final cardsCount = _groupedPosts[keys[i]]!.length;
-      final bool isNarrowScreen = screenWidth < 360;
-      final double cardHeight = _calculateCardHeight(screenWidth, isNarrowScreen);
-      final double cardMargin = isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04;
-      targetOffset += cardsCount * (cardHeight + cardMargin);
-    }
-    
-    // Add visual offset to account for drag handle and padding
-    // This ensures the target section appears nicely positioned, not at the very top
-    final double dragHandleHeight = screenWidth * 0.029 + screenWidth * 0.019 + screenWidth * 0.012; // top + bottom + handle height
-    final double topBuffer = screenWidth * 0.02; // ListView top padding
-    final double visualOffset = dragHandleHeight + topBuffer + (screenWidth * 0.02); // Extra visual spacing
-    
-    // Subtract the visual offset so the section appears positioned nicely
-    final double adjustedOffset = (targetOffset - visualOffset).clamp(0.0, scrollPosition.maxScrollExtent);
-    
-    print('📍 FALLBACK SCROLL:');
-    print('   Raw target offset: ${targetOffset.toStringAsFixed(1)}px');
-    print('   Visual offset: ${visualOffset.toStringAsFixed(1)}px');
-    print('   Final adjusted offset: ${adjustedOffset.toStringAsFixed(1)}px');
-    
-    if (animate) {
-      _isAutoScrolling = true;
-      _draggableSheetController!.animateTo(
-        adjustedOffset,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      ).then((_) => _isAutoScrolling = false);
-    } else {
-      _draggableSheetController!.jumpTo(adjustedOffset);
-    }
-  }
-
-  void _showArticleSheet(BulletinPost post) {
-    Get.bottomSheet(
-      ArticleDetailDraggableSheet(article: Article(
-        title: post.title,
-        subtitle: post.subtitle,
-        imagePath: post.imagePath,
-        content: post.content,
-      )),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      useRootNavigator: false,
-      enableDrag: true,
-    );
   }
 
   @override
   void dispose() {
-    _inactivityTimer?.cancel();
-    _midnightTimer?.cancel();
-    _sheetController.removeListener(_onSheetExtentChanged);
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_hasScrolledInitially) return;
+    if (!_scrollController.hasClients) return;
+    
+    // Check if Today section is visible by looking at its GlobalKey
+    bool todayIsVisible = false;
+    if (_todayKey != null && _dateKeys.containsKey(_todayKey)) {
+      final keyContext = _dateKeys[_todayKey]?.currentContext;
+      if (keyContext != null) {
+        final RenderBox? box = keyContext.findRenderObject() as RenderBox?;
+        if (box != null && box.hasSize) {
+          final position = box.localToGlobal(Offset.zero);
+          final screenHeight = MediaQuery.of(context).size.height;
+          // Today section is visible if it's within the viewport (between top and 70% of screen)
+          // Also check if it's not too far above the viewport (position.dy > -100)
+          todayIsVisible = position.dy > -100 && position.dy < screenHeight * 0.7;
+        }
+      }
+    }
+    
+    // Show button whenever Today section is NOT visible (scrolled up or down away from it)
+    final shouldShow = !todayIsVisible;
+    
+    if (_showScrollToTodayButton != shouldShow) {
+      setState(() {
+        _showScrollToTodayButton = shouldShow;
+      });
+    }
+  }
+
+  void _buildGroupedList() {
+    final today = DateTime.now();
+    List<BulletinPost> posts;
+    
+    if (_selectedTab == 'Pinned') {
+      // Use controller pinned posts only
+      posts = [...controller.pinnedPosts];
+    } else {
+      // Use controller all posts only
+      posts = [...controller.allPosts.where((p) => !p.isPinned)];
+    }
+    
+    posts.sort((a, b) => a.date.compareTo(b.date));
+    
+    final Map<String, List<BulletinPost>> grouped = {};
+    _dateKeys.clear();
+    
+    for (var post in posts) {
+      String dateHeader;
+      if (isSameDay(post.date, today)) {
+        dateHeader = 'Today';
+        _todayKey = dateHeader;
+      } else if (isSameDay(post.date, today.subtract(const Duration(days: 1)))) {
+        dateHeader = 'Yesterday';
+      } else if (isSameDay(post.date, today.add(const Duration(days: 1)))) {
+        dateHeader = 'Tomorrow';
+      } else {
+        dateHeader = DateFormat('EEEE, MMMM d').format(post.date);
+      }
+      
+      if (grouped[dateHeader] == null) {
+        grouped[dateHeader] = [];
+        _dateKeys[dateHeader] = GlobalKey();
+      }
+      grouped[dateHeader]!.add(post);
+    }
+    
+    // Find the best key to scroll to if there's no "Today"
+    if (_todayKey == null && grouped.isNotEmpty) {
+      final keys = grouped.keys.toList();
+      
+      // Try to find closest future date
+      for (final key in keys) {
+        final firstPost = grouped[key]!.first;
+        if (firstPost.date.isAfter(today)) {
+          _todayKey = key;
+          break;
+        }
+      }
+      
+      // If no future date, use the most recent past date
+      if (_todayKey == null) {
+        _todayKey = keys.last;
+      }
+    }
+    
+    setState(() => _groupedPosts = grouped);
+    
+    // Scroll to today after build
+    if (!_hasScrolledInitially) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            _scrollToToday(animate: false);
+            _hasScrolledInitially = true;
+          }
+        });
+      });
+    }
+  }
+
+  void _scrollToToday({bool animate = true}) {
+    if (_todayKey == null || !_dateKeys.containsKey(_todayKey)) return;
+    
+    final keyContext = _dateKeys[_todayKey]?.currentContext;
+    if (keyContext != null) {
+      Scrollable.ensureVisible(
+        keyContext,
+        duration: animate ? const Duration(milliseconds: 400) : Duration.zero,
+        curve: Curves.easeInOut,
+        alignment: 0.1, // Offset a bit from top to account for header
+      );
+      
+      if (mounted) {
+        setState(() {
+          _showScrollToTodayButton = false;
+        });
+      }
+    } else if (_scrollController.hasClients) {
+      // Fallback: scroll to top
+      _scrollController.animateTo(
+        0,
+        duration: animate ? const Duration(milliseconds: 400) : Duration.zero,
+        curve: Curves.easeInOut,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _showScrollToTodayButton = false;
+        });
+      }
+    }
+  }
+
+  void _onTabChanged(String tab) {
+    HapticFeedbackHelper.buttonPress();
+    setState(() {
+      _selectedTab = tab;
+      _hasScrolledInitially = false;
+      _showScrollToTodayButton = false;
+    });
+    // Reset scroll position first
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    _buildGroupedList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pinnedPosts = controller.pinnedPosts;
     final dateKeys = _groupedPosts.keys.toList();
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double topSpacer = screenWidth * 0.057; // ~24px at 420px width
-    final double betweenSpacer = 0; // Set to 0 to remove gap
-
-    // Calculate dynamic minimum extent to avoid covering pinned section (always present now)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final headerBox = _headerKey.currentContext?.findRenderObject() as RenderBox?;
-      final sectionHeaderBox = _sectionHeaderKey.currentContext?.findRenderObject() as RenderBox?;
-      final carouselBox = _carouselKey.currentContext?.findRenderObject() as RenderBox?;
-      if (headerBox != null && sectionHeaderBox != null && carouselBox != null) {
-        final double totalHeight =
-          headerBox.size.height +
-          topSpacer +
-          sectionHeaderBox.size.height +
-          carouselBox.size.height +
-          screenWidth * 0.038; // Add small buffer (~16px at 420px width)
-        final double calculatedMin = (totalHeight / screenHeight).clamp(0.1, 0.5);
-        if (_calculatedMinExtent != calculatedMin) {
-          setState(() {
-            _calculatedMinExtent = calculatedMin;
-          });
-        }
-      }
-    });
-
-    final double effectiveMinExtent = _getSnapBackExtent();
-    final double effectiveInitialExtent = responsiveInitialExtent;
-    
-    // Ensure minChildSize <= initialChildSize to prevent Flutter assertion error
-    final double safeMinExtent = (effectiveMinExtent > effectiveInitialExtent ? effectiveInitialExtent : effectiveMinExtent) * 0.9;
+    final double topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       body: Stack(
         children: [
-          // Gradient background
           const LiquidMeshBackground(),
-          // Main header and pinned carousel always visible
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                key: _headerKey,
-                height: MediaQuery.of(context).padding.top + (screenWidth * 0.07) + 20,
+          
+          // Main scrollable content
+          CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // Header with integrated segmented control
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _BulletinMeltingHeader(
+                  title: 'Bulletin',
+                  topPadding: topPadding,
+                  tabs: _tabs,
+                  selectedTab: _selectedTab,
+                  onTabChanged: _onTabChanged,
+                ),
               ),
-              SizedBox(height: topSpacer),
-              _buildSectionHeader("Pinned", key: _sectionHeaderKey),
-              if (pinnedPosts.isNotEmpty) 
-                _buildPinnedCarousel(pinnedPosts, key: _carouselKey)
-              else
-                _buildEmptyPinnedSection(key: _carouselKey),
-              // Remove the betweenSpacer from the layout
-              // SizedBox(height: betweenSpacer),
-            ],
-          ),
-          // DraggableScrollableSheet overlays lower part only
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: DraggableScrollableSheet(
-              controller: _sheetController,
-              initialChildSize: effectiveInitialExtent,
-              minChildSize: safeMinExtent,
-              maxChildSize: 0.9,
-              expand: false, // Allow sheet to retract from any scroll position
-              builder: (context, scrollController) {
-                _draggableSheetController = scrollController;
-                // Ensure ListView is fully built before attempting to scroll
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  // Add a longer delay to ensure all widgets are rendered
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    print('🚀 Triggering initial scroll to today section...');
-                    _scrollToTodaySection(animate: false);
-                  });
-                });
-                scrollController.removeListener(_onScroll);
-                scrollController.addListener(_onScroll);
-                if (dateKeys.isEmpty) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.35),
-                              Colors.white.withOpacity(0.18),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
-                          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                        ),
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(screenWidth * 0.076),
-                            child: Text(
-                              'No bulletin posts available.',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.35),
-                            Colors.white.withOpacity(0.18),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(screenWidth * 0.057)),
-                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                      ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onVerticalDragStart: (details) {
-                          _isDraggingHandle = true;
-                          dragStartExtent = _sheetController.size;
-                        },
-                        onVerticalDragUpdate: (details) {
-                          if (dragStartExtent != null) {
-                            final dragDelta = details.primaryDelta ?? 0.0;
-                            final newExtent = (_sheetController.size - dragDelta / MediaQuery.of(context).size.height).clamp(safeMinExtent, 0.9);
-                            _sheetController.jumpTo(newExtent);
-                          }
-                        },
-                        onVerticalDragEnd: (details) {
-                          _isDraggingHandle = false;
-                          dragStartExtent = null;
-                          // Snap to snap-back extent if swiped down fast
-                          if (details.primaryVelocity != null && details.primaryVelocity! > 500) {
-                            _sheetController.animateTo(_getSnapBackExtent(), duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
-                          }
-                          // No need to trigger scrollToTodaySection here; handled by controller listener
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(top: screenWidth * 0.029, bottom: screenWidth * 0.019), // ~12px, ~8px at 420px width
-                          child: Center(
-                            child: Container(
-                              width: screenWidth * 0.086, // ~36px at 420px width
-                              height: screenWidth * 0.012, // ~5px at 420px width
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(2.5),
+              
+              // Content with AnimatedContentSwitcher for tab animation
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  top: screenWidth * 0.02,
+                  bottom: screenHeight * 0.15,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: AnimatedContentSwitcher(
+                    switchKey: _selectedTab,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Posts grouped by date
+                        if (dateKeys.isEmpty)
+                          Padding(
+                            padding: EdgeInsets.all(screenWidth * 0.06),
+                            child: Center(
+                              child: Text(
+                                _selectedTab == 'Pinned' 
+                                    ? 'No pinned announcements' 
+                                    : 'No announcements available',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontSize: screenWidth * 0.04,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          controller: scrollController,
-                          padding: EdgeInsets.only(
-                            top: screenWidth * 0.02, // Small buffer above first card
-                            bottom: screenHeight * 0.18, // Responsive bottom padding
-                          ),
-                          itemCount: dateKeys.length,
-                          itemBuilder: (context, index) {
-                            final date = dateKeys[index];
-                            final postsForDate = _groupedPosts[date]!;
-                            return StickyHeader(
-                              header: _buildDateHeader(date, key: _sectionKeys[date]),
-                              content: Column(
-                                children: postsForDate.map((post) => _BulletinEventCard(post: post)).toList(),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          // Melting glass header
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: MediaQuery.of(context).padding.top + 60,
-              child: ShaderMask(
-                shaderCallback: (rect) {
-                  return const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black, // Fully visible (blurred) at top
-                      Colors.black, // Stay blurred through middle
-                      Colors.transparent, // Fade out at bottom
-                    ],
-                    stops: [0.0, 0.7, 1.0],
-                  ).createShader(rect);
-                },
-                blendMode: BlendMode.dstIn,
-                child: ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            const Color(0xFF030308).withOpacity(1.0),
-                            const Color(0xFF030308).withOpacity(0.85),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.7, 1.0],
-                        ),
-                      ),
+                          )
+                        else
+                          ...dateKeys.expand((dateKey) => [
+                            _buildDateHeader(dateKey),
+                            ..._groupedPosts[dateKey]!.map((post) => _BulletinEventCard(post: post)),
+                          ]).toList(),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-          // Header title
+          
+          // Animated scroll to today button
           Positioned(
-            top: MediaQuery.of(context).padding.top + 4,
-            left: 24,
-            child: Text(
-              'Bulletin',
-              style: GoogleFonts.inter(
-                fontSize: 36,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.0,
-                color: Colors.white,
+            bottom: screenHeight * 0.12,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: AnimatedSlide(
+                offset: _showScrollToTodayButton ? Offset.zero : const Offset(0, 2),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: _showScrollToTodayButton ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: IgnorePointer(
+                    ignoring: !_showScrollToTodayButton,
+                    child: _buildScrollToTodayButton(context),
+                  ),
+                ),
               ),
             ),
           ),
@@ -723,104 +300,224 @@ class _BulletinPageState extends State<BulletinPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title, {Key? key}) {
+  Widget _buildScrollToTodayButton(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    return Padding(
-      key: key,
-      padding: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, screenWidth * 0.06, screenWidth * 0.04),
-      child: Text(
-        title,
-        style: GoogleFonts.inter(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold, color: Colors.white),
+    
+    return GestureDetector(
+      onTap: () {
+        HapticFeedbackHelper.buttonPress();
+        _scrollToToday();
+      },
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: screenWidth * 0.08,
+          cornerSmoothing: 1.0,
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.05,
+              vertical: screenWidth * 0.03,
+            ),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.3),
+                  Colors.white.withOpacity(0.15),
+                ],
+              ),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: screenWidth * 0.08,
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CupertinoIcons.arrow_counterclockwise,
+                  color: Colors.white,
+                  size: screenWidth * 0.045,
+                ),
+                SizedBox(width: screenWidth * 0.02),
+                Text(
+                  'Back to Today',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: screenWidth * 0.035,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildDateHeader(String date, {Key? key}) {
+  Widget _buildDateHeader(String date) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    final bool isToday = date == 'Today';
     
-    // Make header height responsive to screen size
-    final double headerHeight = screenWidth * 0.13; // 13% of screen width
-    final double verticalPadding = screenWidth * 0.03;
-    final double horizontalPadding = screenWidth * 0.06;
+    return Container(
+      key: _dateKeys[date],
+      padding: EdgeInsets.fromLTRB(
+        screenWidth * 0.057,
+        screenWidth * 0.04,
+        screenWidth * 0.057,
+        screenWidth * 0.02,
+      ),
+      child: Text(
+        date,
+        style: GoogleFonts.inter(
+          fontSize: screenWidth * 0.05,
+          fontWeight: FontWeight.bold,
+          color: isToday ? Colors.white : Colors.white.withOpacity(0.8),
+        ),
+      ),
+    );
+  }
+}
+
+/// Custom header delegate that includes both title AND segmented control
+/// The segmented control moves up/down with the header as it shrinks/expands
+class _BulletinMeltingHeader extends SliverPersistentHeaderDelegate {
+  final String title;
+  final double topPadding;
+  final List<String> tabs;
+  final String selectedTab;
+  final ValueChanged<String> onTabChanged;
+
+  _BulletinMeltingHeader({
+    required this.title,
+    required this.topPadding,
+    required this.tabs,
+    required this.selectedTab,
+    required this.onTabChanged,
+  });
+
+  @override
+  double get minExtent => topPadding + 155.0; // Fixed size - title + segmented control
+  @override
+  double get maxExtent => topPadding + 155.0; // Fixed size - title + segmented control
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          key: key, // Use the provided GlobalKey
-          width: double.infinity,
-          height: headerHeight,
-          padding: EdgeInsets.symmetric(
-            horizontal: horizontalPadding,
-            vertical: verticalPadding,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    // Fixed title size - matches other headers at expanded position (36)
+    final double titleFontSize = 36;
+    // Match Events page spacing: header ends, then screenWidth * 0.04 gap, then content
+    final double titleToTabSpacing = screenWidth * 0.055;
+    
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // THE TOP-DOWN MELTING GLASS LAYER (background - behind content)
+        ShaderMask(
+          shaderCallback: (rect) {
+            return LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
-                Colors.white.withOpacity(0.25),
-                Colors.white.withOpacity(0.12),
+                Colors.black,
+                Colors.black,
+                Colors.black,
+                Colors.black,
+                Colors.black.withOpacity(0.8),
+                Colors.black.withOpacity(0.4),
+                Colors.transparent,
               ],
-            ),
-          ),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              date,
-              style: GoogleFonts.inter(
-                fontSize: MediaQuery.of(context).size.width * 0.045, 
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              stops: const [0.0, 0.5, 0.7, 0.82, 0.9, 0.96, 1.0],
+            ).createShader(rect);
+          },
+          blendMode: BlendMode.dstIn,
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF030308).withOpacity(1.0),
+                      const Color(0xFF030308).withOpacity(1.0),
+                      const Color(0xFF030308).withOpacity(1.0),
+                      const Color(0xFF030308).withOpacity(1.0),
+                      const Color(0xFF030308).withOpacity(0.7),
+                      const Color(0xFF030308).withOpacity(0.3),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.5, 0.68, 0.8, 0.9, 0.96, 1.0],
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPinnedCarousel(List<BulletinPost> posts, {Key? key}) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double carouselHeight = screenWidth * 0.56; // ~236 on 420px width, proportional
-    return SizedBox(
-      key: key,
-      height: carouselHeight,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057), // ~24px at 420px width
-        itemCount: posts.length,
-        itemBuilder: (context, index) {
-          return _PinnedPostCard(post: posts[index]);
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyPinnedSection({Key? key}) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double carouselHeight = screenWidth * 0.56; // Same height as regular carousel
-    return SizedBox(
-      key: key,
-      height: carouselHeight,
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057), // ~24px at 420px width
-          child: Text(
-            'No pinned posts at this time',
-            style: TextStyle(
-              fontSize: screenWidth * 0.04,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
+        
+        // HEADER CONTENT - Title + Segmented Control (on top of blur layer)
+        // Use same positioning as LiquidMeltingHeader for the title
+        Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: topPadding + 10,
+            bottom: 4,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              // Title row - matches LiquidMeltingHeader exactly
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1.0,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: titleToTabSpacing),
+              // Segmented control - part of header
+              SizedBox(
+                height: screenWidth * 0.105,
+                child: AnimatedSegmentedControl(
+                  segments: tabs,
+                  selectedSegment: selectedTab,
+                  onSelectionChanged: onTabChanged,
+                  compact: true,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
+      ],
     );
   }
 
+  @override
+  bool shouldRebuild(covariant _BulletinMeltingHeader oldDelegate) {
+    return oldDelegate.selectedTab != selectedTab || 
+           oldDelegate.topPadding != topPadding;
+  }
 }
 
 class _BulletinEventCard extends StatelessWidget {
@@ -852,7 +549,12 @@ class _BulletinEventCard extends StatelessWidget {
       onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
       onTap: () => _showArticleSheet(post),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(screenWidth * 0.06, 0, screenWidth * 0.06, isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04),
+        padding: EdgeInsets.fromLTRB(
+          screenWidth * 0.057,
+          0,
+          screenWidth * 0.057,
+          isNarrowScreen ? screenWidth * 0.03 : screenWidth * 0.04,
+        ),
         child: ClipSmoothRect(
           radius: SmoothBorderRadius(
             cornerRadius: DesignConstants.get24Radius(context),
@@ -883,23 +585,38 @@ class _BulletinEventCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    post.title,
-                    style: GoogleFonts.inter(
-                      fontSize: MediaQuery.of(context).size.width * 0.045, 
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      if (post.isPinned)
+                        Padding(
+                          padding: EdgeInsets.only(right: screenWidth * 0.02),
+                          child: Icon(
+                            CupertinoIcons.pin_fill,
+                            size: screenWidth * 0.04,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      Expanded(
+                        child: Text(
+                          post.title,
+                          style: GoogleFonts.inter(
+                            fontSize: screenWidth * 0.045,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: isNarrowScreen ? screenWidth * 0.015 : screenWidth * 0.02),
                   Row(
                     children: [
                       Icon(
-                        CupertinoIcons.calendar, 
-                        size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045, 
-                        color: Colors.white.withOpacity(0.7)
+                        CupertinoIcons.calendar,
+                        size: isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.045,
+                        color: Colors.white.withOpacity(0.7),
                       ),
                       SizedBox(width: screenWidth * 0.02),
                       Flexible(
@@ -915,115 +632,6 @@ class _BulletinEventCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PinnedPostCard extends StatelessWidget {
-  const _PinnedPostCard({required this.post});
-  final BulletinPost post;
-
-  void _showArticleSheet(BulletinPost post) {
-    Get.bottomSheet(
-      ArticleDetailDraggableSheet(article: Article(
-        title: post.title,
-        subtitle: post.subtitle,
-        imagePath: post.imagePath,
-        content: post.content,
-      )),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double cardRadius = DesignConstants.get32Radius(context);
-    final double cardWidth = screenWidth * 0.65;
-    final double imageHeight = screenWidth * 0.32;
-    final double fontSizeTitle = screenWidth * 0.045;
-    final double fontSizeSubtitle = screenWidth * 0.035;
-    return GestureDetector(
-      onTapDown: (_) => HapticFeedbackHelper.buttonPress(),
-      onTapUp: (_) => HapticFeedbackHelper.buttonRelease(),
-      onTap: () => _showArticleSheet(post),
-      child: Container(
-        width: cardWidth,
-        margin: EdgeInsets.only(right: screenWidth * 0.04, bottom: screenWidth * 0.01),
-        child: ClipSmoothRect(
-          radius: SmoothBorderRadius(
-            cornerRadius: cardRadius,
-            cornerSmoothing: 1.0,
-          ),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: ShapeDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.25),
-                    Colors.white.withOpacity(0.12),
-                  ],
-                ),
-                shape: SmoothRectangleBorder(
-                  borderRadius: SmoothBorderRadius(
-                    cornerRadius: cardRadius,
-                    cornerSmoothing: 1.0,
-                  ),
-                  side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipSmoothRect(
-                    radius: SmoothBorderRadius.only(
-                      topLeft: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
-                      topRight: SmoothRadius(cornerRadius: cardRadius, cornerSmoothing: 1.0),
-                    ),
-                    child: Image.asset(
-                      post.imagePath!,
-                      height: imageHeight,
-                      width: double.infinity,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.white.withOpacity(0.1)),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.03),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.title,
-                          style: GoogleFonts.inter(
-                            fontSize: MediaQuery.of(context).size.width * 0.045, 
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: screenWidth * 0.01),
-                        Text(
-                          post.subtitle,
-                          style: TextStyle(fontSize: fontSizeSubtitle, color: Colors.white.withOpacity(0.7)),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: screenWidth * 0.01),
                 ],
               ),
             ),

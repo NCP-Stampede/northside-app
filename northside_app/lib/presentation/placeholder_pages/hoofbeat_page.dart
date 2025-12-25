@@ -104,7 +104,7 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.2),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.width * 0.029),
                           shape: SmoothRectangleBorder(
                             borderRadius: SmoothBorderRadius(
                               cornerRadius: 8,
@@ -112,10 +112,10 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
                             ),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Go Back',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: MediaQuery.of(context).size.width * 0.038,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -143,7 +143,10 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
             // Large "Hoofbeat" Header
             SliverToBoxAdapter(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.057,
+                  vertical: MediaQuery.of(context).size.width * 0.095,
+                ),
                 child: Builder(
                   builder: (context) {
                     final double screenWidth = MediaQuery.of(context).size.width;
@@ -163,19 +166,19 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
             // Top Stories Section
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.057),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Top Stories',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: MediaQuery.of(context).size.width * 0.067,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.038),
                     
                     // Placeholder cards for top stories
                     _buildPlaceholderCard(),
@@ -188,21 +191,24 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
             // Trending Section
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.057,
+                  vertical: MediaQuery.of(context).size.width * 0.076,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Trending',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: MediaQuery.of(context).size.width * 0.067,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.038),
                     SizedBox(
-                      height: 200,
+                      height: MediaQuery.of(context).size.width * 0.476,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         itemCount: 3,
@@ -219,26 +225,26 @@ class _HoofBeatPageState extends State<HoofBeatPage> {
             // News Section
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.057),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'News',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: MediaQuery.of(context).size.width * 0.067,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.038),
                     
                     // News placeholder items
                     _buildNewsPlaceholder(),
                     _buildNewsPlaceholder(),
                     _buildNewsPlaceholder(),
                     
-                    const SizedBox(height: 120), // Extra padding for bottom navigation
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.15), // Extra padding for bottom navigation
                   ],
                 ),
               ),

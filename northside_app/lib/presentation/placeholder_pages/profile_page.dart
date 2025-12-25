@@ -107,11 +107,18 @@ class ProfilePage extends StatelessWidget {
             slivers: [
               SliverPersistentHeader(
                 pinned: true,
-                delegate: LiquidMeltingHeader(title: 'Settings'),
+                delegate: LiquidMeltingHeader(
+                  title: 'Settings',
+                  topPadding: MediaQuery.of(context).padding.top,
+                ),
               ),
               SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.057)
-                    .copyWith(bottom: screenHeight * 0.15),
+                padding: EdgeInsets.only(
+                  left: screenWidth * 0.057,
+                  right: screenWidth * 0.057,
+                  top: screenWidth * 0.04,
+                  bottom: screenHeight * 0.15,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                   // App Settings Section
@@ -420,7 +427,7 @@ class ProfilePage extends StatelessWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.057),
                 decoration: ShapeDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -443,30 +450,30 @@ class ProfilePage extends StatelessWidget {
                   children: [
                     Icon(
                       CupertinoIcons.arrow_counterclockwise,
-                      size: 60,
+                      size: MediaQuery.of(context).size.width * 0.143,
                       color: Colors.white,
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.048),
                     Text(
                       'Reset Settings',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: MediaQuery.of(context).size.width * 0.057,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         decoration: TextDecoration.none,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.029),
                     Text(
                       'Are you sure you want to reset all settings to their default values?',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: MediaQuery.of(context).size.width * 0.038,
                         color: Colors.white.withOpacity(0.8),
                         decoration: TextDecoration.none,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: MediaQuery.of(context).size.width * 0.057),
                     Row(
                       children: [
                         Expanded(
@@ -480,7 +487,7 @@ class ProfilePage extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white.withOpacity(0.2),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.width * 0.029),
                                 shape: SmoothRectangleBorder(
                                   borderRadius: SmoothBorderRadius(
                                     cornerRadius: 8,
@@ -488,17 +495,17 @@ class ProfilePage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Cancel',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: MediaQuery.of(context).size.width * 0.038,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: MediaQuery.of(context).size.width * 0.029),
                         Expanded(
                           child: SizedBox(
                             width: double.infinity,
@@ -517,7 +524,7 @@ class ProfilePage extends StatelessWidget {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red.withOpacity(0.8),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.width * 0.029),
                                 shape: SmoothRectangleBorder(
                                   borderRadius: SmoothBorderRadius(
                                     cornerRadius: 8,
@@ -525,10 +532,10 @@ class ProfilePage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Reset',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: MediaQuery.of(context).size.width * 0.038,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
