@@ -245,37 +245,38 @@ class _EventsPageState extends State<EventsPage> {
     final double iconSize = isNarrowScreen ? screenWidth * 0.045 : screenWidth * 0.052;
     final double verticalPadding = isNarrowScreen ? screenWidth * 0.04 : screenWidth * 0.055;
     
-    return ClipSmoothRect(
-      radius: SmoothBorderRadius(
-        cornerRadius: DesignConstants.get24Radius(context),
-        cornerSmoothing: 1.0,
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: verticalPadding),
-          decoration: ShapeDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.25),
-                Colors.white.withOpacity(0.12),
-              ],
-            ),
-            shape: SmoothRectangleBorder(
-              borderRadius: SmoothBorderRadius(
-                cornerRadius: DesignConstants.get24Radius(context),
-                cornerSmoothing: 1.0,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+      child: ClipSmoothRect(
+        radius: SmoothBorderRadius(
+          cornerRadius: DesignConstants.get24Radius(context),
+          cornerSmoothing: 1.0,
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: verticalPadding),
+            decoration: ShapeDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.12),
+                ],
               ),
-              side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+              shape: SmoothRectangleBorder(
+                borderRadius: SmoothBorderRadius(
+                  cornerRadius: DesignConstants.get24Radius(context),
+                  cornerSmoothing: 1.0,
+                ),
+                side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+              ),
             ),
-          ),
-      // Wrap in LayoutBuilder to adjust calendar based on available space
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return TableCalendar<Article>(
+            // Wrap in LayoutBuilder to adjust calendar based on available space
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return TableCalendar<Article>(
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
@@ -380,8 +381,9 @@ class _EventsPageState extends State<EventsPage> {
               _focusedDay = focusedDay;
             },
           );
-        },
-      ),
+              },
+            ),
+          ),
         ),
       ),
     );

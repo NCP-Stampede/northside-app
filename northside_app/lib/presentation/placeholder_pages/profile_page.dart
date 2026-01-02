@@ -175,17 +175,6 @@ class ProfilePage extends StatelessWidget {
               
               SizedBox(height: screenHeight * 0.03),
               
-              // Event Filtering Section
-              _buildSectionHeader(context, 'Event Filters'),
-              _buildActionCard(
-                context: context,
-                title: 'Event Categories',
-                subtitle: 'Filter events by type',
-                onTap: () => _showEventFilters(context, settingsController),
-              ),
-              
-              SizedBox(height: screenHeight * 0.03),
-              
               // Account & Info Section
               _buildSectionHeader(context, 'Account & Info'),
               _buildActionCard(
